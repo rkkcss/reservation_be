@@ -1,0 +1,3 @@
+org.springframework.test.context.ContextCustomizerFactory = \
+    hu.daniinc.reservation.config.\
+    SqlTestContainersSpringContextCustomizerFactory
