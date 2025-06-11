@@ -1,0 +1,36 @@
+{
+  "annotations": {
+    "changelogDate": "20250528110110"
+  },
+  "applications": "*",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "email",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "phoneNumber",
+      "fieldType": "String"
+    }
+  ],
+  "name": "Guest",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "appointment",
+      "otherEntityRelationshipName": "guest",
+      "relationshipName": "appointment",
+      "relationshipSide": "right",
+      "relationshipType": "one-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

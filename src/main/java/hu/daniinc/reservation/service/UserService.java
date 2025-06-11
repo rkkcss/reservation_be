@@ -20,10 +20,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import tech.jhipster.security.RandomUtil;
 
 /**
@@ -345,5 +347,36 @@ public class UserService {
         if (user.getEmail() != null) {
             Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE)).evictIfPresent(user.getEmail());
         }
+    }
+
+    public void changeName(UserDTO userDTO) {
+        User loggedInUser = this.getUserWithAuthorities().orElseThrow(() -> new RuntimeException("User not found!"));
+        if (userDTO.getFirstName() == null && userDTO.getFirstName().length() < 2) {
+            throw new RuntimeException("First name cannot less than 2 characters or null!");
+        }
+
+        if (userDTO.getLastName() == null && userDTO.getLastName().length() < 2) {
+            throw new RuntimeException("Last name cannot less than 2 characters or null!");
+        }
+        loggedInUser.setLastName(userDTO.getLastName());
+        loggedInUser.setFirstName(userDTO.getFirstName());
+        userRepository.save(loggedInUser);
+    }
+
+    @Transactional
+    public void changeLogin(String login) {
+        if (login == null || login.length() < 2 || login.length() > 50) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Login must be between 2 and 50 characters!");
+        }
+
+        User loggedInUser =
+            this.getUserWithAuthorities().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
+
+        if (userRepository.existsByLogin(login) && !loggedInUser.getLogin().equals(login)) {
+            throw new RuntimeException("This login name is already taken!");
+        }
+
+        loggedInUser.setLogin(login);
+        userRepository.save(loggedInUser);
     }
 }

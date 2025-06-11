@@ -48,6 +48,18 @@ public class CacheConfiguration {
             createCache(cm, hu.daniinc.reservation.domain.User.class.getName() + ".authorities");
             createCache(cm, hu.daniinc.reservation.domain.PersistentToken.class.getName());
             createCache(cm, hu.daniinc.reservation.domain.User.class.getName() + ".persistentTokens");
+            createCache(cm, hu.daniinc.reservation.domain.Appointment.class.getName());
+            createCache(cm, hu.daniinc.reservation.domain.Appointment.class.getName() + ".offerings");
+            createCache(cm, hu.daniinc.reservation.domain.Business.class.getName());
+            createCache(cm, hu.daniinc.reservation.domain.Business.class.getName() + ".workingHours");
+            createCache(cm, hu.daniinc.reservation.domain.Business.class.getName() + ".customWorkingHours");
+            createCache(cm, hu.daniinc.reservation.domain.Business.class.getName() + ".offerings");
+            createCache(cm, hu.daniinc.reservation.domain.BusinessOpeningHours.class.getName());
+            createCache(cm, hu.daniinc.reservation.domain.BusinessRating.class.getName());
+            createCache(cm, hu.daniinc.reservation.domain.CustomWorkingHours.class.getName());
+            createCache(cm, hu.daniinc.reservation.domain.Guest.class.getName());
+            createCache(cm, hu.daniinc.reservation.domain.Offering.class.getName());
+            createCache(cm, hu.daniinc.reservation.domain.WorkingHours.class.getName());
             // jhipster-needle-caffeine-add-entry
         };
     }

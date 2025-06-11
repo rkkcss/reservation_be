@@ -19,7 +19,25 @@
     <property name="timeType" value="time(6)" dbms="postgresql"/>
 
     <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110105_added_entity_Appointment.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110106_added_entity_Business.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110107_added_entity_BusinessOpeningHours.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110108_added_entity_BusinessRating.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110109_added_entity_CustomWorkingHours.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110110_added_entity_Guest.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110111_added_entity_Offering.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110112_added_entity_WorkingHours.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
-    <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
+    <include file="config/liquibase/changelog/20250528110105_added_entity_constraints_Appointment.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110106_added_entity_constraints_Business.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110109_added_entity_constraints_CustomWorkingHours.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110111_added_entity_constraints_Offering.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528110112_added_entity_constraints_WorkingHours.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250528T1350_added_entity_constraints_Guest.xml" relativeToChangelogFile="false"/>
+
+  <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
+
+    <include file="config/liquibase/changelog/20250528T1530_remove_appointment_from_offering.xml" relativeToChangelogFile="false"/>
+
 </databaseChangeLog>

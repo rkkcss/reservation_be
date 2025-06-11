@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -67,6 +68,14 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/api/account/reset-password/init")).permitAll()
                     .requestMatchers(mvc.pattern("/api/account/reset-password/finish")).permitAll()
                     .requestMatchers(mvc.pattern("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
+
+
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/offerings/**")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/working-hours/**")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/businesses/**")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/csrf-token")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/appointments")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/businesses/**")).permitAll()
                     .requestMatchers(mvc.pattern("/api/**")).authenticated()
                     .requestMatchers(mvc.pattern("/websocket/**")).authenticated()
                     .requestMatchers(mvc.pattern("/v3/api-docs/**")).hasAuthority(AuthoritiesConstants.ADMIN)
@@ -103,6 +112,7 @@ public class SecurityConfiguration {
             http
                 .csrf(csrf -> csrf.ignoringRequestMatchers(antMatcher("/h2-console/**")))
                 .authorizeHttpRequests(authz -> authz.requestMatchers(antMatcher("/h2-console/**")).permitAll());
+            http.headers(headers -> headers.frameOptions().sameOrigin());
         }
         return http.build();
     }

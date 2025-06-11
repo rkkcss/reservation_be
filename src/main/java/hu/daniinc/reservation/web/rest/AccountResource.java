@@ -9,6 +9,7 @@ import hu.daniinc.reservation.service.MailService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.AdminUserDTO;
 import hu.daniinc.reservation.service.dto.PasswordChangeDTO;
+import hu.daniinc.reservation.service.dto.UserDTO;
 import hu.daniinc.reservation.web.rest.errors.*;
 import hu.daniinc.reservation.web.rest.vm.KeyAndPasswordVM;
 import hu.daniinc.reservation.web.rest.vm.ManagedUserVM;
@@ -22,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -250,5 +252,23 @@ public class AccountResource {
             password.length() < ManagedUserVM.PASSWORD_MIN_LENGTH ||
             password.length() > ManagedUserVM.PASSWORD_MAX_LENGTH
         );
+    }
+
+    @GetMapping("/csrf-token")
+    public ResponseEntity<String> getCsrfToken() {
+        return ResponseEntity.status(HttpStatus.OK).body("CSRF-TOKEN");
+    }
+
+    @PatchMapping("/change-name")
+    public ResponseEntity<String> updateName(@RequestBody UserDTO userDTO) {
+        userService.changeName(userDTO);
+        return ResponseEntity.status(HttpStatus.OK).body("Name updated");
+    }
+
+    @PatchMapping("/change-login")
+    public ResponseEntity<Void> updateLogin(@RequestBody UserDTO userDTO) {
+        userService.changeLogin(userDTO.getLogin());
+
+        return ResponseEntity.noContent().build();
     }
 }

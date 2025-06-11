@@ -1,0 +1,83 @@
+entity Business {
+  name String required
+  createdDate ZonedDateTime
+  description String maxlength(500)
+  address String
+  phoneNumber String
+  breakBetweenAppointmentsMin Integer min(0)
+  logo String
+  bannerUrl String
+}
+
+entity Offering {
+  durationMinutes Integer required min(1)
+  price BigDecimal required min(1)
+  description String
+  title String required
+}
+
+entity Appointment {
+  startDate ZonedDateTime required
+  endDate ZonedDateTime required
+  createdDate ZonedDateTime required
+  modifiedDate ZonedDateTime
+  note String maxlength(300)
+  status AppointmentStatus required
+}
+
+enum AppointmentStatus {
+  PENDING,
+  CONFIRMED,
+  CANCELLED
+}
+
+entity BusinessRating {
+  number Integer min(1) max(5) required
+  description String maxlength(500)
+  imageUrl String
+}
+
+entity WorkingHours {
+  dayOfWeek Integer required // 1 = Hétfő, 7 = Vasárnap
+  startTime ZonedDateTime required
+  endTime ZonedDateTime required
+}
+
+entity CustomWorkingHours {
+  workDate LocalDate required
+  startTime ZonedDateTime required
+  endTime ZonedDateTime required
+}
+
+entity BusinessOpeningHours {
+  dayOfWeek Integer required // 1 = Hétfő, 7 = Vasárnap
+  startTime ZonedDateTime required
+  endTime ZonedDateTime required
+}
+
+entity Guest {
+  name String required
+  email String required
+  phoneNumber String
+}
+
+relationship ManyToOne {
+  WorkingHours to Business,
+  CustomWorkingHours to Business
+  Offering to Business
+  Appointment to Business
+}
+
+relationship OneToMany {
+  Appointment to Offering
+}
+
+relationship OneToOne {
+  @Id Business to User with builtInEntity,
+  Appointment to Guest,
+}
+
+// Konfigurációk
+dto * with mapstruct
+service * with serviceImpl
+paginate * with pagination

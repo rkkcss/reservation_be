@@ -1,0 +1,37 @@
+{
+  "annotations": {
+    "changelogDate": "20250528110112"
+  },
+  "applications": "*",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "dayOfWeek",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "startTime",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "endTime",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "name": "WorkingHours",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "business",
+      "otherEntityRelationshipName": "workingHours",
+      "relationshipName": "business",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

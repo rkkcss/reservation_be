@@ -1,0 +1,37 @@
+{
+  "annotations": {
+    "changelogDate": "20250528110109"
+  },
+  "applications": "*",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "workDate",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "startTime",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "endTime",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "name": "CustomWorkingHours",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "business",
+      "otherEntityRelationshipName": "customWorkingHours",
+      "relationshipName": "business",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}
