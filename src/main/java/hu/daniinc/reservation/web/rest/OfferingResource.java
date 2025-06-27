@@ -192,6 +192,7 @@ public class OfferingResource {
     public ResponseEntity<List<OfferingDTO>> getAllByBusinessId(@PathVariable(value = "id") Long id, Pageable pageable) {
         Page<OfferingDTO> page = offeringService.getAllByBusinessId(id, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        headers.add("X-Page-Size", String.valueOf(pageable.getPageSize()));
 
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

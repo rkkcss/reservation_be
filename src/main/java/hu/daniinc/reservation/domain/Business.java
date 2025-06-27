@@ -80,6 +80,17 @@ public class Business implements Serializable {
     @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
     private Set<Guest> guests = new HashSet<>();
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
+    @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
+    private Set<BusinessRating> businessRatings = new HashSet<>();
+
+    private Boolean appointmentApprovalRequired;
+
+    @Column(nullable = false)
+    @Min(0)
+    @Max(52)
+    private Integer maxWeeksInAdvance;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -218,6 +229,30 @@ public class Business implements Serializable {
     public Business user(User user) {
         this.setUser(user);
         return this;
+    }
+
+    public Integer getMaxWeeksInAdvance() {
+        return maxWeeksInAdvance;
+    }
+
+    public void setMaxWeeksInAdvance(Integer maxWeeksInAdvance) {
+        this.maxWeeksInAdvance = maxWeeksInAdvance;
+    }
+
+    public Boolean getAppointmentApprovalRequired() {
+        return appointmentApprovalRequired;
+    }
+
+    public void setAppointmentApprovalRequired(Boolean appointmentApprovalRequired) {
+        this.appointmentApprovalRequired = appointmentApprovalRequired;
+    }
+
+    public Set<BusinessRating> getBusinessRatings() {
+        return businessRatings;
+    }
+
+    public void setBusinessRatings(Set<BusinessRating> businessRatings) {
+        this.businessRatings = businessRatings;
     }
 
     public Set<Appointment> getAppointments() {

@@ -179,4 +179,16 @@ public class BusinessRatingResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @GetMapping("/business/{businessId}")
+    public ResponseEntity<List<BusinessRatingDTO>> getAllBusinessRatingsByBusinessId(
+        @PathVariable("businessId") Long businessId,
+        Pageable pageable
+    ) {
+        LOG.debug("REST request to get BusinessRating by businessId : {}", businessId);
+
+        Page<BusinessRatingDTO> page = businessRatingService.findAllByBusinessId(businessId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
 }

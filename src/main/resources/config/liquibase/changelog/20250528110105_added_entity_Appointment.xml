@@ -41,6 +41,9 @@
             <column name="offering_id" type="bigint">
               <constraints nullable="true" unique="false" />
             </column>
+            <column name="modifier_token" type="varchar(255)">
+              <constraints nullable="false" />
+            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
         <dropDefaultValue tableName="appointment" columnName="start_date" columnDataType="${datetimeType}"/>

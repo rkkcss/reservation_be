@@ -22,6 +22,10 @@ public class BusinessRatingDTO implements Serializable {
 
     private String imageUrl;
 
+    private BusinessDTO business;
+
+    private GuestDTO guest;
+
     public Long getId() {
         return id;
     }
@@ -52,6 +56,22 @@ public class BusinessRatingDTO implements Serializable {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public GuestDTO getGuest() {
+        return guest;
+    }
+
+    public void setGuest(GuestDTO guest) {
+        this.guest = guest;
+    }
+
+    public BusinessDTO getBusiness() {
+        return business;
+    }
+
+    public void setBusiness(BusinessDTO business) {
+        this.business = business;
     }
 
     @Override

@@ -68,6 +68,8 @@ public class Appointment implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Offering offering;
 
+    private String modifierToken;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -193,6 +195,14 @@ public class Appointment implements Serializable {
 
     public void setOffering(Offering offering) {
         this.offering = offering;
+    }
+
+    public String getModifierToken() {
+        return modifierToken;
+    }
+
+    public void setModifierToken(String modifierToken) {
+        this.modifierToken = modifierToken;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

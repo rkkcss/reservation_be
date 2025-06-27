@@ -1,9 +1,11 @@
 package hu.daniinc.reservation.repository;
 
 import hu.daniinc.reservation.domain.Appointment;
+import hu.daniinc.reservation.service.dto.AppointmentDTO;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -32,4 +34,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
         "SELECT CASE WHEN COUNT(a) > 0 THEN TRUE ELSE FALSE END FROM Appointment a WHERE a.business.user.login = ?#{authentication.name} and a.id = ?1"
     )
     Boolean isBusinessTheOwnerById(Long id);
+
+    @Query(
+        "select a from Appointment a where a.business.user.login = ?#{authentication.name} and a.status = 'PENDING' and a.createdDate >= CURRENT_DATE"
+    )
+    List<Appointment> findAllPendingAppointments();
+
+    @Query("select a from Appointment a where a.modifierToken = ?1")
+    Optional<Appointment> findByModifierToken(String modifierToken);
 }

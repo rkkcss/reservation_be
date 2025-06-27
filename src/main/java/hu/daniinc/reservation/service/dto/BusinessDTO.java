@@ -35,6 +35,10 @@ public class BusinessDTO implements Serializable {
 
     private UserDTO user;
 
+    private Boolean appointmentApprovalRequired;
+
+    private Integer maxWeeksInAdvance;
+
     public Long getId() {
         return id;
     }
@@ -89,6 +93,22 @@ public class BusinessDTO implements Serializable {
 
     public void setBreakBetweenAppointmentsMin(Integer breakBetweenAppointmentsMin) {
         this.breakBetweenAppointmentsMin = breakBetweenAppointmentsMin;
+    }
+
+    public Integer getMaxWeeksInAdvance() {
+        return maxWeeksInAdvance;
+    }
+
+    public void setMaxWeeksInAdvance(Integer maxWeeksInAdvance) {
+        this.maxWeeksInAdvance = maxWeeksInAdvance;
+    }
+
+    public Boolean getAppointmentApprovalRequired() {
+        return appointmentApprovalRequired;
+    }
+
+    public void setAppointmentApprovalRequired(Boolean appointmentApprovalRequired) {
+        this.appointmentApprovalRequired = appointmentApprovalRequired;
     }
 
     private Set<WorkingHoursDTO> workingHours;

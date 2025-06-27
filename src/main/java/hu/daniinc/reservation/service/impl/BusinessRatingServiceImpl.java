@@ -81,4 +81,9 @@ public class BusinessRatingServiceImpl implements BusinessRatingService {
         LOG.debug("Request to delete BusinessRating : {}", id);
         businessRatingRepository.deleteById(id);
     }
+
+    @Override
+    public Page<BusinessRatingDTO> findAllByBusinessId(Long businessId, Pageable pageable) {
+        return businessRatingRepository.findAllByBusinessId(businessId, pageable).map(businessRatingMapper::toDto);
+    }
 }

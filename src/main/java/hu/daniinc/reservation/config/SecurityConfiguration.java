@@ -15,6 +15,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -72,10 +73,14 @@ public class SecurityConfiguration {
 
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/offerings/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/working-hours/**")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/businesses/owner")).hasAnyAuthority(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN)
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/businesses/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/csrf-token")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/appointments")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/businesses/**")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/business-ratings/business/**")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/cancel/*")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/appointments/cancel/*")).permitAll()
                     .requestMatchers(mvc.pattern("/api/**")).authenticated()
                     .requestMatchers(mvc.pattern("/websocket/**")).authenticated()
                     .requestMatchers(mvc.pattern("/v3/api-docs/**")).hasAuthority(AuthoritiesConstants.ADMIN)

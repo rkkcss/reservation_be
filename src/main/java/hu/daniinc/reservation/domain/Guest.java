@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -47,6 +48,10 @@ public class Guest implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
     private Business business;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "guest")
+    @JsonIgnoreProperties(value = { "guest" })
+    private Set<BusinessRating> businessRating = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -124,6 +129,14 @@ public class Guest implements Serializable {
 
     public void setCanBook(Boolean canBook) {
         this.canBook = canBook;
+    }
+
+    public Set<BusinessRating> getBusinessRating() {
+        return businessRating;
+    }
+
+    public void setBusinessRating(Set<BusinessRating> businessRating) {
+        this.businessRating = businessRating;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

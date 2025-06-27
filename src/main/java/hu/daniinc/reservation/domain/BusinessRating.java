@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -35,6 +36,14 @@ public class BusinessRating implements Serializable {
 
     @Column(name = "image_url")
     private String imageUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JsonIgnore
+    private Business business;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JsonIgnore
+    private Guest guest;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -88,6 +97,22 @@ public class BusinessRating implements Serializable {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Business getBusiness() {
+        return business;
+    }
+
+    public void setBusiness(Business business) {
+        this.business = business;
+    }
+
+    public Guest getGuest() {
+        return guest;
+    }
+
+    public void setGuest(Guest guest) {
+        this.guest = guest;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

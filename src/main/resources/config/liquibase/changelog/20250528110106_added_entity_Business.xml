@@ -38,8 +38,14 @@
             <column name="banner_url" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
+            <column name="appointment_approval_required" type="BOOLEAN" defaultValueBoolean="true">
+              <constraints nullable="false"/>
+            </column>
             <column name="user_id" type="bigint">
                 <constraints nullable="true" unique="true" uniqueConstraintName="ux_business__user_id" />
+            </column>
+            <column name="max_weeks_in_advance" type="INT" defaultValueNumeric="26">
+              <constraints nullable="false"/>
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>

@@ -260,4 +260,22 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
             "hu.daniinc.reservation"
         );
     }
+
+    @ExceptionHandler(hu.daniinc.reservation.web.rest.errors.NotFoundException.class)
+    public ResponseEntity<ProblemDetailWithCause> handleNotFoundException(
+        hu.daniinc.reservation.web.rest.errors.NotFoundException ex,
+        NativeWebRequest request
+    ) {
+        ProblemDetailWithCause problem = ProblemDetailWithCauseBuilder.instance()
+            .withStatus(HttpStatus.NOT_FOUND.value())
+            .withTitle("Entity not found")
+            .withDetail(ex.getMessage())
+            .withType(URI.create("https://example.com/problem/entity-not-found"))
+            .build();
+
+        problem.setProperty("message", "error.entityNotFound");
+        problem.setProperty("path", getPathValue(request));
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problem);
+    }
 }

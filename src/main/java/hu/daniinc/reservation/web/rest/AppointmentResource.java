@@ -220,4 +220,21 @@ public class AppointmentResource {
                 Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(zdt -> zdt.toString()).collect(Collectors.toList()))
             );
     }
+
+    @GetMapping("/cancel/{modifierToken}")
+    public ResponseEntity<AppointmentDTO> getAppointmentByGuestnameAndAppointmentId(
+        @PathVariable(value = "modifierToken") String modifierToken
+    ) {
+        LOG.debug("REST request to get Appointment by modifier token: {}", modifierToken);
+        return ResponseEntity.status(HttpStatus.OK).body(appointmentService.getAppointmentByModifierToken(modifierToken));
+    }
+
+    @PostMapping("/cancel/{modifierToken}")
+    public ResponseEntity<Void> cancelAppointment(@PathVariable(value = "modifierToken") String modifierToken) {
+        LOG.debug("REST request to cancel Appointment : {}", modifierToken);
+        appointmentService.cancelByModifierToken(modifierToken);
+        return ResponseEntity.noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, modifierToken))
+            .build();
+    }
 }

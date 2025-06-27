@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 /**
  * Service Interface for managing {@link hu.daniinc.reservation.domain.Appointment}.
@@ -69,4 +70,8 @@ public interface AppointmentService {
     AppointmentDTO saveByOwner(CreateAppointmentRequestDTO createAppointmentRequestDTO);
 
     AppointmentDTO saveAppointmentByGuest(CreateAppointmentByGuestDTO createAppointmentByGuestDTO);
+
+    AppointmentDTO getAppointmentByModifierToken(String modifierToken);
+
+    void cancelByModifierToken(String modifierToken);
 }

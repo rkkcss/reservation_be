@@ -9,6 +9,7 @@ import hu.daniinc.reservation.service.dto.CreateAppointmentByGuestDTO;
 import hu.daniinc.reservation.service.dto.CreateAppointmentRequestDTO;
 import hu.daniinc.reservation.service.dto.UpdateAppointmentDTO;
 import hu.daniinc.reservation.service.mapper.AppointmentMapper;
+import hu.daniinc.reservation.web.rest.errors.NotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.*;
 import java.util.*;
@@ -128,6 +129,17 @@ public class AppointmentServiceImpl implements AppointmentService {
     ) {
         Map<LocalDate, List<ZonedDateTime>> availableSlotsMap = new LinkedHashMap<>();
 
+        Business business = businessRepository.findById(businessId).orElseThrow(() -> new EntityNotFoundException("Business not found"));
+
+        Integer maxWeeks = business.getMaxWeeksInAdvance(); // pl. 26
+
+        if (maxWeeks != null && maxWeeks > 0) {
+            LocalDate maxAllowedDate = LocalDate.now().plusWeeks(maxWeeks);
+            if (to.isAfter(maxAllowedDate)) {
+                to = maxAllowedDate;
+            }
+        }
+
         // Lekérjük az összes releváns appointmentet előre
         ZonedDateTime overallStart = from.atStartOfDay(ZoneId.systemDefault());
         ZonedDateTime overallEnd = to.plusDays(1).atStartOfDay(ZoneId.systemDefault());
@@ -212,6 +224,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         //set guest
         Optional.ofNullable(createAppointmentRequestDTO.getGuestId()).flatMap(guestRepository::findById).ifPresent(appointment::setGuest);
 
+        appointment.setModifierToken(UUID.randomUUID().toString());
+
         return appointmentMapper.toDto(appointmentRepository.save(appointment));
     }
 
@@ -255,6 +269,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setBusiness(business);
 
+        if (business.getAppointmentApprovalRequired()) {
+            appointment.setStatus(AppointmentStatus.PENDING);
+        } else {
+            appointment.setStatus(AppointmentStatus.CONFIRMED);
+        }
+
         //set guest
         Guest guest = guestRepository
             .findByEmail(createAppointmentByGuestDTO.getEmail())
@@ -284,9 +304,27 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setStartDate(startDate);
         appointment.setEndDate(endDate);
-        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.setModifierToken(UUID.randomUUID().toString());
 
         return appointmentMapper.toDto(appointmentRepository.save(appointment));
+    }
+
+    //get and appointment by guest name and appointment ID
+    @Override
+    public AppointmentDTO getAppointmentByModifierToken(String token) {
+        return appointmentRepository
+            .findByModifierToken(token)
+            .map(appointmentMapper::toDto)
+            .orElseThrow(() -> new NotFoundException("Entity not found", token));
+    }
+
+    //cancel appointment by modifier token
+    @Override
+    public void cancelByModifierToken(String modifierToken) {
+        Appointment appointment = appointmentRepository
+            .findByModifierToken(modifierToken)
+            .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+        appointmentRepository.deleteById(appointment.getId());
     }
 
     //checking the appointment is available return TRUE if yes else FALSE
@@ -344,7 +382,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             ZonedDateTime whStart = date.atTime(wh.getStartTime()).atZone(zone);
             ZonedDateTime whEnd = date.atTime(wh.getEndTime()).atZone(zone);
             boolean ok = !slotStart.isBefore(whStart) && !slotEnd.isAfter(whEnd);
-            LOG.debug("    check against {}–{}: {}", whStart, whEnd, ok);
+            LOG.debug("check against {}–{}: {}", whStart, whEnd, ok);
             if (ok) {
                 LOG.debug("  → accept: fits in default working hours");
                 return true;

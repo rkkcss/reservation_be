@@ -55,4 +55,6 @@ public interface BusinessRatingService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    Page<BusinessRatingDTO> findAllByBusinessId(Long businessId, Pageable pageable);
 }

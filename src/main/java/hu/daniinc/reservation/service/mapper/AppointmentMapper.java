@@ -31,5 +31,6 @@ public interface AppointmentMapper extends EntityMapper<AppointmentDTO, Appointm
     @Mapping(target = "description", source = "description")
     @Mapping(target = "title", source = "title")
     @Mapping(target = "price", source = "price")
+    @Mapping(target = "durationMinutes", source = "durationMinutes")
     OfferingDTO toDtoOffering(Offering offering);
 }
