@@ -36,7 +36,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     Boolean isBusinessTheOwnerById(Long id);
 
     @Query(
-        "select a from Appointment a where a.business.user.login = ?#{authentication.name} and a.status = 'PENDING' and a.createdDate >= CURRENT_DATE"
+        "select a from Appointment a where a.business.user.login = ?#{authentication.name} and a.status = 'PENDING' and a.startDate >= CURRENT_DATE"
     )
     List<Appointment> findAllPendingAppointments();
 

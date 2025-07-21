@@ -277,12 +277,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         //set guest
         Guest guest = guestRepository
-            .findByEmail(createAppointmentByGuestDTO.getEmail())
+            .findByEmail(createAppointmentByGuestDTO.getEmail(), business.getId())
             .orElseGet(() -> {
                 Guest newGuest = new Guest();
                 newGuest.setEmail(createAppointmentByGuestDTO.getEmail());
                 newGuest.setName(createAppointmentByGuestDTO.getName());
                 newGuest.setPhoneNumber(createAppointmentByGuestDTO.getPhoneNumber());
+                newGuest.setBusiness(business);
                 return guestRepository.save(newGuest);
             });
 
@@ -325,6 +326,11 @@ public class AppointmentServiceImpl implements AppointmentService {
             .findByModifierToken(modifierToken)
             .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
         appointmentRepository.deleteById(appointment.getId());
+    }
+
+    @Override
+    public List<AppointmentDTO> getAllPendingAppointments() {
+        return appointmentRepository.findAllPendingAppointments().stream().map(appointmentMapper::toDto).collect(Collectors.toList());
     }
 
     //checking the appointment is available return TRUE if yes else FALSE

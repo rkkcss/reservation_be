@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.service;
 
+import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
 import java.util.List;
 import java.util.Optional;
@@ -65,4 +66,8 @@ public interface BusinessService {
     void delete(Long id);
 
     BusinessDTO getBusinessByLoggedInUser();
+
+    void changeBusinessLogo(String logo);
+
+    void changeBusinessTheme(BusinessTheme theme);
 }

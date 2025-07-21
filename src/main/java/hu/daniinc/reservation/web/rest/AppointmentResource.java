@@ -237,4 +237,10 @@ public class AppointmentResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, modifierToken))
             .build();
     }
+
+    @GetMapping("/pendings")
+    public ResponseEntity<List<AppointmentDTO>> getPendingAppointments() {
+        LOG.debug("REST request to get all pending appointments");
+        return ResponseEntity.ok(appointmentService.getAllPendingAppointments());
+    }
 }

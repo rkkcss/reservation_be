@@ -47,6 +47,9 @@
             <column name="max_weeks_in_advance" type="INT" defaultValueNumeric="26">
               <constraints nullable="false"/>
             </column>
+            <column name="theme" type="varchar(255)">
+              <constraints nullable="false" />
+            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
         <dropDefaultValue tableName="business" columnName="created_date" columnDataType="${datetimeType}"/>

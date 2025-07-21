@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.service.dto;
 
+import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -38,6 +39,8 @@ public class BusinessDTO implements Serializable {
     private Boolean appointmentApprovalRequired;
 
     private Integer maxWeeksInAdvance;
+
+    private BusinessTheme theme;
 
     public Long getId() {
         return id;
@@ -93,6 +96,14 @@ public class BusinessDTO implements Serializable {
 
     public void setBreakBetweenAppointmentsMin(Integer breakBetweenAppointmentsMin) {
         this.breakBetweenAppointmentsMin = breakBetweenAppointmentsMin;
+    }
+
+    public BusinessTheme getTheme() {
+        return theme;
+    }
+
+    public void setTheme(BusinessTheme theme) {
+        this.theme = theme;
     }
 
     public Integer getMaxWeeksInAdvance() {

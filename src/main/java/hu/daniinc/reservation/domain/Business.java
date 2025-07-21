@@ -1,6 +1,7 @@
 package hu.daniinc.reservation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -15,7 +16,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  */
 @Entity
 @Table(name = "business")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Business implements Serializable {
 
@@ -84,12 +84,18 @@ public class Business implements Serializable {
     @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
     private Set<BusinessRating> businessRatings = new HashSet<>();
 
+    @Column(name = "appointment_approval_required")
     private Boolean appointmentApprovalRequired;
 
     @Column(nullable = false)
     @Min(0)
     @Max(52)
     private Integer maxWeeksInAdvance;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "theme", nullable = false)
+    private BusinessTheme theme = BusinessTheme.DEFAULT;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -104,6 +110,14 @@ public class Business implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public BusinessTheme getTheme() {
+        return theme;
+    }
+
+    public void setTheme(BusinessTheme theme) {
+        this.theme = theme;
     }
 
     public String getName() {
@@ -388,6 +402,7 @@ public class Business implements Serializable {
             ", breakBetweenAppointmentsMin=" + getBreakBetweenAppointmentsMin() +
             ", logo='" + getLogo() + "'" +
             ", bannerUrl='" + getBannerUrl() + "'" +
+            ", appointmentApprovalRequired='" + getAppointmentApprovalRequired() + "'" +
             "}";
     }
 

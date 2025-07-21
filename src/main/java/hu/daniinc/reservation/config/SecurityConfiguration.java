@@ -71,6 +71,7 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
 
 
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/uploaded-images/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/offerings/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/working-hours/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/businesses/owner")).hasAnyAuthority(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN)

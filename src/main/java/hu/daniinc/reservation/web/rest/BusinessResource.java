@@ -1,7 +1,9 @@
 package hu.daniinc.reservation.web.rest;
 
+import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.service.BusinessService;
+import hu.daniinc.reservation.service.dto.BusinessAppearanceDTO;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -191,5 +193,19 @@ public class BusinessResource {
     public ResponseEntity<BusinessDTO> getAllBusinessOwners() {
         LOG.debug("REST request to get Business owners");
         return ResponseEntity.status(HttpStatus.OK).body(businessService.getBusinessByLoggedInUser());
+    }
+
+    @PostMapping("/logo")
+    public ResponseEntity<String> getBusinessLogo(@RequestBody BusinessAppearanceDTO businessAppearanceDTO) {
+        LOG.debug("REST request to change Business Logo : {}", businessAppearanceDTO.getLogo());
+        businessService.changeBusinessLogo(businessAppearanceDTO.getLogo());
+        return ResponseEntity.ok().body(businessAppearanceDTO.getLogo());
+    }
+
+    @PostMapping("/theme")
+    public ResponseEntity<BusinessTheme> changeBusinessTheme(@RequestBody BusinessAppearanceDTO businessAppearanceDTO) {
+        LOG.debug("REST request to change Business Theme : {}", businessAppearanceDTO.getTheme());
+        businessService.changeBusinessTheme(businessAppearanceDTO.getTheme());
+        return ResponseEntity.ok().body(businessAppearanceDTO.getTheme());
     }
 }

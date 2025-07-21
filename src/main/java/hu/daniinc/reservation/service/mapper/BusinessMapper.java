@@ -13,6 +13,7 @@ import org.mapstruct.*;
 public interface BusinessMapper extends EntityMapper<BusinessDTO, Business> {
     @Mapping(target = "user", source = "user", qualifiedByName = "userId")
     @Mapping(target = "workingHours", source = "workingHours", ignore = true)
+    @Mapping(target = "theme", source = "theme")
     BusinessDTO toDto(Business s);
 
     @Named("userId")

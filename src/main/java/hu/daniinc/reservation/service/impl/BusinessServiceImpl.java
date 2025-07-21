@@ -1,10 +1,12 @@
 package hu.daniinc.reservation.service.impl;
 
 import hu.daniinc.reservation.domain.Business;
+import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.service.BusinessService;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
 import hu.daniinc.reservation.service.mapper.BusinessMapper;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -29,10 +31,12 @@ public class BusinessServiceImpl implements BusinessService {
     private final BusinessRepository businessRepository;
 
     private final BusinessMapper businessMapper;
+    private final ImageServiceImpl imageServiceImpl;
 
-    public BusinessServiceImpl(BusinessRepository businessRepository, BusinessMapper businessMapper) {
+    public BusinessServiceImpl(BusinessRepository businessRepository, BusinessMapper businessMapper, ImageServiceImpl imageServiceImpl) {
         this.businessRepository = businessRepository;
         this.businessMapper = businessMapper;
+        this.imageServiceImpl = imageServiceImpl;
     }
 
     @Override
@@ -103,6 +107,37 @@ public class BusinessServiceImpl implements BusinessService {
     public BusinessDTO getBusinessByLoggedInUser() {
         LOG.debug("Request to get Business By LoggedInUser");
         return businessRepository.findByLogin().map(businessMapper::toDto).orElseThrow(() -> new RuntimeException("No Business Found"));
+    }
+
+    @Override
+    public void changeBusinessLogo(String newLogo) {
+        LOG.debug("Request to change Business Logo");
+
+        Business business = businessRepository.findByLogin().orElseThrow(() -> new EntityNotFoundException("No Business Found"));
+
+        String oldLogo = business.getLogo();
+
+        if (newLogo == null || newLogo.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid logo name");
+        }
+
+        business.setLogo(newLogo);
+        businessRepository.save(business);
+
+        if (oldLogo != null && !oldLogo.equals(newLogo)) {
+            imageServiceImpl.deleteImage(oldLogo);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void changeBusinessTheme(BusinessTheme theme) {
+        LOG.debug("Request to change Business Theme");
+
+        Business business = businessRepository.findByLogin().orElseThrow(() -> new EntityNotFoundException("No Business Found"));
+
+        business.setTheme(theme);
+        businessRepository.save(business);
     }
 
     public Business getAuthenticatedBusiness() {
