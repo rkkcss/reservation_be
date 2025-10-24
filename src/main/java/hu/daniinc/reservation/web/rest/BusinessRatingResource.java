@@ -185,7 +185,7 @@ public class BusinessRatingResource {
         @PathVariable("businessId") Long businessId,
         Pageable pageable
     ) {
-        LOG.debug("REST request to get BusinessRating by businessId : {}", businessId);
+        LOG.debug("REST request to get BusinessRatings by businessId : {}", businessId);
 
         Page<BusinessRatingDTO> page = businessRatingService.findAllByBusinessId(businessId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

@@ -76,4 +76,8 @@ public interface AppointmentService {
     void cancelByModifierToken(String modifierToken);
 
     List<AppointmentDTO> getAllPendingAppointments();
+
+    AppointmentDTO approveAppointment(Long appointmentId);
+
+    AppointmentDTO cancelAppointment(Long id);
 }

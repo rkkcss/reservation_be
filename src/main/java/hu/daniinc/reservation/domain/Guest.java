@@ -15,7 +15,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  */
 @Entity
 @Table(name = "guest")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Guest implements Serializable {
 
@@ -39,7 +38,7 @@ public class Guest implements Serializable {
     private String phoneNumber;
 
     @Column(name = "can_book", nullable = false)
-    private Boolean canBook = true;
+    private boolean canBook;
 
     @JsonIgnoreProperties(value = { "guest", "business", "offerings" }, allowSetters = true)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "guest")

@@ -5,6 +5,7 @@ import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,6 +14,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * A Appointment.
@@ -20,6 +22,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 @Entity
 @Table(name = "appointment")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@EntityListeners(AuditingEntityListener.class)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Appointment implements Serializable {
 
@@ -44,7 +47,6 @@ public class Appointment implements Serializable {
     private ZonedDateTime createdDate;
 
     @Column(name = "modified_date")
-    @LastModifiedDate
     private ZonedDateTime modifiedDate;
 
     @Size(max = 300)

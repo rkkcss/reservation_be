@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import jakarta.persistence.*;
@@ -28,7 +29,7 @@ public class Business implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     @Column(name = "created_date")

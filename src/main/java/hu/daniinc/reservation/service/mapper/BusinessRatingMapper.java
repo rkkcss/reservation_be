@@ -16,6 +16,7 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface BusinessRatingMapper extends EntityMapper<BusinessRatingDTO, BusinessRating> {
     @Mapping(target = "guest", source = "guest", qualifiedByName = "guest")
+    @Mapping(target = "business", source = "business", ignore = true)
     BusinessRatingDTO toDto(BusinessRating s);
 
     @Named("guest")

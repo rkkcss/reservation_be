@@ -243,4 +243,16 @@ public class AppointmentResource {
         LOG.debug("REST request to get all pending appointments");
         return ResponseEntity.ok(appointmentService.getAllPendingAppointments());
     }
+
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<AppointmentDTO> approveAppointment(@PathVariable(value = "id") Long id) {
+        LOG.debug("REST request to approve Appointment : {}", id);
+        return ResponseEntity.status(HttpStatus.OK).body(appointmentService.approveAppointment(id));
+    }
+
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<AppointmentDTO> cancelAppointment(@PathVariable(value = "id") Long id) {
+        LOG.debug("REST request to cancel Appointment by owner : {}", id);
+        return ResponseEntity.status(HttpStatus.OK).body(appointmentService.cancelAppointment(id));
+    }
 }

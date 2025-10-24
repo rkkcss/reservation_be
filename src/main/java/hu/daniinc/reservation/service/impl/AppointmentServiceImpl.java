@@ -9,7 +9,9 @@ import hu.daniinc.reservation.service.dto.CreateAppointmentByGuestDTO;
 import hu.daniinc.reservation.service.dto.CreateAppointmentRequestDTO;
 import hu.daniinc.reservation.service.dto.UpdateAppointmentDTO;
 import hu.daniinc.reservation.service.mapper.AppointmentMapper;
+import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import hu.daniinc.reservation.web.rest.errors.NotFoundException;
+import io.undertow.util.BadRequestException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.*;
 import java.util.*;
@@ -36,6 +38,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final BusinessRepository businessRepository;
     private final OfferingRepository offeringRepository;
     private final GuestRepository guestRepository;
+    private final GuestServiceImpl guestServiceImpl;
 
     public AppointmentServiceImpl(
         AppointmentRepository appointmentRepository,
@@ -44,7 +47,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         WorkingHoursRepository workingHoursRepository,
         BusinessRepository businessRepository,
         OfferingRepository offeringRepository,
-        GuestRepository guestRepository
+        GuestRepository guestRepository,
+        GuestServiceImpl guestServiceImpl
     ) {
         this.appointmentRepository = appointmentRepository;
         this.appointmentMapper = appointmentMapper;
@@ -53,6 +57,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.businessRepository = businessRepository;
         this.offeringRepository = offeringRepository;
         this.guestRepository = guestRepository;
+        this.guestServiceImpl = guestServiceImpl;
     }
 
     @Override
@@ -256,7 +261,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 createAppointmentByGuestDTO.getOfferingId()
             )
         ) {
-            throw new IllegalArgumentException("A választott időpont nem elérhető.");
+            throw new BadRequestAlertException("Appointment is reserved!", null, "appointment.reserved");
         }
 
         Appointment appointment = new Appointment();
@@ -286,6 +291,11 @@ public class AppointmentServiceImpl implements AppointmentService {
                 newGuest.setBusiness(business);
                 return guestRepository.save(newGuest);
             });
+
+        if (!guest.getCanBook()) {
+            LOG.debug("Guest can not book because it's not allowed guest id:- {}, can book: {}", guest.getCanBook(), guest.getCanBook());
+            throw new BadRequestAlertException("Guest can't book!", null, "guest.cantbook");
+        }
 
         appointment.setGuest(guest);
         Offering offering = offeringRepository
@@ -331,6 +341,28 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public List<AppointmentDTO> getAllPendingAppointments() {
         return appointmentRepository.findAllPendingAppointments().stream().map(appointmentMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public AppointmentDTO approveAppointment(Long appointmentId) {
+        Appointment appointment = appointmentRepository
+            .findByIdAndLoggedInOwner(appointmentId)
+            .orElseThrow(() -> new EntityNotFoundException("appointment"));
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+
+        return appointmentMapper.toDto(appointmentRepository.save(appointment));
+    }
+
+    @Override
+    @Transactional
+    public AppointmentDTO cancelAppointment(Long appointmentId) {
+        Appointment appointment = appointmentRepository
+            .findByIdAndLoggedInOwner(appointmentId)
+            .orElseThrow(() -> new EntityNotFoundException("appointment"));
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+
+        return appointmentMapper.toDto(appointmentRepository.save(appointment));
     }
 
     //checking the appointment is available return TRUE if yes else FALSE

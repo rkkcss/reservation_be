@@ -13,11 +13,6 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface OfferingMapper extends EntityMapper<OfferingDTO, Offering> {
-    @Mapping(target = "business", source = "business", qualifiedByName = "businessId")
+    @Mapping(target = "business", source = "business", ignore = true)
     OfferingDTO toDto(Offering s);
-
-    @Named("businessId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    BusinessDTO toDtoBusinessId(Business business);
 }

@@ -3,6 +3,7 @@ package hu.daniinc.reservation.service.dto;
 import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
