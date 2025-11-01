@@ -52,9 +52,15 @@ spring:
     contexts: dev, faker
   mail:
     host: localhost
-    port: 25
+    port: 1025
     username:
     password:
+      properties:
+        mail:
+          smtp:
+            auth: false
+            starttls:
+              enable: false
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
@@ -92,7 +98,7 @@ jhipster:
       # security key (this key should be unique for your application, and kept secret)
       key: 24b084410039b38b23aed7a9dc292fd0b89d55aec51ed6a65d13484be8a01c7b44c64aec15d7ed5bf97872c53f11764ce15c
   mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://127.0.0.1:8080
+    base-url: http://localhost:5173
   logging:
     use-json-format: false # By default, logs are not in Json format
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration

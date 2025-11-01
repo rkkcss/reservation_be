@@ -2,8 +2,11 @@ package hu.daniinc.reservation.service;
 
 import hu.daniinc.reservation.config.Constants;
 import hu.daniinc.reservation.domain.Authority;
+import hu.daniinc.reservation.domain.Business;
 import hu.daniinc.reservation.domain.User;
+import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import hu.daniinc.reservation.repository.AuthorityRepository;
+import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.repository.PersistentTokenRepository;
 import hu.daniinc.reservation.repository.UserRepository;
 import hu.daniinc.reservation.security.AuthoritiesConstants;
@@ -46,19 +49,22 @@ public class UserService {
     private final AuthorityRepository authorityRepository;
 
     private final CacheManager cacheManager;
+    private final BusinessRepository businessRepository;
 
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
         PersistentTokenRepository persistentTokenRepository,
         AuthorityRepository authorityRepository,
-        CacheManager cacheManager
+        CacheManager cacheManager,
+        BusinessRepository businessRepository
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.persistentTokenRepository = persistentTokenRepository;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
+        this.businessRepository = businessRepository;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -118,26 +124,37 @@ public class UserService {
                     throw new EmailAlreadyUsedException();
                 }
             });
+
         User newUser = new User();
         String encryptedPassword = passwordEncoder.encode(password);
         newUser.setLogin(userDTO.getLogin().toLowerCase());
-        // new user gets initially a generated password
         newUser.setPassword(encryptedPassword);
         newUser.setFirstName(userDTO.getFirstName());
         newUser.setLastName(userDTO.getLastName());
-        if (userDTO.getEmail() != null) {
-            newUser.setEmail(userDTO.getEmail().toLowerCase());
-        }
+        newUser.setEmail(userDTO.getEmail().toLowerCase());
         newUser.setImageUrl(userDTO.getImageUrl());
         newUser.setLangKey(userDTO.getLangKey());
-        // new user is not active
         newUser.setActivated(false);
-        // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
+
         Set<Authority> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
+
         userRepository.save(newUser);
+
+        // Business creating
+        Business business = new Business();
+        business.setName(newUser.getFirstName() + "'s Business");
+        business.setUser(newUser);
+        business.setAddress(newUser.getFirstName() + "'s Address");
+        business.setMaxWeeksInAdvance(0);
+        business.setTheme(BusinessTheme.DEFAULT);
+        business.setAppointmentApprovalRequired(Boolean.FALSE);
+        businessRepository.save(business);
+
+        userRepository.save(newUser);
+
         this.clearUserCaches(newUser);
         LOG.debug("Created Information for User: {}", newUser);
         return newUser;
