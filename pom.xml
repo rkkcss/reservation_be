@@ -413,32 +413,32 @@
         </plugins>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <!--Work around. Surefire does not use JUnit's Test Engine discovery functionality -->
-                            <id>prepare cucumber feature files</id>
-                            <phase>integration-test</phase>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
-                            <configuration>
-                                <target>
-                                    <echo message="Running JUnit Platform CLI"/>
-                                    <java classname="org.junit.platform.console.ConsoleLauncher" fork="true" failonerror="true" newenvironment="true" maxmemory="512m" classpathref="maven.test.classpath">
-                                        <jvmarg value="-Dspring.profiles.active=testprod"/>
-                                        <arg value="--include-engine"/>
-                                        <arg value="cucumber"/>
-                                        <arg value="--scan-classpath"/>
-                                        <arg value="${project.build.testOutputDirectory}"/>
-                                    </java>
-                                </target>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+<!--                <plugin>-->
+<!--                    <groupId>org.apache.maven.plugins</groupId>-->
+<!--                    <artifactId>maven-antrun-plugin</artifactId>-->
+<!--                    <executions>-->
+<!--                        <execution>-->
+<!--                            &lt;!&ndash;Work around. Surefire does not use JUnit's Test Engine discovery functionality &ndash;&gt;-->
+<!--                            <id>prepare cucumber feature files</id>-->
+<!--                            <phase>integration-test</phase>-->
+<!--                            <goals>-->
+<!--                                <goal>run</goal>-->
+<!--                            </goals>-->
+<!--                            <configuration>-->
+<!--                                <target>-->
+<!--                                    <echo message="Running JUnit Platform CLI"/>-->
+<!--                                    <java classname="org.junit.platform.console.ConsoleLauncher" fork="true" failonerror="true" newenvironment="true" maxmemory="512m" classpathref="maven.test.classpath">-->
+<!--                                        <jvmarg value="-Dspring.profiles.active=testprod"/>-->
+<!--                                        <arg value="&#45;&#45;include-engine"/>-->
+<!--                                        <arg value="cucumber"/>-->
+<!--                                        <arg value="&#45;&#45;scan-classpath"/>-->
+<!--                                        <arg value="${project.build.testOutputDirectory}"/>-->
+<!--                                    </java>-->
+<!--                                </target>-->
+<!--                            </configuration>-->
+<!--                        </execution>-->
+<!--                    </executions>-->
+<!--                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
