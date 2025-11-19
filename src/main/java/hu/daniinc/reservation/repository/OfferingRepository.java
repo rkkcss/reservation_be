@@ -4,6 +4,7 @@ import hu.daniinc.reservation.domain.Offering;
 import hu.daniinc.reservation.service.dto.OfferingDTO;
 import java.util.List;
 import java.util.Optional;
+import org.hibernate.annotations.Where;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -14,11 +15,12 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
+@Where(clause = "status <> 'DELETED'")
 public interface OfferingRepository extends JpaRepository<Offering, Long> {
     @Query("select o from Offering o where o.business.user.login = ?#{authentication.name}")
     Page<Offering> getAllByBusinessOwner(Pageable pageable);
 
-    @Query("select o from Offering o where o.business.id = ?1")
+    @Query("select o from Offering o where o.business.id = ?1 and o.status = 'ACTIVE'")
     Page<Offering> findAllByBusinessId(Long id, Pageable pageable);
 
     @Query("select o from Offering o where o.business.user.login = ?#{authentication.name}")

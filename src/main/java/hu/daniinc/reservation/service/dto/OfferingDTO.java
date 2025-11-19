@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.service.dto;
 
+import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -29,6 +30,8 @@ public class OfferingDTO implements Serializable {
     private BusinessDTO business;
 
     private AppointmentDTO appointment;
+
+    private BasicEntityStatus status;
 
     public Long getId() {
         return id;
@@ -84,6 +87,14 @@ public class OfferingDTO implements Serializable {
 
     public void setAppointment(AppointmentDTO appointment) {
         this.appointment = appointment;
+    }
+
+    public BasicEntityStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BasicEntityStatus status) {
+        this.status = status;
     }
 
     @Override

@@ -23,6 +23,7 @@ public interface AppointmentMapper extends EntityMapper<AppointmentDTO, Appointm
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")
+    @Mapping(target = "email", source = "email")
     GuestDTO toDtoGuestId(Guest guest);
 
     @Named("offeringMap")

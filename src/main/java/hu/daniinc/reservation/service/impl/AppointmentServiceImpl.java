@@ -116,13 +116,18 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void logicalDelete(Long id) {
         LOG.debug("Request to delete Appointment : {}", id);
+
+        Appointment appointment = appointmentRepository
+            .findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Appointment not found with ID: " + id));
 
         if (!appointmentRepository.isBusinessTheOwnerById(id)) {
             throw new RuntimeException("You are not the owner of this appointment");
         }
-        appointmentRepository.deleteById(id);
+        appointment.setStatus(AppointmentStatus.DELETED);
+        appointmentRepository.save(appointment);
     }
 
     @Override
@@ -224,7 +229,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         offeringRepository.findByIdToBusiness(createAppointmentRequestDTO.getOfferingId()).ifPresent(appointment::setOffering);
 
         //set status
-        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.setStatus(createAppointmentRequestDTO.getStatus());
 
         //set guest
         Optional.ofNullable(createAppointmentRequestDTO.getGuestId()).flatMap(guestRepository::findById).ifPresent(appointment::setGuest);
@@ -289,6 +294,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 newGuest.setName(createAppointmentByGuestDTO.getName());
                 newGuest.setPhoneNumber(createAppointmentByGuestDTO.getPhoneNumber());
                 newGuest.setBusiness(business);
+                newGuest.setCanBook(true);
                 return guestRepository.save(newGuest);
             });
 

@@ -154,8 +154,6 @@ public class AppointmentResource {
 
     /**
      * {@code GET  /appointments} : get all the appointments.
-     *
-     * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of appointments in body.
      */
     @GetMapping("")
@@ -182,15 +180,15 @@ public class AppointmentResource {
     }
 
     /**
-     * {@code DELETE  /appointments/:id} : delete the "id" appointment.
+     * {@code POST  /appointments/:id} : logical delete the "id" appointment.
      *
      * @param id the id of the appointmentDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}")
     public ResponseEntity<Void> deleteAppointment(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Appointment : {}", id);
-        appointmentService.delete(id);
+        appointmentService.logicalDelete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();

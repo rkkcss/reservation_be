@@ -17,12 +17,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     @Query(
-        "SELECT a FROM Appointment a WHERE a.startDate <= :endDate AND a.endDate >= :startDate AND a.business.user.login = ?#{authentication.name}"
+        "SELECT a FROM Appointment a WHERE a.startDate <= :endDate AND a.endDate >= :startDate AND a.business.user.login = ?#{authentication.name} and a.status <> 'DELETED'"
     )
     List<Appointment> findOverlappingAppointments(@Param("startDate") ZonedDateTime startDate, @Param("endDate") ZonedDateTime endDate);
 
     @Query(
-        "SELECT a FROM Appointment a WHERE a.business.id = :businessId AND a.startDate < :end AND a.endDate > :start AND a.status <> 'CANCELLED'"
+        "SELECT a FROM Appointment a WHERE a.business.id = :businessId AND a.startDate < :end AND a.endDate > :start and a.status <> 'DELETED'"
     )
     List<Appointment> findByBusinessIdAndDateRange(
         @Param("businessId") Long businessId,

@@ -55,7 +55,7 @@ public interface OfferingService {
      *
      * @param id the id of the entity.
      */
-    void delete(Long id);
+    void logicalDelete(Long id);
 
     Page<OfferingDTO> getAllByLoggedInOwner(Pageable pageable);
 

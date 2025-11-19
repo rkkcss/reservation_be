@@ -171,10 +171,10 @@ public class OfferingResource {
      * @param id the id of the offeringDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<Void> deleteOffering(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Offering : {}", id);
-        offeringService.delete(id);
+        offeringService.logicalDelete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();

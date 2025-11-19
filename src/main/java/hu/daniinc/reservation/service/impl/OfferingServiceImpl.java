@@ -1,6 +1,8 @@
 package hu.daniinc.reservation.service.impl;
 
+import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.domain.Offering;
+import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.repository.OfferingRepository;
 import hu.daniinc.reservation.service.OfferingService;
@@ -91,9 +93,13 @@ public class OfferingServiceImpl implements OfferingService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void logicalDelete(Long id) {
         LOG.debug("Request to delete Offering : {}", id);
-        offeringRepository.deleteById(id);
+        Offering offering = offeringRepository
+            .findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Offering not found for id : " + id));
+        offering.setStatus(BasicEntityStatus.DELETED);
+        offeringRepository.save(offering);
     }
 
     @Override

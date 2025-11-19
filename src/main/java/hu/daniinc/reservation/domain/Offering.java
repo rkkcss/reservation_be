@@ -1,6 +1,8 @@
 package hu.daniinc.reservation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
+import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -45,6 +47,11 @@ public class Offering implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "user", "appointment", "workingHours", "customWorkingHours", "offerings" }, allowSetters = true)
     private Business business;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private BasicEntityStatus status = BasicEntityStatus.INACTIVE;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -124,6 +131,14 @@ public class Offering implements Serializable {
     public Offering business(Business business) {
         this.setBusiness(business);
         return this;
+    }
+
+    public BasicEntityStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BasicEntityStatus status) {
+        this.status = status;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

@@ -63,7 +63,7 @@ public interface AppointmentService {
      *
      * @param id the id of the entity.
      */
-    void delete(Long id);
+    void logicalDelete(Long id);
 
     Map<LocalDate, List<ZonedDateTime>> getAvailableSlotsBetweenDates(Long businessId, LocalDate from, LocalDate to, Duration slotLength);
 

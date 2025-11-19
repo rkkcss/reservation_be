@@ -1,11 +1,11 @@
-id;duration_minutes;price;description;title
-1;14180;27328.44;ötvenéves égetően hiteget;odavezet
-2;1208;210.59;pssz megszerez;sebtében sportos
-3;13172;12340.94;azóta next;izzólámpa
-4;7897;26946.76;kockázatmentes;összevegyül begörcsöl qua
-5;7782;2010.85;így amidst sárgalemezű békagomba;borsos
-6;22032;18356.72;ah állj;considering
-7;19396;2609.72;ízes kifárad;the mihelyt
-8;558;19608.81;lábhoz;horgonyzó apróbirtok
-9;26230;5046.52;apropos azazhogy szélmalomgráf;vasmag mindenképpen hehe
-10;10373;19205.78;fejnehéz fővilágosító vonatkozólag;fagyasztóberendezés hehe
+id;duration_minutes;price;description;title;status
+1;14180;27328.44;ötvenéves égetően hiteget;odavezet;active
+2;1208;210.59;pssz megszerez;sebtében sportos;inactive
+3;13172;12340.94;azóta next;izzólámpa;inactive
+4;7897;26946.76;kockázatmentes;összevegyül begörcsöl qua;inactive
+5;7782;2010.85;így amidst sárgalemezű békagomba;borsos;inactive
+6;22032;18356.72;ah állj;considering;active
+7;19396;2609.72;ízes kifárad;the mihelyt;active
+8;558;19608.81;lábhoz;horgonyzó apróbirtok;active
+9;26230;5046.52;apropos azazhogy szélmalomgráf;vasmag mindenképpen hehe;deleted
+10;10373;19205.78;fejnehéz fővilágosító vonatkozólag;fagyasztóberendezés hehe;deleted
