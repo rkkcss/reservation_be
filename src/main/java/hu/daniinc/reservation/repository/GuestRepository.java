@@ -20,12 +20,12 @@ public interface GuestRepository extends JpaRepository<Guest, Long> {
         "WHERE (LOWER(g.name) LIKE LOWER(CONCAT('%', ?1, '%')) " +
         "OR LOWER(g.email) LIKE LOWER(CONCAT('%', ?1, '%')) " +
         "OR LOWER(g.phoneNumber) LIKE LOWER(CONCAT('%', ?1, '%'))) " +
-        "AND g.business.user.login = ?#{authentication.name} " +
+        "AND g.business.owner.login = ?#{authentication.name} " +
         "ORDER BY g.name DESC LIMIT 10"
     )
     List<Guest> searchByName(String name);
 
-    @Query("select g from Guest g where g.business.user.login = ?#{authentication.name}")
+    @Query("select g from Guest g where g.business.owner.login = ?#{authentication.name}")
     Page<Guest> findAllByLoggedInUser(Pageable pageable);
 
     @Query("select g from Guest g where LOWER(g.email) = LOWER(?1) and g.business.id = ?2")

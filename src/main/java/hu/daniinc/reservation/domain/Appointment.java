@@ -62,9 +62,10 @@ public class Appointment implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Guest guest;
 
-    @JsonIgnoreProperties(value = { "user", "appointments", "workingHours", "customWorkingHours", "offerings" }, allowSetters = true)
     @ManyToOne(fetch = FetchType.LAZY)
-    private Business business;
+    @JoinColumn(name = "business_employee_id")
+    @JsonIgnoreProperties(value = { "businessEmployee" })
+    private BusinessEmployee businessEmployee;
 
     @OneToOne
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -178,17 +179,12 @@ public class Appointment implements Serializable {
         return this;
     }
 
-    public Business getBusiness() {
-        return this.business;
+    public BusinessEmployee getBusinessEmployee() {
+        return businessEmployee;
     }
 
-    public void setBusiness(Business business) {
-        this.business = business;
-    }
-
-    public Appointment business(Business business) {
-        this.setBusiness(business);
-        return this;
+    public void setBusinessEmployee(BusinessEmployee businessEmployee) {
+        this.businessEmployee = businessEmployee;
     }
 
     public Offering getOffering() {

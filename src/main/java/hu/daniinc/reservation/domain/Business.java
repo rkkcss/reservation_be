@@ -1,6 +1,5 @@
 package hu.daniinc.reservation.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import jakarta.persistence.*;
@@ -57,11 +56,7 @@ public class Business implements Serializable {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(unique = true)
-    private User user;
-
-    @JsonIgnoreProperties(value = { "guest", "business", "offerings" }, allowSetters = true)
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
-    private Set<Appointment> appointments;
+    private User owner;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
     @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
@@ -71,11 +66,6 @@ public class Business implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
     private Set<CustomWorkingHours> customWorkingHours = new HashSet<>();
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "business", "appointment" }, allowSetters = true)
-    private Set<Offering> offerings = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
     @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
@@ -97,6 +87,10 @@ public class Business implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "theme", nullable = false)
     private BusinessTheme theme = BusinessTheme.DEFAULT;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
+    @JsonIgnoreProperties(value = { "business" })
+    private Set<BusinessEmployee> businessEmployees;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -233,16 +227,24 @@ public class Business implements Serializable {
         this.bannerUrl = bannerUrl;
     }
 
-    public User getUser() {
-        return this.user;
+    public Set<BusinessEmployee> getBusinessEmployees() {
+        return businessEmployees;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setBusinessEmployees(Set<BusinessEmployee> businessEmployees) {
+        this.businessEmployees = businessEmployees;
+    }
+
+    public User getOwner() {
+        return this.owner;
+    }
+
+    public void setOwner(User user) {
+        this.owner = user;
     }
 
     public Business user(User user) {
-        this.setUser(user);
+        this.setOwner(user);
         return this;
     }
 
@@ -268,14 +270,6 @@ public class Business implements Serializable {
 
     public void setBusinessRatings(Set<BusinessRating> businessRatings) {
         this.businessRatings = businessRatings;
-    }
-
-    public Set<Appointment> getAppointments() {
-        return appointments;
-    }
-
-    public void setAppointments(Set<Appointment> appointments) {
-        this.appointments = appointments;
     }
 
     public Set<WorkingHours> getWorkingHours() {
@@ -337,37 +331,6 @@ public class Business implements Serializable {
     public Business removeCustomWorkingHours(CustomWorkingHours customWorkingHours) {
         this.customWorkingHours.remove(customWorkingHours);
         customWorkingHours.setBusiness(null);
-        return this;
-    }
-
-    public Set<Offering> getOfferings() {
-        return this.offerings;
-    }
-
-    public void setOfferings(Set<Offering> offerings) {
-        if (this.offerings != null) {
-            this.offerings.forEach(i -> i.setBusiness(null));
-        }
-        if (offerings != null) {
-            offerings.forEach(i -> i.setBusiness(this));
-        }
-        this.offerings = offerings;
-    }
-
-    public Business offerings(Set<Offering> offerings) {
-        this.setOfferings(offerings);
-        return this;
-    }
-
-    public Business addOffering(Offering offering) {
-        this.offerings.add(offering);
-        offering.setBusiness(this);
-        return this;
-    }
-
-    public Business removeOffering(Offering offering) {
-        this.offerings.remove(offering);
-        offering.setBusiness(null);
         return this;
     }
 

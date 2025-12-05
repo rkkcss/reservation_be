@@ -43,12 +43,11 @@ class AppointmentTest {
     void businessTest() {
         Appointment appointment = getAppointmentRandomSampleGenerator();
         Business businessBack = getBusinessRandomSampleGenerator();
+        //        appointment.setBusiness(businessBack);
+        //        assertThat(appointment.getBusiness()).isEqualTo(businessBack);
 
-        appointment.setBusiness(businessBack);
-        assertThat(appointment.getBusiness()).isEqualTo(businessBack);
-
-        appointment.business(null);
-        assertThat(appointment.getBusiness()).isNull();
+        //        appointment.business(null);
+        //        assertThat(appointment.getBusiness()).isNull();
     }
 
     @Test

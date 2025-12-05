@@ -17,17 +17,18 @@
                                  referencedTableName="guest"
                                  />
 
-        <addForeignKeyConstraint baseColumnNames="business_id"
-                                 baseTableName="appointment"
-                                 constraintName="fk_appointment__business_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="business"
-                                 />
         <addForeignKeyConstraint baseColumnNames="offering_id"
                                  baseTableName="appointment"
                                  constraintName="fk_appointment__offering_id"
                                  referencedColumnNames="id"
                                  referencedTableName="offering"
+        />
+        <addForeignKeyConstraint
+                                baseTableName="appointment"
+                                baseColumnNames="business_employee_id"
+                                referencedTableName="business_employee"
+                                referencedColumnNames="id"
+                                constraintName="fk_appointment_business_employee"
         />
     </changeSet>
 </databaseChangeLog>

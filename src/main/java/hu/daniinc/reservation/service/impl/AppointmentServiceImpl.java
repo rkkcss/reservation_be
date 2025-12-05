@@ -103,9 +103,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AppointmentDTO> findOverlappingAppointments(ZonedDateTime startDate, ZonedDateTime endDate) {
+    public List<AppointmentDTO> findOverlappingAppointments(ZonedDateTime startDate, ZonedDateTime endDate, Long businessId) {
         LOG.debug("Request to get all Appointments");
-        return appointmentRepository.findOverlappingAppointments(startDate, endDate).stream().map(appointmentMapper::toDto).toList();
+        return appointmentRepository
+            .findOverlappingAppointments(startDate, endDate, businessId)
+            .stream()
+            .map(appointmentMapper::toDto)
+            .toList();
     }
 
     @Override
@@ -123,7 +127,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             .findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Appointment not found with ID: " + id));
 
-        if (!appointmentRepository.isBusinessTheOwnerById(id)) {
+        if (!appointmentRepository.isUserTheAppointmentOwnerById(id)) {
             throw new RuntimeException("You are not the owner of this appointment");
         }
         appointment.setStatus(AppointmentStatus.DELETED);
@@ -222,8 +226,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setCreatedDate(ZonedDateTime.now());
 
-        Business ownerBusiness = businessRepository.findByLogin().orElseThrow(() -> new RuntimeException("No business found for login"));
-        appointment.setBusiness(ownerBusiness);
+        Business ownerBusiness = businessRepository
+            .findBusinessByLoginAndBusinessId(1L)
+            .orElseThrow(() -> new RuntimeException("No business found for login"));
+        //        appointment.setBusinessEmployee(ownerBusiness);
 
         //set offering
         offeringRepository.findByIdToBusiness(createAppointmentRequestDTO.getOfferingId()).ifPresent(appointment::setOffering);
@@ -277,7 +283,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             .findById(createAppointmentByGuestDTO.getBusinessId())
             .orElseThrow(() -> new EntityNotFoundException("No business found for login"));
 
-        appointment.setBusiness(business);
+        //        appointment.setBusiness(business);
 
         if (business.getAppointmentApprovalRequired()) {
             appointment.setStatus(AppointmentStatus.PENDING);
@@ -345,8 +351,12 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentDTO> getAllPendingAppointments() {
-        return appointmentRepository.findAllPendingAppointments().stream().map(appointmentMapper::toDto).collect(Collectors.toList());
+    public List<AppointmentDTO> getAllPendingAppointments(Long businessId) {
+        return appointmentRepository
+            .findAllPendingAppointments(businessId)
+            .stream()
+            .map(appointmentMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     @Override

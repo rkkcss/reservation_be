@@ -159,10 +159,11 @@ public class AppointmentResource {
     @GetMapping("")
     public ResponseEntity<List<AppointmentDTO>> getAllAppointments(
         @RequestParam ZonedDateTime startDate,
-        @RequestParam ZonedDateTime endDate
+        @RequestParam ZonedDateTime endDate,
+        @RequestParam Long businessId
     ) {
         LOG.debug("REST request to get a page of Appointments");
-        List<AppointmentDTO> result = appointmentService.findOverlappingAppointments(startDate, endDate);
+        List<AppointmentDTO> result = appointmentService.findOverlappingAppointments(startDate, endDate, businessId);
         return ResponseEntity.ok().body(result);
     }
 
@@ -236,10 +237,10 @@ public class AppointmentResource {
             .build();
     }
 
-    @GetMapping("/pendings")
-    public ResponseEntity<List<AppointmentDTO>> getPendingAppointments() {
+    @GetMapping("/business/{businessId}/pendings")
+    public ResponseEntity<List<AppointmentDTO>> getPendingAppointments(@PathVariable(value = "businessId") Long businessId) {
         LOG.debug("REST request to get all pending appointments");
-        return ResponseEntity.ok(appointmentService.getAllPendingAppointments());
+        return ResponseEntity.ok(appointmentService.getAllPendingAppointments(businessId));
     }
 
     @PatchMapping("/{id}/approve")

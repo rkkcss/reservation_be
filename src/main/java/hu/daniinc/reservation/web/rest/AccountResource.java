@@ -1,7 +1,11 @@
 package hu.daniinc.reservation.web.rest;
 
+import hu.daniinc.reservation.domain.BusinessEmployee;
+import hu.daniinc.reservation.domain.BusinessEmployeeInvite;
 import hu.daniinc.reservation.domain.PersistentToken;
 import hu.daniinc.reservation.domain.User;
+import hu.daniinc.reservation.repository.BusinessEmployeeInviteRepository;
+import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.PersistentTokenRepository;
 import hu.daniinc.reservation.repository.UserRepository;
 import hu.daniinc.reservation.security.SecurityUtils;
@@ -10,6 +14,7 @@ import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.AdminUserDTO;
 import hu.daniinc.reservation.service.dto.PasswordChangeDTO;
 import hu.daniinc.reservation.service.dto.UserDTO;
+import hu.daniinc.reservation.service.mapper.UserMapper;
 import hu.daniinc.reservation.web.rest.errors.*;
 import hu.daniinc.reservation.web.rest.vm.KeyAndPasswordVM;
 import hu.daniinc.reservation.web.rest.vm.ManagedUserVM;
@@ -17,6 +22,7 @@ import jakarta.validation.Valid;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.time.ZonedDateTime;
 import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,6 +38,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 public class AccountResource {
+
+    private final BusinessEmployeeInviteRepository businessEmployeeInviteRepository;
+    private final BusinessEmployeeRepository businessEmployeeRepository;
+    private final UserMapper userMapper;
 
     private static class AccountResourceException extends RuntimeException {
 
@@ -54,12 +64,18 @@ public class AccountResource {
         UserRepository userRepository,
         UserService userService,
         MailService mailService,
-        PersistentTokenRepository persistentTokenRepository
+        PersistentTokenRepository persistentTokenRepository,
+        BusinessEmployeeInviteRepository businessEmployeeInviteRepository,
+        BusinessEmployeeRepository businessEmployeeRepository,
+        UserMapper userMapper
     ) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.mailService = mailService;
         this.persistentTokenRepository = persistentTokenRepository;
+        this.businessEmployeeInviteRepository = businessEmployeeInviteRepository;
+        this.businessEmployeeRepository = businessEmployeeRepository;
+        this.userMapper = userMapper;
     }
 
     /**
@@ -78,6 +94,31 @@ public class AccountResource {
         }
         User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
         mailService.sendActivationEmail(user);
+    }
+
+    @PostMapping("/register-with-invite")
+    public ResponseEntity<UserDTO> registerWithInvite(@RequestParam String inviteToken, @RequestBody ManagedUserVM registerRequest) {
+        BusinessEmployeeInvite invite = businessEmployeeInviteRepository
+            .findByToken(inviteToken)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+
+        if (invite.isUsed() || invite.getExpiresAt().isBefore(ZonedDateTime.now())) {
+            throw new IllegalArgumentException("Token expired or already used");
+        }
+
+        User user = userService.createUser(registerRequest);
+
+        BusinessEmployee employee = new BusinessEmployee();
+        employee.setUser(user);
+        employee.setBusiness(invite.getBusiness());
+        employee.setRole(invite.getRole());
+        employee.setPermissions(invite.getPermissions());
+        businessEmployeeRepository.save(employee);
+
+        invite.setUsed(true);
+        businessEmployeeInviteRepository.save(invite);
+
+        return ResponseEntity.ok(userMapper.userToUserDTO(user));
     }
 
     /**

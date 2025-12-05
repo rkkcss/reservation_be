@@ -17,12 +17,21 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     @Query(
-        "SELECT a FROM Appointment a WHERE a.startDate <= :endDate AND a.endDate >= :startDate AND a.business.user.login = ?#{authentication.name} and a.status <> 'DELETED'"
+        "SELECT a FROM Appointment a " +
+        "WHERE a.startDate <= :endDate " +
+        "AND a.endDate >= :startDate " +
+        "AND a.businessEmployee.user.login = ?#{authentication.name} " +
+        "AND a.businessEmployee.business.id = :businessId " +
+        "and a.status <> 'DELETED'"
     )
-    List<Appointment> findOverlappingAppointments(@Param("startDate") ZonedDateTime startDate, @Param("endDate") ZonedDateTime endDate);
+    List<Appointment> findOverlappingAppointments(
+        @Param("startDate") ZonedDateTime startDate,
+        @Param("endDate") ZonedDateTime endDate,
+        @Param("businessId") Long businessId
+    );
 
     @Query(
-        "SELECT a FROM Appointment a WHERE a.business.id = :businessId AND a.startDate < :end AND a.endDate > :start and a.status <> 'DELETED'"
+        "SELECT a FROM Appointment a WHERE a.businessEmployee.business.id = :businessId AND a.startDate < :end AND a.endDate > :start and a.status <> 'DELETED'"
     )
     List<Appointment> findByBusinessIdAndDateRange(
         @Param("businessId") Long businessId,
@@ -31,18 +40,18 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     );
 
     @Query(
-        "SELECT CASE WHEN COUNT(a) > 0 THEN TRUE ELSE FALSE END FROM Appointment a WHERE a.business.user.login = ?#{authentication.name} and a.id = ?1"
+        "SELECT CASE WHEN COUNT(a) > 0 THEN TRUE ELSE FALSE END FROM Appointment a WHERE a.businessEmployee.user.login = ?#{authentication.name} and a.id = ?1"
     )
-    Boolean isBusinessTheOwnerById(Long id);
+    Boolean isUserTheAppointmentOwnerById(Long id);
 
     @Query(
-        "select a from Appointment a where a.business.user.login = ?#{authentication.name} and a.status = 'PENDING' and a.startDate >= CURRENT_DATE"
+        "select a from Appointment a where a.businessEmployee.user.login = ?#{authentication.name} and a.status = 'PENDING' and a.startDate >= CURRENT_DATE and a.businessEmployee.business.id = :businessId"
     )
-    List<Appointment> findAllPendingAppointments();
+    List<Appointment> findAllPendingAppointments(@Param("businessId") Long businessId);
 
     @Query("select a from Appointment a where a.modifierToken = ?1")
     Optional<Appointment> findByModifierToken(String modifierToken);
 
-    @Query("select a from Appointment a where a.id = ?1 and a.business.user.login = ?#{authentication.name}")
+    @Query("select a from Appointment a where a.id = ?1 and a.businessEmployee.business.owner.login = ?#{authentication.name}")
     Optional<Appointment> findByIdAndLoggedInOwner(Long appointmentId);
 }

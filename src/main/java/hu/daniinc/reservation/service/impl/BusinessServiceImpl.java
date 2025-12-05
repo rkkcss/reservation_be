@@ -77,19 +77,6 @@ public class BusinessServiceImpl implements BusinessService {
         return businessRepository.findAll(pageable).map(businessMapper::toDto);
     }
 
-    /**
-     *  Get all the businesses where Appointment is {@code null}.
-     *  @return the list of entities.
-     */
-    @Transactional(readOnly = true)
-    public List<BusinessDTO> findAllWhereAppointmentIsNull() {
-        LOG.debug("Request to get all businesses where Appointment is null");
-        return StreamSupport.stream(businessRepository.findAll().spliterator(), false)
-            .filter(business -> business.getAppointments() == null)
-            .map(businessMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
-    }
-
     @Override
     @Transactional(readOnly = true)
     public Optional<BusinessDTO> findOne(Long id) {
@@ -104,16 +91,21 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public BusinessDTO getBusinessByLoggedInUser() {
+    public BusinessDTO getBusinessByLoggedInUser(Long businessId) {
         LOG.debug("Request to get Business By LoggedInUser");
-        return businessRepository.findByLogin().map(businessMapper::toDto).orElseThrow(() -> new RuntimeException("No Business Found"));
+        return businessRepository
+            .findBusinessByLoginAndBusinessId(businessId)
+            .map(businessMapper::toDto)
+            .orElseThrow(() -> new RuntimeException("No Business Found"));
     }
 
     @Override
     public void changeBusinessLogo(String newLogo) {
         LOG.debug("Request to change Business Logo");
 
-        Business business = businessRepository.findByLogin().orElseThrow(() -> new EntityNotFoundException("No Business Found"));
+        Business business = businessRepository
+            .findBusinessByLoginAndBusinessId(1L)
+            .orElseThrow(() -> new EntityNotFoundException("No Business Found"));
 
         String oldLogo = business.getLogo();
 
@@ -134,7 +126,9 @@ public class BusinessServiceImpl implements BusinessService {
     public void changeBusinessTheme(BusinessTheme theme) {
         LOG.debug("Request to change Business Theme");
 
-        Business business = businessRepository.findByLogin().orElseThrow(() -> new EntityNotFoundException("No Business Found"));
+        Business business = businessRepository
+            .findBusinessByLoginAndBusinessId(1L)
+            .orElseThrow(() -> new EntityNotFoundException("No Business Found"));
 
         business.setTheme(theme);
         businessRepository.save(business);
@@ -142,7 +136,7 @@ public class BusinessServiceImpl implements BusinessService {
 
     public Business getAuthenticatedBusiness() {
         return businessRepository
-            .findByLogin()
+            .findBusinessByLoginAndBusinessId(1L)
             .orElseThrow(() -> new IllegalStateException("Authenticated user has no associated business."));
     }
 }

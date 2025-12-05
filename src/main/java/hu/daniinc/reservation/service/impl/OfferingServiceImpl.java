@@ -1,11 +1,15 @@
 package hu.daniinc.reservation.service.impl;
 
 import hu.daniinc.reservation.domain.Appointment;
+import hu.daniinc.reservation.domain.BusinessEmployee;
 import hu.daniinc.reservation.domain.Offering;
+import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
+import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.repository.OfferingRepository;
 import hu.daniinc.reservation.service.OfferingService;
+import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.OfferingDTO;
 import hu.daniinc.reservation.service.mapper.OfferingMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,26 +37,36 @@ public class OfferingServiceImpl implements OfferingService {
 
     private final OfferingMapper offeringMapper;
     private final BusinessRepository businessRepository;
+    private final BusinessEmployeeRepository businessEmployeeRepository;
+    private final UserService userService;
 
     public OfferingServiceImpl(
         OfferingRepository offeringRepository,
         OfferingMapper offeringMapper,
-        BusinessRepository businessRepository
+        BusinessRepository businessRepository,
+        BusinessEmployeeRepository businessEmployeeRepository,
+        UserService userService
     ) {
         this.offeringRepository = offeringRepository;
         this.offeringMapper = offeringMapper;
         this.businessRepository = businessRepository;
+        this.businessEmployeeRepository = businessEmployeeRepository;
+        this.userService = userService;
     }
 
     @Override
     @Transactional
-    public OfferingDTO save(OfferingDTO offeringDTO) {
+    public OfferingDTO saveOwnOffering(OfferingDTO offeringDTO, Long businessId) {
         LOG.debug("Request to save Offering : {}", offeringDTO);
+
+        BusinessEmployee currentEmployee = businessEmployeeRepository
+            .findByUserLoginAndBusinessId(businessId)
+            .orElseThrow(() -> new EntityNotFoundException("You are not part of this business"));
+
         Offering offering = offeringMapper.toEntity(offeringDTO);
-        offering.setBusiness(
-            businessRepository.findByLogin().orElseThrow(() -> new EntityNotFoundException("Business not found for the logged in user!"))
-        );
+        offering.setBusinessEmployee(currentEmployee);
         offering = offeringRepository.save(offering);
+
         return offeringMapper.toDto(offering);
     }
 
@@ -66,6 +81,7 @@ public class OfferingServiceImpl implements OfferingService {
     @Override
     public Optional<OfferingDTO> partialUpdate(OfferingDTO offeringDTO) {
         LOG.debug("Request to partially update Offering : {}", offeringDTO);
+        User user = userService.getUserWithAuthorities().orElseThrow(() -> new AuthorizationDeniedException("You are not authorised"));
 
         return offeringRepository
             .findById(offeringDTO.getId())
@@ -103,8 +119,8 @@ public class OfferingServiceImpl implements OfferingService {
     }
 
     @Override
-    public Page<OfferingDTO> getAllByLoggedInOwner(Pageable pageable) {
-        return offeringRepository.getAllByBusinessOwner(pageable).map(offeringMapper::toDto);
+    public Page<OfferingDTO> getAllByLoggedInEmployeeAndBusinessId(Long businessId, Pageable pageable) {
+        return offeringRepository.getAllByBusinessIdAndLoggedInEmployee(businessId, pageable).map(offeringMapper::toDto);
     }
 
     @Override

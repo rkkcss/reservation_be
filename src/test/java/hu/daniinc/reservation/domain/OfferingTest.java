@@ -28,12 +28,6 @@ class OfferingTest {
     void businessTest() {
         Offering offering = getOfferingRandomSampleGenerator();
         Business businessBack = getBusinessRandomSampleGenerator();
-
-        offering.setBusiness(businessBack);
-        assertThat(offering.getBusiness()).isEqualTo(businessBack);
-
-        offering.business(null);
-        assertThat(offering.getBusiness()).isNull();
     }
 
     @Test

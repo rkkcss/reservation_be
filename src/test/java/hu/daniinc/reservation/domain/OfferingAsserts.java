@@ -24,7 +24,6 @@ public class OfferingAsserts {
      */
     public static void assertOfferingAllUpdatablePropertiesEquals(Offering expected, Offering actual) {
         assertOfferingUpdatableFieldsEquals(expected, actual);
-        assertOfferingUpdatableRelationshipsEquals(expected, actual);
     }
 
     /**
@@ -52,17 +51,5 @@ public class OfferingAsserts {
             .satisfies(a -> assertThat(a.getPrice()).as("check price").usingComparator(bigDecimalCompareTo).isEqualTo(expected.getPrice()))
             .satisfies(a -> assertThat(a.getDescription()).as("check description").isEqualTo(expected.getDescription()))
             .satisfies(a -> assertThat(a.getTitle()).as("check title").isEqualTo(expected.getTitle()));
-    }
-
-    /**
-     * Asserts that the entity has all the updatable relationships set.
-     *
-     * @param expected the expected entity
-     * @param actual the actual entity
-     */
-    public static void assertOfferingUpdatableRelationshipsEquals(Offering expected, Offering actual) {
-        assertThat(actual)
-            .as("Verify Offering relationships")
-            .satisfies(a -> assertThat(a.getBusiness()).as("check business").isEqualTo(expected.getBusiness()));
     }
 }

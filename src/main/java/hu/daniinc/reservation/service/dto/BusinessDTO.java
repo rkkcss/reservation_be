@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -34,7 +35,7 @@ public class BusinessDTO implements Serializable {
 
     private String bannerUrl;
 
-    private UserDTO user;
+    private UserDTO owner;
 
     private Boolean appointmentApprovalRequired;
 
@@ -140,12 +141,12 @@ public class BusinessDTO implements Serializable {
         this.bannerUrl = bannerUrl;
     }
 
-    public UserDTO getUser() {
-        return user;
+    public UserDTO getOwner() {
+        return owner;
     }
 
-    public void setUser(UserDTO user) {
-        this.user = user;
+    public void setOwner(UserDTO user) {
+        this.owner = user;
     }
 
     public Set<WorkingHoursDTO> getWorkingHours() {
@@ -190,7 +191,7 @@ public class BusinessDTO implements Serializable {
             ", breakBetweenAppointmentsMin=" + getBreakBetweenAppointmentsMin() +
             ", logo='" + getLogo() + "'" +
             ", bannerUrl='" + getBannerUrl() + "'" +
-            ", user=" + getUser() +
+            ", owner=" + getOwner() +
             "}";
     }
 }

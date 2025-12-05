@@ -44,13 +44,6 @@ public interface BusinessService {
     Page<BusinessDTO> findAll(Pageable pageable);
 
     /**
-     * Get all the BusinessDTO where Appointment is {@code null}.
-     *
-     * @return the {@link List} of entities.
-     */
-    List<BusinessDTO> findAllWhereAppointmentIsNull();
-
-    /**
      * Get the "id" business.
      *
      * @param id the id of the entity.
@@ -65,7 +58,7 @@ public interface BusinessService {
      */
     void delete(Long id);
 
-    BusinessDTO getBusinessByLoggedInUser();
+    BusinessDTO getBusinessByLoggedInUser(Long businessId);
 
     void changeBusinessLogo(String logo);
 

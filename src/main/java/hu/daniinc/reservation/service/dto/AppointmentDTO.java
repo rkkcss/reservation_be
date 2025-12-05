@@ -26,6 +26,8 @@ public class AppointmentDTO implements Serializable {
 
     private ZonedDateTime modifiedDate;
 
+    private BusinessEmployeeDTO businessEmployee;
+
     @Size(max = 300)
     private String note;
 
@@ -35,8 +37,6 @@ public class AppointmentDTO implements Serializable {
     private OfferingDTO offering;
 
     private GuestDTO guest;
-
-    private BusinessDTO business;
 
     public Long getId() {
         return id;
@@ -102,20 +102,20 @@ public class AppointmentDTO implements Serializable {
         this.guest = guest;
     }
 
-    public BusinessDTO getBusiness() {
-        return business;
-    }
-
-    public void setBusiness(BusinessDTO business) {
-        this.business = business;
-    }
-
     public OfferingDTO getOffering() {
         return offering;
     }
 
     public void setOffering(OfferingDTO offering) {
         this.offering = offering;
+    }
+
+    public BusinessEmployeeDTO getBusinessEmployee() {
+        return businessEmployee;
+    }
+
+    public void setBusinessEmployee(BusinessEmployeeDTO businessEmployee) {
+        this.businessEmployee = businessEmployee;
     }
 
     @Override
@@ -151,7 +151,6 @@ public class AppointmentDTO implements Serializable {
             ", note='" + getNote() + "'" +
             ", status='" + getStatus() + "'" +
             ", guest=" + getGuest() +
-            ", business=" + getBusiness() +
             "}";
     }
 }

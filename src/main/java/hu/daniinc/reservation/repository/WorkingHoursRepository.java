@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface WorkingHoursRepository extends JpaRepository<WorkingHours, Long> {
-    @Query("select wo from WorkingHours wo where wo.business.user.login = ?#{authentication.name}")
+    @Query("select wo from WorkingHours wo where wo.business.owner.login = ?#{authentication.name}")
     List<WorkingHours> findByBusinessUserLogin();
 
     @Query("SELECT w FROM WorkingHours w WHERE w.business.id = :businessId AND w.dayOfWeek = :dayOfWeek")

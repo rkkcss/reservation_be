@@ -82,6 +82,7 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/business-ratings/business/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/cancel/*")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/appointments/cancel/*")).permitAll()
+                    .requestMatchers(mvc.pattern("/api/employee-invite/activate")).permitAll()
                     .requestMatchers(mvc.pattern("/api/**")).authenticated()
                     .requestMatchers(mvc.pattern("/websocket/**")).authenticated()
                     .requestMatchers(mvc.pattern("/v3/api-docs/**")).hasAuthority(AuthoritiesConstants.ADMIN)

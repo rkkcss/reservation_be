@@ -104,7 +104,7 @@ public class WorkingHoursServiceImpl implements WorkingHoursService {
     @Override
     public Void updateWorkingHours(List<WorkingHoursDTO> newHours) {
         Business business = businessRepository
-            .findByLogin()
+            .findBusinessByLoginAndBusinessId(1L)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
 
         // Get existing working hours

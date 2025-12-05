@@ -1,7 +1,9 @@
 package hu.daniinc.reservation.web.rest;
 
+import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import hu.daniinc.reservation.repository.BusinessRepository;
+import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
 import hu.daniinc.reservation.service.BusinessService;
 import hu.daniinc.reservation.service.dto.BusinessAppearanceDTO;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
@@ -150,10 +152,6 @@ public class BusinessResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         @RequestParam(name = "filter", required = false) String filter
     ) {
-        if ("appointment-is-null".equals(filter)) {
-            LOG.debug("REST request to get all Businesss where appointment is null");
-            return new ResponseEntity<>(businessService.findAllWhereAppointmentIsNull(), HttpStatus.OK);
-        }
         LOG.debug("REST request to get a page of Businesses");
         Page<BusinessDTO> page = businessService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -189,10 +187,11 @@ public class BusinessResource {
     }
 
     //get business by logged in user
-    @GetMapping("/owner")
-    public ResponseEntity<BusinessDTO> getAllBusinessOwners() {
+    @GetMapping("/{businessId}/private")
+    @RequiredBusinessPermission(BusinessPermission.MANAGE_BUSINESS_SETTINGS)
+    public ResponseEntity<BusinessDTO> getBusinessPrivate(@PathVariable("businessId") Long businessId) {
         LOG.debug("REST request to get Business owners");
-        return ResponseEntity.status(HttpStatus.OK).body(businessService.getBusinessByLoggedInUser());
+        return ResponseEntity.status(HttpStatus.OK).body(businessService.getBusinessByLoggedInUser(businessId));
     }
 
     @PostMapping("/logo")

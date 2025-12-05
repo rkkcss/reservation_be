@@ -1,7 +1,9 @@
 package hu.daniinc.reservation.web.rest;
 
 import hu.daniinc.reservation.domain.Offering;
+import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.OfferingRepository;
+import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
 import hu.daniinc.reservation.service.OfferingService;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
 import hu.daniinc.reservation.service.dto.GuestDTO;
@@ -58,13 +60,19 @@ public class OfferingResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new offeringDTO, or with status {@code 400 (Bad Request)} if the offering has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("")
-    public ResponseEntity<OfferingDTO> createOffering(@Valid @RequestBody OfferingDTO offeringDTO) throws URISyntaxException {
+    @PostMapping("/business/{businessId}")
+    public ResponseEntity<OfferingDTO> createOffering(@Valid @RequestBody OfferingDTO offeringDTO, @PathVariable Long businessId)
+        throws URISyntaxException {
         LOG.debug("REST request to save Offering : {}", offeringDTO);
         if (offeringDTO.getId() != null) {
             throw new BadRequestAlertException("A new offering cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        offeringDTO = offeringService.save(offeringDTO);
+
+        if (businessId == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+
+        offeringDTO = offeringService.saveOwnOffering(offeringDTO, businessId);
         return ResponseEntity.created(new URI("/api/offerings/" + offeringDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, offeringDTO.getId().toString()))
             .body(offeringDTO);
@@ -181,9 +189,17 @@ public class OfferingResource {
     }
 
     //get all the offerings by logged in user / owner
-    @GetMapping("/business-owner")
-    public ResponseEntity<List<OfferingDTO>> getAllByLoggedInOwner(Pageable pageable) {
-        Page<OfferingDTO> page = offeringService.getAllByLoggedInOwner(pageable);
+    @GetMapping("/business-employee/{businessId}")
+    @RequiredBusinessPermission(value = BusinessPermission.VIEW_SERVICES)
+    public ResponseEntity<List<OfferingDTO>> getAllByLoggedInEmployee(
+        @PathVariable(value = "businessId") Long businessId,
+        Pageable pageable
+    ) {
+        if (businessId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        LOG.debug("REST request to get a page of Offerings by logged in business employee and business id : {}", businessId);
+        Page<OfferingDTO> page = offeringService.getAllByLoggedInEmployeeAndBusinessId(businessId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

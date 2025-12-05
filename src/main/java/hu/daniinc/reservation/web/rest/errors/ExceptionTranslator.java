@@ -278,4 +278,19 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problem);
     }
+
+    @ExceptionHandler(GeneralException.class)
+    public ResponseEntity<ProblemDetailWithCause> handleGeneralException(GeneralException ex, NativeWebRequest request) {
+        ProblemDetailWithCause problem = ProblemDetailWithCauseBuilder.instance()
+            .withStatus(ex.getStatus().value())
+            .withTitle(ex.getMessage())
+            .withDetail(ex.getMessage())
+            .withType(URI.create("https://example.com/problem/general"))
+            .build();
+
+        problem.setProperty("message", ex.getErrorKey());
+        problem.setProperty("path", getPathValue(request));
+
+        return ResponseEntity.status(ex.getStatus()).body(problem);
+    }
 }

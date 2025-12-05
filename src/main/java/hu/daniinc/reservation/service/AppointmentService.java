@@ -48,7 +48,7 @@ public interface AppointmentService {
      * @param pageable the pagination information.
      * @return the list of entities.
      */
-    List<AppointmentDTO> findOverlappingAppointments(ZonedDateTime startDate, ZonedDateTime endDate);
+    List<AppointmentDTO> findOverlappingAppointments(ZonedDateTime startDate, ZonedDateTime endDate, Long businessId);
 
     /**
      * Get the "id" appointment.
@@ -75,7 +75,7 @@ public interface AppointmentService {
 
     void cancelByModifierToken(String modifierToken);
 
-    List<AppointmentDTO> getAllPendingAppointments();
+    List<AppointmentDTO> getAllPendingAppointments(Long businessId);
 
     AppointmentDTO approveAppointment(Long appointmentId);
 

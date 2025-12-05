@@ -16,7 +16,7 @@ public interface OfferingService {
      * @param offeringDTO the entity to save.
      * @return the persisted entity.
      */
-    OfferingDTO save(OfferingDTO offeringDTO);
+    OfferingDTO saveOwnOffering(OfferingDTO offeringDTO, Long businessId);
 
     /**
      * Updates a offering.
@@ -57,7 +57,7 @@ public interface OfferingService {
      */
     void logicalDelete(Long id);
 
-    Page<OfferingDTO> getAllByLoggedInOwner(Pageable pageable);
+    Page<OfferingDTO> getAllByLoggedInEmployeeAndBusinessId(Long businessId, Pageable pageable);
 
     Page<OfferingDTO> getAllByBusinessId(Long id, Pageable pageable);
 

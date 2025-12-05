@@ -1,0 +1,16 @@
+package hu.daniinc.reservation.domain.enumeration;
+
+public enum BusinessPermission {
+    VIEW_SCHEDULE,
+    EDIT_OWN_SCHEDULE,
+    EDIT_ALL_SCHEDULES,
+    CREATE_BOOKING,
+    EDIT_OWN_BOOKINGS,
+    EDIT_ALL_BOOKINGS,
+    VIEW_SERVICES,
+    EDIT_OWN_SERVICES,
+    EDIT_ALL_SERVICES,
+    VIEW_STATISTICS,
+    MANAGE_EMPLOYEES,
+    MANAGE_BUSINESS_SETTINGS,
+}

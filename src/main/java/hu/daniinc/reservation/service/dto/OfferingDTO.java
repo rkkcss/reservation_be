@@ -27,7 +27,7 @@ public class OfferingDTO implements Serializable {
     @NotNull
     private String title;
 
-    private BusinessDTO business;
+    private BusinessEmployeeDTO businessEmployee;
 
     private AppointmentDTO appointment;
 
@@ -73,12 +73,12 @@ public class OfferingDTO implements Serializable {
         this.title = title;
     }
 
-    public BusinessDTO getBusiness() {
-        return business;
+    public BusinessEmployeeDTO getBusinessEmployee() {
+        return businessEmployee;
     }
 
-    public void setBusiness(BusinessDTO business) {
-        this.business = business;
+    public void setBusinessEmployee(BusinessEmployeeDTO businessEmployee) {
+        this.businessEmployee = businessEmployee;
     }
 
     public AppointmentDTO getAppointment() {
@@ -127,7 +127,7 @@ public class OfferingDTO implements Serializable {
             ", price=" + getPrice() +
             ", description='" + getDescription() + "'" +
             ", title='" + getTitle() + "'" +
-            ", business=" + getBusiness() +
+            ", businessEmployee=" + getBusinessEmployee() +
             ", appointment=" + getAppointment() +
             "}";
     }

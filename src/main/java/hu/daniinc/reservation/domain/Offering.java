@@ -45,8 +45,8 @@ public class Offering implements Serializable {
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "user", "appointment", "workingHours", "customWorkingHours", "offerings" }, allowSetters = true)
-    private Business business;
+    @JsonIgnoreProperties(value = { "business", "user", "appointments", "offering" }, allowSetters = true)
+    private BusinessEmployee businessEmployee;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -120,16 +120,16 @@ public class Offering implements Serializable {
         this.title = title;
     }
 
-    public Business getBusiness() {
-        return this.business;
+    public BusinessEmployee getBusinessEmployee() {
+        return this.businessEmployee;
     }
 
-    public void setBusiness(Business business) {
-        this.business = business;
+    public void setBusinessEmployee(BusinessEmployee businessEmployee) {
+        this.businessEmployee = businessEmployee;
     }
 
-    public Offering business(Business business) {
-        this.setBusiness(business);
+    public Offering businessEmployee(BusinessEmployee businessEmployee) {
+        this.setBusinessEmployee(businessEmployee);
         return this;
     }
 

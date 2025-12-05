@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+  <!-- MAIN TABLE -->
+  <changeSet id="20250119-1-create-business-employee-invite" author="dani">
+    <createTable tableName="business_employee_invite">
+
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="email" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="business_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_invite_business"
+                     referencedTableName="business" referencedColumnNames="id"/>
+      </column>
+
+      <column name="role" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="token" type="VARCHAR(255)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+
+      <column name="expires_at" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="used" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="invited_by" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_invite_invited_by"
+                     referencedTableName="jhi_user" referencedColumnNames="id"/>
+      </column>
+
+    </createTable>
+  </changeSet>
+
+  <!-- PERMISSIONS ELEMENT COLLECTION -->
+  <changeSet id="20250119-2-business-employee-invite-permissions" author="dani">
+    <createTable tableName="business_employee_invite_permissions">
+      <column name="business_employee_invite_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_be_invite_perm"
+                     referencedTableName="business_employee_invite" referencedColumnNames="id"
+                     deleteCascade="true"/>
+      </column>
+
+      <column name="permission" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <!-- Composite PK -->
+    <addPrimaryKey
+      tableName="business_employee_invite_permissions"
+      columnNames="business_employee_invite_id, permission"
+      constraintName="pk_be_invite_permissions"/>
+  </changeSet>
+
+</databaseChangeLog>

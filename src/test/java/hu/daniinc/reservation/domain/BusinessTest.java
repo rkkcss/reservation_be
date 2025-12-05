@@ -79,21 +79,5 @@ class BusinessTest {
     void offeringTest() {
         Business business = getBusinessRandomSampleGenerator();
         Offering offeringBack = getOfferingRandomSampleGenerator();
-
-        business.addOffering(offeringBack);
-        assertThat(business.getOfferings()).containsOnly(offeringBack);
-        assertThat(offeringBack.getBusiness()).isEqualTo(business);
-
-        business.removeOffering(offeringBack);
-        assertThat(business.getOfferings()).doesNotContain(offeringBack);
-        assertThat(offeringBack.getBusiness()).isNull();
-
-        business.offerings(new HashSet<>(Set.of(offeringBack)));
-        assertThat(business.getOfferings()).containsOnly(offeringBack);
-        assertThat(offeringBack.getBusiness()).isEqualTo(business);
-
-        business.setOfferings(new HashSet<>());
-        assertThat(business.getOfferings()).doesNotContain(offeringBack);
-        assertThat(offeringBack.getBusiness()).isNull();
     }
 }
