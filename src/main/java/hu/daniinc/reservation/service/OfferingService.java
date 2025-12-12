@@ -53,9 +53,9 @@ public interface OfferingService {
     /**
      * Delete the "id" offering.
      *
-     * @param id the id of the entity.
+     * @param offerId the id of the entity.
      */
-    void logicalDelete(Long id);
+    void logicalDelete(Long offerId, Long businessId);
 
     Page<OfferingDTO> getAllByLoggedInEmployeeAndBusinessId(Long businessId, Pageable pageable);
 

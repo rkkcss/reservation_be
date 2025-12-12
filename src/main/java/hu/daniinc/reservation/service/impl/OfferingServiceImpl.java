@@ -121,11 +121,11 @@ public class OfferingServiceImpl implements OfferingService {
     }
 
     @Override
-    public void logicalDelete(Long id) {
-        LOG.debug("Request to delete Offering : {}", id);
+    public void logicalDelete(Long offerId, Long businessId) {
+        LOG.debug("Request to logical delete Offering : {}, in businessId: {}", offerId, businessId);
         Offering offering = offeringRepository
-            .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Offering not found for id : " + id));
+            .findByOfferingIdAndBusinessId(offerId, businessId)
+            .orElseThrow(() -> new EntityNotFoundException("Offering not found for id : " + offerId));
         offering.setStatus(BasicEntityStatus.DELETED);
         offeringRepository.save(offering);
     }

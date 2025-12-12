@@ -17,12 +17,7 @@ public class OfferingSpecification {
     }
 
     private static Specification<Offering> isPublicOffering() {
-        return (root, query, cb) ->
-            cb.and(
-                cb.equal(root.get("status"), BasicEntityStatus.ACTIVE),
-                cb.notEqual(root.get("businessEmployee").get("status"), BasicEntityStatus.DELETED),
-                cb.notEqual(root.get("businessEmployee").get("status"), BasicEntityStatus.INACTIVE)
-            );
+        return (root, query, cb) -> cb.and(cb.equal(root.get("status"), BasicEntityStatus.ACTIVE));
     }
 
     private static Specification<Offering> searchByEmployeeName(String search) {

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * A Offering.
@@ -16,6 +17,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Entity
 @Table(name = "offering")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SQLRestriction("status <> 'DELETED'")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Offering implements Serializable {
 

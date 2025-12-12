@@ -209,15 +209,16 @@ public class OfferingResource {
     /**
      * {@code DELETE  /offerings/:id} : delete the "id" offering.
      *
-     * @param id the id of the offeringDTO to delete.
+     * @param offerId the id of the offeringDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @PatchMapping("/{id}")
-    public ResponseEntity<Void> deleteOffering(@PathVariable("id") Long id) {
-        LOG.debug("REST request to delete Offering : {}", id);
-        offeringService.logicalDelete(id);
+    @PatchMapping("/{offerId}/business/{businessId}")
+    @RequiredBusinessPermission(value = { BusinessPermission.EDIT_ALL_SERVICES, BusinessPermission.EDIT_OWN_SERVICES })
+    public ResponseEntity<Void> deleteOffering(@PathVariable("offerId") Long offerId, @PathVariable("businessId") Long businessId) {
+        LOG.debug("REST request to delete Offering : {}", offerId);
+        offeringService.logicalDelete(offerId, businessId);
         return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, offerId.toString()))
             .build();
     }
 
