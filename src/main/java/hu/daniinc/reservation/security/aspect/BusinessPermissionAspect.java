@@ -5,6 +5,8 @@ import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
+import java.util.Arrays;
+import java.util.Set;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -41,10 +43,27 @@ public class BusinessPermissionAspect {
                 new GeneralException("You are not an employee of this business.", "employee-not-part-of-business", HttpStatus.BAD_REQUEST)
             );
 
-        BusinessPermission needed = required.value();
+        Set<BusinessPermission> employeePerms = employee.getPermissions();
+        BusinessPermission[] requiredPerms = required.value();
+        boolean requireAll = required.requiredAll();
 
-        if (!employee.getPermissions().contains(needed)) {
-            throw new GeneralException("Missing permission: " + needed, "permission-missing " + needed, HttpStatus.BAD_REQUEST);
+        boolean authorized;
+
+        // --- if all permissions required
+        if (requireAll) {
+            authorized = Arrays.stream(requiredPerms).allMatch(employeePerms::contains);
+        }
+        // if only one permission required
+        else {
+            authorized = Arrays.stream(requiredPerms).anyMatch(employeePerms::contains);
+        }
+
+        if (!authorized) {
+            throw new GeneralException(
+                "Missing required permission(s): " + Arrays.toString(requiredPerms),
+                "permission-missing",
+                HttpStatus.BAD_REQUEST
+            );
         }
     }
 
@@ -57,7 +76,6 @@ public class BusinessPermissionAspect {
             if (paramNames[i].equals(paramName)) {
                 Object arg = args[i];
 
-                // Ha businessEmployeeId, akkor keressük meg a businessId-t
                 if (paramName.equals("businessEmployeeId") && arg instanceof Long) {
                     return businessEmployeeRepository
                         .findById((Long) arg)

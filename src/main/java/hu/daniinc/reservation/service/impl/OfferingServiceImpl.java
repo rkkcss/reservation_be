@@ -1,9 +1,6 @@
 package hu.daniinc.reservation.service.impl;
 
-import hu.daniinc.reservation.domain.Appointment;
-import hu.daniinc.reservation.domain.BusinessEmployee;
-import hu.daniinc.reservation.domain.Offering;
-import hu.daniinc.reservation.domain.User;
+import hu.daniinc.reservation.domain.*;
 import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
 import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.BusinessRepository;
@@ -12,14 +9,19 @@ import hu.daniinc.reservation.service.OfferingService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.OfferingDTO;
 import hu.daniinc.reservation.service.mapper.OfferingMapper;
+import hu.daniinc.reservation.service.specifications.OfferingSpecification;
+import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,15 +58,15 @@ public class OfferingServiceImpl implements OfferingService {
 
     @Override
     @Transactional
-    public OfferingDTO saveOwnOffering(OfferingDTO offeringDTO, Long businessId) {
+    public OfferingDTO createOffering(OfferingDTO offeringDTO, Long businessId, Long employeeId) {
         LOG.debug("Request to save Offering : {}", offeringDTO);
 
-        BusinessEmployee currentEmployee = businessEmployeeRepository
-            .findByUserLoginAndBusinessId(businessId)
+        BusinessEmployee employee = businessEmployeeRepository
+            .findByBusinessIdAndEmployeeId(businessId, employeeId)
             .orElseThrow(() -> new EntityNotFoundException("You are not part of this business"));
 
         Offering offering = offeringMapper.toEntity(offeringDTO);
-        offering.setBusinessEmployee(currentEmployee);
+        offering.setBusinessEmployee(employee);
         offering = offeringRepository.save(offering);
 
         return offeringMapper.toDto(offering);
@@ -79,19 +81,29 @@ public class OfferingServiceImpl implements OfferingService {
     }
 
     @Override
-    public Optional<OfferingDTO> partialUpdate(OfferingDTO offeringDTO) {
+    public Optional<OfferingDTO> partialUpdate(OfferingDTO offeringDTO, Long businessId) {
         LOG.debug("Request to partially update Offering : {}", offeringDTO);
-        User user = userService.getUserWithAuthorities().orElseThrow(() -> new AuthorizationDeniedException("You are not authorised"));
 
-        return offeringRepository
+        // 2. Ellenőrzés: a user valóban tagja-e a megadott businessnek
+        businessEmployeeRepository
+            .findByUserLoginAndBusinessId(businessId)
+            .orElseThrow(() -> new GeneralException("You are not part of this business", "business-access-denied", HttpStatus.FORBIDDEN));
+
+        // 3. Offering betöltése + ellenőrzés, hogy ugyanahhoz a businesshez tartozik
+        Offering offering = offeringRepository
             .findById(offeringDTO.getId())
-            .map(existingOffering -> {
-                offeringMapper.partialUpdate(existingOffering, offeringDTO);
+            .orElseThrow(() -> new GeneralException("Offering not found", "offering-not-found", HttpStatus.NOT_FOUND));
 
-                return existingOffering;
-            })
-            .map(offeringRepository::save)
-            .map(offeringMapper::toDto);
+        if (!offering.getBusinessEmployee().getBusiness().getId().equals(businessId)) {
+            throw new AuthorizationDeniedException("You cannot modify an offering in another business");
+        }
+
+        // 4. Részleges frissítés
+        offeringMapper.partialUpdate(offering, offeringDTO);
+
+        // 5. Mentés + DTO vissza
+        Offering saved = offeringRepository.save(offering);
+        return Optional.of(offeringMapper.toDto(saved));
     }
 
     @Override
@@ -129,7 +141,34 @@ public class OfferingServiceImpl implements OfferingService {
     }
 
     @Override
-    public List<OfferingDTO> getAllByLoggedInOwnerWithoutPagination() {
-        return offeringRepository.getAllByBusinessOwnerWithoutPagination().stream().map(offeringMapper::toDto).collect(Collectors.toList());
+    public List<OfferingDTO> getAllOfferingsByLoggedInEmployee(Long businessId) {
+        userService.getUserWithAuthorities().orElseThrow(() -> new AuthorizationDeniedException("You are not authorised"));
+        // Check if user is part of the business
+        businessEmployeeRepository
+            .findByUserLoginAndBusinessId(businessId)
+            .orElseThrow(() -> new GeneralException("You are not part of this business", "not-part-business", HttpStatus.NOT_FOUND));
+
+        return offeringRepository.getAllByLoggedInEmployee(businessId).stream().map(offeringMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<OfferingDTO> getAllOfferingsByLoggedInBusinessId(Long businessId, Pageable pageable) {
+        return offeringRepository.findAllByBusinessId(businessId, pageable).map(offeringMapper::toDto);
+    }
+
+    @Override
+    public List<OfferingDTO> getAllByBusinessEmployee(Long businessEmployeeId) {
+        return offeringRepository
+            .getAllByBusinessEmployee(businessEmployeeId)
+            .stream()
+            .map(offeringMapper::toDto)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<OfferingDTO> findAllPublicOfferingByBusinessId(Long businessId, String search, Pageable pageable) {
+        Specification<Offering> spec = OfferingSpecification.publicOfferingsWithEmployeeNameFilter(businessId, search);
+
+        return offeringRepository.findAll(spec, pageable).map(offeringMapper::toDto);
     }
 }

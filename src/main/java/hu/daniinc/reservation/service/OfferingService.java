@@ -16,7 +16,7 @@ public interface OfferingService {
      * @param offeringDTO the entity to save.
      * @return the persisted entity.
      */
-    OfferingDTO saveOwnOffering(OfferingDTO offeringDTO, Long businessId);
+    OfferingDTO createOffering(OfferingDTO offeringDTO, Long businessId, Long employeeId);
 
     /**
      * Updates a offering.
@@ -32,7 +32,7 @@ public interface OfferingService {
      * @param offeringDTO the entity to update partially.
      * @return the persisted entity.
      */
-    Optional<OfferingDTO> partialUpdate(OfferingDTO offeringDTO);
+    Optional<OfferingDTO> partialUpdate(OfferingDTO offeringDTO, Long businessId);
 
     /**
      * Get all the offerings.
@@ -61,5 +61,11 @@ public interface OfferingService {
 
     Page<OfferingDTO> getAllByBusinessId(Long id, Pageable pageable);
 
-    List<OfferingDTO> getAllByLoggedInOwnerWithoutPagination();
+    List<OfferingDTO> getAllOfferingsByLoggedInEmployee(Long businessId);
+
+    Page<OfferingDTO> getAllOfferingsByLoggedInBusinessId(Long businessId, Pageable pageable);
+
+    List<OfferingDTO> getAllByBusinessEmployee(Long businessEmployeeId);
+
+    Page<OfferingDTO> findAllPublicOfferingByBusinessId(Long businessId, String search, Pageable pageable);
 }

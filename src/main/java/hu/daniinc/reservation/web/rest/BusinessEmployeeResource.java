@@ -93,4 +93,13 @@ public class BusinessEmployeeResource {
 
         return ResponseEntity.status(HttpStatus.OK).body(businessEmployeeService.updatePermissions(businessEmployeeId, permissions));
     }
+
+    //return all the public employees
+    @GetMapping("/public/business/{businessId}")
+    public ResponseEntity<List<BusinessEmployeeDTO>> getPublicEmployees(@PathVariable Long businessId) {
+        if (businessId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.ok(businessEmployeeService.findAllPublicByBusinessId(businessId));
+    }
 }

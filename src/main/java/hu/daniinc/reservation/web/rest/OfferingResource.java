@@ -60,9 +60,13 @@ public class OfferingResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new offeringDTO, or with status {@code 400 (Bad Request)} if the offering has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/business/{businessId}")
-    public ResponseEntity<OfferingDTO> createOffering(@Valid @RequestBody OfferingDTO offeringDTO, @PathVariable Long businessId)
-        throws URISyntaxException {
+    @PostMapping("/business/{businessId}/business-employee/{employeeId}")
+    @RequiredBusinessPermission(value = { BusinessPermission.EDIT_ALL_SERVICES, BusinessPermission.EDIT_OWN_SERVICES })
+    public ResponseEntity<OfferingDTO> createOffering(
+        @Valid @RequestBody OfferingDTO offeringDTO,
+        @PathVariable Long businessId,
+        @PathVariable Long employeeId
+    ) throws URISyntaxException {
         LOG.debug("REST request to save Offering : {}", offeringDTO);
         if (offeringDTO.getId() != null) {
             throw new BadRequestAlertException("A new offering cannot already have an ID", ENTITY_NAME, "idexists");
@@ -72,7 +76,7 @@ public class OfferingResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
 
-        offeringDTO = offeringService.saveOwnOffering(offeringDTO, businessId);
+        offeringDTO = offeringService.createOffering(offeringDTO, businessId, employeeId);
         return ResponseEntity.created(new URI("/api/offerings/" + offeringDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, offeringDTO.getId().toString()))
             .body(offeringDTO);
@@ -122,24 +126,26 @@ public class OfferingResource {
      * or with status {@code 500 (Internal Server Error)} if the offeringDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{offeringId}/business/{businessId}", consumes = { "application/json", "application/merge-patch+json" })
+    @RequiredBusinessPermission(value = { BusinessPermission.EDIT_OWN_SERVICES, BusinessPermission.EDIT_ALL_SERVICES })
     public ResponseEntity<OfferingDTO> partialUpdateOffering(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "offeringId") final Long offeringId,
+        @PathVariable(value = "businessId") final Long businessId,
         @NotNull @RequestBody OfferingDTO offeringDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Offering partially : {}, {}", id, offeringDTO);
+        LOG.debug("REST request to partial update Offering partially : {}, {}, {}", offeringId, offeringDTO, businessId);
         if (offeringDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, offeringDTO.getId())) {
+        if (!Objects.equals(offeringId, offeringDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!offeringRepository.existsById(id)) {
+        if (!offeringRepository.existsById(offeringId)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<OfferingDTO> result = offeringService.partialUpdate(offeringDTO);
+        Optional<OfferingDTO> result = offeringService.partialUpdate(offeringDTO, businessId);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -148,16 +154,43 @@ public class OfferingResource {
     }
 
     /**
-     * {@code GET  /offerings} : get all the offerings.
+     * {@code GET  /offerings/{businessId} : get all the offerings.
      *
-     * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of offerings in body.
      */
-    @GetMapping("")
-    public ResponseEntity<List<OfferingDTO>> getAllOfferings(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get a page of Offerings");
-        List<OfferingDTO> result = offeringService.getAllByLoggedInOwnerWithoutPagination();
+    @GetMapping("/business/{businessId}/employee")
+    public ResponseEntity<List<OfferingDTO>> getAllOwnOfferings(@PathVariable(value = "businessId") Long businessId) {
+        LOG.debug("REST request to get own Offerings by business id : {}", businessId);
+        List<OfferingDTO> result = offeringService.getAllOfferingsByLoggedInEmployee(businessId);
         return ResponseEntity.ok().body(result);
+    }
+
+    // return all the offerings by businessId
+    @GetMapping("/business/{businessId}/")
+    public ResponseEntity<List<OfferingDTO>> getAllByBusiness(@PathVariable(value = "businessId") Long businessId, Pageable pageable) {
+        LOG.debug("REST request to get Offerings by business id : {}", businessId);
+        Page<OfferingDTO> page = offeringService.getAllOfferingsByLoggedInBusinessId(businessId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    // return all offerings by business employee
+    @GetMapping("/business-employee/{businessEmployeeId}")
+    public ResponseEntity<List<OfferingDTO>> getAllByBusinessEmployee(@PathVariable(value = "businessEmployeeId") Long businessEmployeeId) {
+        LOG.debug("REST request to get Offerings by business employee id : {}", businessEmployeeId);
+        return ResponseEntity.ok().body(offeringService.getAllByBusinessEmployee(businessEmployeeId));
+    }
+
+    //return all the business related offerings - PUBLIC
+    @GetMapping("/public/business/{businessId}")
+    public ResponseEntity<List<OfferingDTO>> getAllPublicByBusinessId(
+        @PathVariable(value = "businessId") Long businessId,
+        @RequestParam(required = false) String search,
+        Pageable pageable
+    ) {
+        Page<OfferingDTO> page = offeringService.findAllPublicOfferingByBusinessId(businessId, search, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
@@ -189,7 +222,7 @@ public class OfferingResource {
     }
 
     //get all the offerings by logged in user / owner
-    @GetMapping("/business-employee/{businessId}")
+    @GetMapping("/business/{businessId}/my")
     @RequiredBusinessPermission(value = BusinessPermission.VIEW_SERVICES)
     public ResponseEntity<List<OfferingDTO>> getAllByLoggedInEmployee(
         @PathVariable(value = "businessId") Long businessId,

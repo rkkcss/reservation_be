@@ -8,7 +8,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RequiredBusinessPermission {
-    BusinessPermission value();
+    BusinessPermission[] value();
 
     String businessIdParam() default "businessId";
+
+    boolean requiredAll() default false;
 }

@@ -14,6 +14,7 @@ import hu.daniinc.reservation.service.mapper.UserMapper;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import hu.daniinc.reservation.web.rest.errors.NotFoundException;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -102,5 +103,14 @@ public class BusinessEmployeeServiceImpl implements BusinessEmployeeService {
         }
 
         return businessEmployeeMapper.toDto(businessEmployeeRepository.save(businessEmployee));
+    }
+
+    @Override
+    public List<BusinessEmployeeDTO> findAllPublicByBusinessId(Long businessId) {
+        return businessEmployeeRepository
+            .findAllPublicByBusinessId(businessId)
+            .stream()
+            .map(businessEmployeeMapper::toDto)
+            .collect(Collectors.toList());
     }
 }
