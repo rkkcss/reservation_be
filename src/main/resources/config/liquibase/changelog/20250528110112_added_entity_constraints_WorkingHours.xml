@@ -10,11 +10,11 @@
     -->
     <changeSet id="20250528110112-2" author="jhipster">
 
-        <addForeignKeyConstraint baseColumnNames="business_id"
+        <addForeignKeyConstraint baseColumnNames="business_employee_id"
                                  baseTableName="working_hours"
-                                 constraintName="fk_working_hours__business_id"
+                                 constraintName="fk_working_hours__business_employee_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="business"
+                                 referencedTableName="business_employee"
                                  />
     </changeSet>
 </databaseChangeLog>

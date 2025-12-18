@@ -17,13 +17,13 @@
             <column name="day_of_week" type="integer">
                 <constraints nullable="false" />
             </column>
-            <column name="start_time" type="${datetimeType}">
+            <column name="start_time" type="time">
                 <constraints nullable="false" />
             </column>
-            <column name="end_time" type="${datetimeType}">
+            <column name="end_time" type="time">
                 <constraints nullable="false" />
             </column>
-            <column name="business_id" type="bigint">
+            <column name="business_employee_id" type="bigint">
                 <constraints nullable="true" />
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->

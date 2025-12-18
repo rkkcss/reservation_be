@@ -13,4 +13,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CustomWorkingHoursRepository extends JpaRepository<CustomWorkingHours, Long> {
     Optional<CustomWorkingHours> findByBusinessIdAndWorkDate(Long businessId, LocalDate date);
+
+    //TODO: fix it
+    @Query(
+        "SELECT c FROM CustomWorkingHours c WHERE c.business.id = :businessId AND c.business.owner.id = :employeeId AND c.workDate = :date"
+    )
+    Optional<CustomWorkingHours> findByBusinessIdAndEmployeeIdAndWorkDate(Long businessId, Long employeeId, LocalDate date);
 }

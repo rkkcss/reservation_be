@@ -1,10 +1,12 @@
 package hu.daniinc.reservation.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import hu.daniinc.reservation.domain.BusinessOpeningHours;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -42,6 +44,8 @@ public class BusinessDTO implements Serializable {
     private Integer maxWeeksInAdvance;
 
     private BusinessTheme theme;
+
+    private Set<BusinessOpeningHoursDTO> openingHours = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -123,8 +127,6 @@ public class BusinessDTO implements Serializable {
         this.appointmentApprovalRequired = appointmentApprovalRequired;
     }
 
-    private Set<WorkingHoursDTO> workingHours;
-
     public String getLogo() {
         return logo;
     }
@@ -149,12 +151,12 @@ public class BusinessDTO implements Serializable {
         this.owner = user;
     }
 
-    public Set<WorkingHoursDTO> getWorkingHours() {
-        return workingHours;
+    public Set<BusinessOpeningHoursDTO> getOpeningHours() {
+        return openingHours;
     }
 
-    public void setWorkingHours(Set<WorkingHoursDTO> workingHours) {
-        this.workingHours = workingHours;
+    public void setOpeningHours(Set<BusinessOpeningHoursDTO> openingHours) {
+        this.openingHours = openingHours;
     }
 
     @Override

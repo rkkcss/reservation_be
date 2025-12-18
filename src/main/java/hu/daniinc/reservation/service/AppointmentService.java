@@ -5,6 +5,7 @@ import hu.daniinc.reservation.service.dto.CreateAppointmentByGuestDTO;
 import hu.daniinc.reservation.service.dto.CreateAppointmentRequestDTO;
 import hu.daniinc.reservation.service.dto.UpdateAppointmentDTO;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -48,7 +49,7 @@ public interface AppointmentService {
      * @param pageable the pagination information.
      * @return the list of entities.
      */
-    List<AppointmentDTO> findOverlappingAppointments(ZonedDateTime startDate, ZonedDateTime endDate, Long businessId);
+    List<AppointmentDTO> findOverlappingAppointments(Instant startDate, Instant endDate, Long businessId, String name);
 
     /**
      * Get the "id" appointment.
@@ -65,11 +66,17 @@ public interface AppointmentService {
      */
     void logicalDelete(Long id);
 
-    Map<LocalDate, List<ZonedDateTime>> getAvailableSlotsBetweenDates(Long businessId, LocalDate from, LocalDate to, Duration slotLength);
+    Map<LocalDate, List<Instant>> getAvailableSlotsBetweenDates(
+        Long businessId,
+        Long employeeId,
+        LocalDate from,
+        LocalDate to,
+        Duration slotLength
+    );
 
     AppointmentDTO saveByOwner(CreateAppointmentRequestDTO createAppointmentRequestDTO);
 
-    AppointmentDTO saveAppointmentByGuest(CreateAppointmentByGuestDTO createAppointmentByGuestDTO);
+    AppointmentDTO saveAppointmentByGuest(Long businessId, Long employeeId, CreateAppointmentByGuestDTO createAppointmentByGuestDTO);
 
     AppointmentDTO getAppointmentByModifierToken(String modifierToken);
 
@@ -77,7 +84,7 @@ public interface AppointmentService {
 
     List<AppointmentDTO> getAllPendingAppointments(Long businessId);
 
-    AppointmentDTO approveAppointment(Long appointmentId);
+    AppointmentDTO approveAppointment(Long appointmentId, Long employeeId);
 
-    AppointmentDTO cancelAppointment(Long id);
+    AppointmentDTO cancelAppointment(Long id, Long employeeId);
 }

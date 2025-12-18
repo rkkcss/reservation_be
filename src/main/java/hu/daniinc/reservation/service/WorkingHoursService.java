@@ -57,7 +57,9 @@ public interface WorkingHoursService {
      */
     void delete(Long id);
 
-    List<WorkingHoursDTO> getAllByLoggedInUser();
+    List<WorkingHoursDTO> getAllByBusinessAndEmployeeId(Long businessId, Long employeeId);
 
-    Void updateWorkingHours(List<WorkingHoursDTO> newHours);
+    Void updateWorkingHours(Long businessId, Long employeeId, List<WorkingHoursDTO> newHours);
+
+    List<WorkingHoursDTO> getAllOwnWorkingHours(Long businessId);
 }

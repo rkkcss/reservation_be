@@ -56,6 +56,6 @@ public class WorkingHoursAsserts {
     public static void assertWorkingHoursUpdatableRelationshipsEquals(WorkingHours expected, WorkingHours actual) {
         assertThat(actual)
             .as("Verify WorkingHours relationships")
-            .satisfies(a -> assertThat(a.getBusiness()).as("check business").isEqualTo(expected.getBusiness()));
+            .satisfies(a -> assertThat(a.getBusinessEmployee()).as("check business").isEqualTo(expected.getBusinessEmployee()));
     }
 }

@@ -44,13 +44,12 @@ public class Guest implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "guest")
     private Set<Appointment> appointments;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Business business;
-
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "guest")
     @JsonIgnoreProperties(value = { "guest" })
     private Set<BusinessRating> businessRating = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private BusinessEmployee businessEmployee;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -114,14 +113,6 @@ public class Guest implements Serializable {
         this.appointments = appointments;
     }
 
-    public Business getBusiness() {
-        return business;
-    }
-
-    public void setBusiness(Business business) {
-        this.business = business;
-    }
-
     public Boolean getCanBook() {
         return canBook;
     }
@@ -136,6 +127,14 @@ public class Guest implements Serializable {
 
     public void setBusinessRating(Set<BusinessRating> businessRating) {
         this.businessRating = businessRating;
+    }
+
+    public BusinessEmployee getBusinessEmployee() {
+        return businessEmployee;
+    }
+
+    public void setBusinessEmployee(BusinessEmployee businessEmployee) {
+        this.businessEmployee = businessEmployee;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

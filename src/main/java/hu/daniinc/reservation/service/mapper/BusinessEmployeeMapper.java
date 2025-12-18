@@ -19,6 +19,7 @@ public interface BusinessEmployeeMapper extends EntityMapper<BusinessEmployeeDTO
     @Mapping(target = "business", source = "business", qualifiedByName = "businessToDTO")
     @Mapping(target = "user", source = "user", qualifiedByName = "userToAdminUserDTOMapper")
     @Mapping(target = "appointments", ignore = true)
+    @Mapping(target = "workingHours", source = "workingHours", ignore = true)
     BusinessEmployeeDTO toDto(BusinessEmployee businessEmployee);
 
     //    @Named("businessToDto")

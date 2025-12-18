@@ -16,10 +16,7 @@ import hu.daniinc.reservation.repository.BusinessOpeningHoursRepository;
 import hu.daniinc.reservation.service.dto.BusinessOpeningHoursDTO;
 import hu.daniinc.reservation.service.mapper.BusinessOpeningHoursMapper;
 import jakarta.persistence.EntityManager;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.AfterEach;
@@ -43,8 +40,8 @@ class BusinessOpeningHoursResourceIT {
     private static final Integer DEFAULT_DAY_OF_WEEK = 1;
     private static final Integer UPDATED_DAY_OF_WEEK = 2;
 
-    private static final ZonedDateTime DEFAULT_START_TIME = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
-    private static final ZonedDateTime UPDATED_START_TIME = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
+    private static final LocalTime DEFAULT_START_TIME = LocalTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
+    private static final LocalTime UPDATED_START_TIME = LocalTime.now(ZoneId.systemDefault()).withNano(0);
 
     private static final ZonedDateTime DEFAULT_END_TIME = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_END_TIME = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
@@ -81,7 +78,10 @@ class BusinessOpeningHoursResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static BusinessOpeningHours createEntity() {
-        return new BusinessOpeningHours().dayOfWeek(DEFAULT_DAY_OF_WEEK).startTime(DEFAULT_START_TIME).endTime(DEFAULT_END_TIME);
+        return new BusinessOpeningHours()
+            .dayOfWeek(DEFAULT_DAY_OF_WEEK)
+            .startTime(DEFAULT_START_TIME)
+            .endTime(LocalTime.from(DEFAULT_END_TIME));
     }
 
     /**
@@ -91,7 +91,10 @@ class BusinessOpeningHoursResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static BusinessOpeningHours createUpdatedEntity() {
-        return new BusinessOpeningHours().dayOfWeek(UPDATED_DAY_OF_WEEK).startTime(UPDATED_START_TIME).endTime(UPDATED_END_TIME);
+        return new BusinessOpeningHours()
+            .dayOfWeek(UPDATED_DAY_OF_WEEK)
+            .startTime(UPDATED_START_TIME)
+            .endTime(LocalTime.from(UPDATED_END_TIME));
     }
 
     @BeforeEach
@@ -241,7 +244,7 @@ class BusinessOpeningHoursResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(businessOpeningHours.getId().intValue())))
             .andExpect(jsonPath("$.[*].dayOfWeek").value(hasItem(DEFAULT_DAY_OF_WEEK)))
-            .andExpect(jsonPath("$.[*].startTime").value(hasItem(sameInstant(DEFAULT_START_TIME))))
+            .andExpect(jsonPath("$.[*].startTime").value(hasItem(sameInstant(ZonedDateTime.from(DEFAULT_START_TIME)))))
             .andExpect(jsonPath("$.[*].endTime").value(hasItem(sameInstant(DEFAULT_END_TIME))));
     }
 
@@ -258,7 +261,7 @@ class BusinessOpeningHoursResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(businessOpeningHours.getId().intValue()))
             .andExpect(jsonPath("$.dayOfWeek").value(DEFAULT_DAY_OF_WEEK))
-            .andExpect(jsonPath("$.startTime").value(sameInstant(DEFAULT_START_TIME)))
+            .andExpect(jsonPath("$.startTime").value(sameInstant(ZonedDateTime.from(DEFAULT_START_TIME))))
             .andExpect(jsonPath("$.endTime").value(sameInstant(DEFAULT_END_TIME)));
     }
 
@@ -283,7 +286,7 @@ class BusinessOpeningHoursResourceIT {
             .orElseThrow();
         // Disconnect from session so that the updates on updatedBusinessOpeningHours are not directly saved in db
         em.detach(updatedBusinessOpeningHours);
-        updatedBusinessOpeningHours.dayOfWeek(UPDATED_DAY_OF_WEEK).startTime(UPDATED_START_TIME).endTime(UPDATED_END_TIME);
+        updatedBusinessOpeningHours.dayOfWeek(UPDATED_DAY_OF_WEEK).startTime(UPDATED_START_TIME).endTime(LocalTime.from(UPDATED_END_TIME));
         BusinessOpeningHoursDTO businessOpeningHoursDTO = businessOpeningHoursMapper.toDto(updatedBusinessOpeningHours);
 
         restBusinessOpeningHoursMockMvc
@@ -413,7 +416,10 @@ class BusinessOpeningHoursResourceIT {
         BusinessOpeningHours partialUpdatedBusinessOpeningHours = new BusinessOpeningHours();
         partialUpdatedBusinessOpeningHours.setId(businessOpeningHours.getId());
 
-        partialUpdatedBusinessOpeningHours.dayOfWeek(UPDATED_DAY_OF_WEEK).startTime(UPDATED_START_TIME).endTime(UPDATED_END_TIME);
+        partialUpdatedBusinessOpeningHours
+            .dayOfWeek(UPDATED_DAY_OF_WEEK)
+            .startTime(UPDATED_START_TIME)
+            .endTime(LocalTime.from(UPDATED_END_TIME));
 
         restBusinessOpeningHoursMockMvc
             .perform(

@@ -2,6 +2,7 @@ package hu.daniinc.reservation.repository;
 
 import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.service.dto.AppointmentDTO;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -15,19 +16,20 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+public interface AppointmentRepository extends JpaRepository<Appointment, Long>, JpaSpecificationExecutor<Appointment> {
     @Query(
         "SELECT a FROM Appointment a " +
         "WHERE a.startDate <= :endDate " +
         "AND a.endDate >= :startDate " +
-        "AND a.businessEmployee.user.login = ?#{authentication.name} " +
+        "AND a.businessEmployee.user.id = :employeeId " +
         "AND a.businessEmployee.business.id = :businessId " +
         "and a.status <> 'DELETED'"
     )
     List<Appointment> findOverlappingAppointments(
-        @Param("startDate") ZonedDateTime startDate,
-        @Param("endDate") ZonedDateTime endDate,
-        @Param("businessId") Long businessId
+        @Param("startDate") Instant startDate,
+        @Param("endDate") Instant endDate,
+        @Param("businessId") Long businessId,
+        @Param("employeeId") Long employeeId
     );
 
     @Query(
@@ -52,6 +54,19 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("select a from Appointment a where a.modifierToken = ?1")
     Optional<Appointment> findByModifierToken(String modifierToken);
 
-    @Query("select a from Appointment a where a.id = ?1 and a.businessEmployee.business.owner.login = ?#{authentication.name}")
-    Optional<Appointment> findByIdAndLoggedInOwner(Long appointmentId);
+    @Query("select a from Appointment a where a.id = ?1 and a.businessEmployee.user.id = :employeeId")
+    Optional<Appointment> findByIdAndLoggedInOwner(Long appointmentId, Long employeeId);
+
+    @Query(
+        "SELECT a FROM Appointment a " +
+        "WHERE a.businessEmployee.business.id = :businessId " +
+        "AND (:employeeId IS NULL OR a.businessEmployee.user.id = :employeeId) " +
+        "AND a.startDate >= :startDate AND a.endDate <= :endDate"
+    )
+    List<Appointment> findByBusinessIdAndEmployeeIdAndDateRange(
+        @Param("businessId") Long businessId,
+        @Param("employeeId") Long employeeId,
+        @Param("startDate") Instant startDate,
+        @Param("endDate") Instant endDate
+    );
 }

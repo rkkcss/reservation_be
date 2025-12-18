@@ -3,6 +3,7 @@ package hu.daniinc.reservation.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -30,11 +31,14 @@ public class BusinessOpeningHours implements Serializable {
 
     @NotNull
     @Column(name = "start_time", nullable = false)
-    private ZonedDateTime startTime;
+    private LocalTime startTime;
 
     @NotNull
     @Column(name = "end_time", nullable = false)
-    private ZonedDateTime endTime;
+    private LocalTime endTime;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Business business;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -64,29 +68,29 @@ public class BusinessOpeningHours implements Serializable {
         this.dayOfWeek = dayOfWeek;
     }
 
-    public ZonedDateTime getStartTime() {
+    public LocalTime getStartTime() {
         return this.startTime;
     }
 
-    public BusinessOpeningHours startTime(ZonedDateTime startTime) {
+    public BusinessOpeningHours startTime(LocalTime startTime) {
         this.setStartTime(startTime);
         return this;
     }
 
-    public void setStartTime(ZonedDateTime startTime) {
+    public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
 
-    public ZonedDateTime getEndTime() {
+    public LocalTime getEndTime() {
         return this.endTime;
     }
 
-    public BusinessOpeningHours endTime(ZonedDateTime endTime) {
+    public BusinessOpeningHours endTime(LocalTime endTime) {
         this.setEndTime(endTime);
         return this;
     }
 
-    public void setEndTime(ZonedDateTime endTime) {
+    public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
     }
 
@@ -107,6 +111,14 @@ public class BusinessOpeningHours implements Serializable {
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
+    }
+
+    public Business getBusiness() {
+        return business;
+    }
+
+    public void setBusiness(Business business) {
+        this.business = business;
     }
 
     // prettier-ignore

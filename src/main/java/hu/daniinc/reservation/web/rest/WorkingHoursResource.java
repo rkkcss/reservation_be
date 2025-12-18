@@ -1,6 +1,8 @@
 package hu.daniinc.reservation.web.rest;
 
+import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.WorkingHoursRepository;
+import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
 import hu.daniinc.reservation.service.WorkingHoursService;
 import hu.daniinc.reservation.service.dto.WorkingHoursDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
@@ -141,33 +143,6 @@ public class WorkingHoursResource {
     }
 
     /**
-     * {@code GET  /working-hours} : get all the workingHours.
-     *
-     * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of workingHours in body.
-     */
-    @GetMapping("")
-    public ResponseEntity<List<WorkingHoursDTO>> getAllWorkingHours(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get a page of WorkingHours");
-        Page<WorkingHoursDTO> page = workingHoursService.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-    /**
-     * {@code GET  /working-hours/:id} : get the "id" workingHours.
-     *
-     * @param id the id of the workingHoursDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the workingHoursDTO, or with status {@code 404 (Not Found)}.
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<WorkingHoursDTO> getWorkingHours(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get WorkingHours : {}", id);
-        Optional<WorkingHoursDTO> workingHoursDTO = workingHoursService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(workingHoursDTO);
-    }
-
-    /**
      * {@code DELETE  /working-hours/:id} : delete the "id" workingHours.
      *
      * @param id the id of the workingHoursDTO to delete.
@@ -182,22 +157,28 @@ public class WorkingHoursResource {
             .build();
     }
 
-    @GetMapping("/available")
-    public ResponseEntity<List<Map<String, ZonedDateTime>>> getAvailableTimes(
-        @RequestParam Long hairdresserId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endDate
+    //get all the working hours by business id and employeeId
+    @GetMapping("/business/{businessId}/business-employee/{employeeId}")
+    public ResponseEntity<List<WorkingHoursDTO>> getBusinessWorkingHours(
+        @PathVariable("businessId") Long businessId,
+        @PathVariable("employeeId") Long employeeId
     ) {
-        return null;
+        return ResponseEntity.status(HttpStatus.OK).body(workingHoursService.getAllByBusinessAndEmployeeId(businessId, employeeId));
     }
 
-    @GetMapping("/business-owner")
-    public ResponseEntity<List<WorkingHoursDTO>> getBusinessWorkingHours() {
-        return ResponseEntity.status(HttpStatus.OK).body(workingHoursService.getAllByLoggedInUser());
+    @GetMapping("/business/{businessId}/my")
+    public ResponseEntity<List<WorkingHoursDTO>> getMyWorkingHoursByBusiness(@PathVariable("businessId") Long businessId) {
+        LOG.debug("REST request to get My WorkingHours");
+        return ResponseEntity.status(HttpStatus.OK).body(workingHoursService.getAllOwnWorkingHours(businessId));
     }
 
-    @PutMapping("/edit")
-    public ResponseEntity<Void> updateOpeningHours(@RequestBody List<WorkingHoursDTO> newHours) {
-        return ResponseEntity.status(HttpStatus.OK).body(workingHoursService.updateWorkingHours(newHours));
+    @PutMapping("/business/{businessId}/business-employee/{employeeId}")
+    @RequiredBusinessPermission(value = { BusinessPermission.EDIT_ALL_SCHEDULES, BusinessPermission.EDIT_OWN_SCHEDULE })
+    public ResponseEntity<Void> updateOpeningHours(
+        @PathVariable("businessId") Long businessId,
+        @PathVariable("employeeId") Long employeeId,
+        @RequestBody List<WorkingHoursDTO> newHours
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(workingHoursService.updateWorkingHours(businessId, employeeId, newHours));
     }
 }

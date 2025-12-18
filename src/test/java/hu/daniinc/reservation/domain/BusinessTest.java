@@ -35,22 +35,6 @@ class BusinessTest {
     void workingHoursTest() {
         Business business = getBusinessRandomSampleGenerator();
         WorkingHours workingHoursBack = getWorkingHoursRandomSampleGenerator();
-
-        business.addWorkingHours(workingHoursBack);
-        assertThat(business.getWorkingHours()).containsOnly(workingHoursBack);
-        assertThat(workingHoursBack.getBusiness()).isEqualTo(business);
-
-        business.removeWorkingHours(workingHoursBack);
-        assertThat(business.getWorkingHours()).doesNotContain(workingHoursBack);
-        assertThat(workingHoursBack.getBusiness()).isNull();
-
-        business.workingHours(new HashSet<>(Set.of(workingHoursBack)));
-        assertThat(business.getWorkingHours()).containsOnly(workingHoursBack);
-        assertThat(workingHoursBack.getBusiness()).isEqualTo(business);
-
-        business.setWorkingHours(new HashSet<>());
-        assertThat(business.getWorkingHours()).doesNotContain(workingHoursBack);
-        assertThat(workingHoursBack.getBusiness()).isNull();
     }
 
     @Test

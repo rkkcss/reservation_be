@@ -9,6 +9,7 @@ import hu.daniinc.reservation.service.dto.CreateAppointmentByGuestDTO;
 import hu.daniinc.reservation.service.dto.CreateAppointmentRequestDTO;
 import hu.daniinc.reservation.service.dto.UpdateAppointmentDTO;
 import hu.daniinc.reservation.service.mapper.AppointmentMapper;
+import hu.daniinc.reservation.service.specifications.AppointmentsSpecification;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import hu.daniinc.reservation.web.rest.errors.NotFoundException;
 import io.undertow.util.BadRequestException;
@@ -18,6 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final OfferingRepository offeringRepository;
     private final GuestRepository guestRepository;
     private final GuestServiceImpl guestServiceImpl;
+    private final BusinessEmployeeRepository businessEmployeeRepository;
 
     public AppointmentServiceImpl(
         AppointmentRepository appointmentRepository,
@@ -48,7 +51,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         BusinessRepository businessRepository,
         OfferingRepository offeringRepository,
         GuestRepository guestRepository,
-        GuestServiceImpl guestServiceImpl
+        GuestServiceImpl guestServiceImpl,
+        BusinessEmployeeRepository businessEmployeeRepository
     ) {
         this.appointmentRepository = appointmentRepository;
         this.appointmentMapper = appointmentMapper;
@@ -58,6 +62,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.offeringRepository = offeringRepository;
         this.guestRepository = guestRepository;
         this.guestServiceImpl = guestServiceImpl;
+        this.businessEmployeeRepository = businessEmployeeRepository;
     }
 
     @Override
@@ -103,13 +108,15 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AppointmentDTO> findOverlappingAppointments(ZonedDateTime startDate, ZonedDateTime endDate, Long businessId) {
-        LOG.debug("Request to get all Appointments");
-        return appointmentRepository
-            .findOverlappingAppointments(startDate, endDate, businessId)
-            .stream()
-            .map(appointmentMapper::toDto)
-            .toList();
+    public List<AppointmentDTO> findOverlappingAppointments(Instant startDate, Instant endDate, Long businessId, String employeeFullName) {
+        Specification<Appointment> spec = AppointmentsSpecification.overlappingAppointmentsByEmployeeName(
+            startDate,
+            endDate,
+            businessId,
+            employeeFullName
+        );
+
+        return appointmentRepository.findAll(spec).stream().map(appointmentMapper::toDto).toList();
     }
 
     @Override
@@ -135,18 +142,19 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Map<LocalDate, List<ZonedDateTime>> getAvailableSlotsBetweenDates(
+    public Map<LocalDate, List<Instant>> getAvailableSlotsBetweenDates(
         Long businessId,
+        Long employeeId,
         LocalDate from,
         LocalDate to,
         Duration slotLength
     ) {
-        Map<LocalDate, List<ZonedDateTime>> availableSlotsMap = new LinkedHashMap<>();
+        Map<LocalDate, List<Instant>> availableSlotsMap = new LinkedHashMap<>();
 
         Business business = businessRepository.findById(businessId).orElseThrow(() -> new EntityNotFoundException("Business not found"));
 
+        // Max előre foglalható idő
         Integer maxWeeks = business.getMaxWeeksInAdvance(); // pl. 26
-
         if (maxWeeks != null && maxWeeks > 0) {
             LocalDate maxAllowedDate = LocalDate.now().plusWeeks(maxWeeks);
             if (to.isAfter(maxAllowedDate)) {
@@ -154,39 +162,55 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
         }
 
-        // Lekérjük az összes releváns appointmentet előre
-        ZonedDateTime overallStart = from.atStartOfDay(ZoneId.systemDefault());
-        ZonedDateTime overallEnd = to.plusDays(1).atStartOfDay(ZoneId.systemDefault());
-        List<Appointment> allAppointments = appointmentRepository.findByBusinessIdAndDateRange(businessId, overallStart, overallEnd);
+        ZoneId zone = ZoneId.of("Europe/Budapest");
+
+        // Lekérjük az összes releváns appointmentet employee-specifikusan
+        Instant overallStart = from.atStartOfDay(zone).toInstant();
+        Instant overallEnd = to.plusDays(1).atStartOfDay(zone).toInstant();
+
+        List<Appointment> allAppointments = appointmentRepository.findByBusinessIdAndEmployeeIdAndDateRange(
+            businessId,
+            employeeId,
+            overallStart,
+            overallEnd
+        );
 
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
-            List<ZonedDateTime> slots = new ArrayList<>();
+            List<Instant> slots = new ArrayList<>();
 
-            Optional<CustomWorkingHours> customOpt = customWorkingHoursRepository.findByBusinessIdAndWorkDate(businessId, date);
+            // Custom working hours employee-specifikusan
+            Optional<CustomWorkingHours> customOpt = customWorkingHoursRepository.findByBusinessIdAndEmployeeIdAndWorkDate(
+                businessId,
+                employeeId,
+                date
+            );
 
             if (customOpt.isPresent()) {
-                // Ha van egyedi munkaidő, csak azt vesszük figyelembe
                 CustomWorkingHours cwh = customOpt.get();
-                ZonedDateTime start = cwh.getStartTime();
-                ZonedDateTime end = cwh.getEndTime();
+                Instant start = cwh.getStartTime().toInstant();
+                Instant end = cwh.getEndTime().toInstant();
 
-                ZonedDateTime current = start;
+                Instant current = start;
                 while (!current.plus(slotLength).isAfter(end)) {
                     slots.add(current);
                     current = current.plus(slotLength);
                 }
             } else {
-                // Alapértelmezett (több) munkasáv lekérdezése
+                // Default working hours employee-specifikusan
                 int dayOfWeek = date.getDayOfWeek().getValue();
-                List<WorkingHours> workingHoursList = workingHoursRepository.findByBusinessIdAndDayOfWeek(businessId, dayOfWeek);
+                List<WorkingHours> workingHoursList = workingHoursRepository.findByBusinessIdAndEmployeeIdAndDayOfWeek(
+                    businessId,
+                    employeeId,
+                    dayOfWeek
+                );
 
                 if (workingHoursList.isEmpty()) continue;
 
                 for (WorkingHours wh : workingHoursList) {
-                    ZonedDateTime start = date.atTime(wh.getStartTime()).atZone(ZoneId.systemDefault());
-                    ZonedDateTime end = date.atTime(wh.getEndTime()).atZone(ZoneId.systemDefault());
+                    Instant start = date.atTime(wh.getStartTime()).atZone(zone).toInstant();
+                    Instant end = date.atTime(wh.getEndTime()).atZone(zone).toInstant();
 
-                    ZonedDateTime current = start;
+                    Instant current = start;
                     while (!current.plus(slotLength).isAfter(end)) {
                         slots.add(current);
                         current = current.plus(slotLength);
@@ -195,12 +219,11 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
 
             // Szűrés ütköző foglalások alapján
+            Instant now = Instant.now();
 
-            ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
-
-            List<ZonedDateTime> available = slots
+            List<Instant> available = slots
                 .stream()
-                .filter(slot -> !slot.isBefore(now)) //can't add appointment in the past
+                .filter(slot -> !slot.isBefore(now))
                 .filter(slot ->
                     allAppointments
                         .stream()
@@ -224,7 +247,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setEndDate(createAppointmentRequestDTO.getEndDate());
         appointment.setNote(createAppointmentRequestDTO.getNote());
 
-        appointment.setCreatedDate(ZonedDateTime.now());
+        appointment.setCreatedDate(Instant.now());
 
         Business ownerBusiness = businessRepository
             .findBusinessByLoginAndBusinessId(1L)
@@ -247,88 +270,75 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public AppointmentDTO saveAppointmentByGuest(CreateAppointmentByGuestDTO createAppointmentByGuestDTO) {
-        //check the business has the selected offer
-        if (
-            !offeringRepository.isBusinessHasTheOffer(
-                createAppointmentByGuestDTO.getOfferingId(),
-                createAppointmentByGuestDTO.getBusinessId()
-            )
-        ) {
-            LOG.error(
-                "Business: {} doesn't have the offer with id: {}",
-                createAppointmentByGuestDTO.getBusinessId(),
-                createAppointmentByGuestDTO.getOfferingId()
-            );
-            throw new RuntimeException("Business doesn't have the offer with id: " + createAppointmentByGuestDTO.getOfferingId());
+    public AppointmentDTO saveAppointmentByGuest(Long businessId, Long employeeId, CreateAppointmentByGuestDTO dto) {
+        // --- 1) Check if the business has the offering ---
+        if (!offeringRepository.isBusinessHasTheOffer(dto.getOfferingId(), businessId)) {
+            LOG.error("Business: {} doesn't have the offer with id: {}", businessId, dto.getOfferingId());
+            throw new RuntimeException("Business doesn't have the offer with id: " + dto.getOfferingId());
         }
 
-        //check the date is available for the selected time
-        if (
-            !isSlotAvailable(
-                createAppointmentByGuestDTO.getBusinessId(),
-                createAppointmentByGuestDTO.getDate(),
-                createAppointmentByGuestDTO.getTime(),
-                createAppointmentByGuestDTO.getOfferingId()
-            )
-        ) {
+        // --- 2) Check if employee exists ---
+        BusinessEmployee employee = businessEmployeeRepository
+            .findByBusinessIdAndEmployeeId(businessId, employeeId)
+            .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+
+        // --- 3) Check if slot is available for this employee ---
+        if (!isSlotAvailable(businessId, employee.getId(), dto.getDate(), dto.getTime(), dto.getOfferingId())) {
             throw new BadRequestAlertException("Appointment is reserved!", null, "appointment.reserved");
         }
 
-        Appointment appointment = new Appointment();
-
-        //set business
-
+        // --- 4) Retrieve business ---
         Business business = businessRepository
-            .findById(createAppointmentByGuestDTO.getBusinessId())
+            .findById(businessId)
             .orElseThrow(() -> new EntityNotFoundException("No business found for login"));
 
-        //        appointment.setBusiness(business);
+        // --- 5) Set guest ---
+        Guest guest = guestRepository
+            .findByEmail(dto.getEmail(), business.getId())
+            .orElseGet(() -> {
+                Guest newGuest = new Guest();
+                newGuest.setEmail(dto.getEmail());
+                newGuest.setName(dto.getName());
+                newGuest.setPhoneNumber(dto.getPhoneNumber());
+                newGuest.setBusinessEmployee(employee);
+                newGuest.setCanBook(true);
+                return guestRepository.save(newGuest);
+            });
 
+        if (!guest.getCanBook()) {
+            LOG.debug("Guest cannot book: guest id {}, canBook: {}", guest.getId(), guest.getCanBook());
+            throw new BadRequestAlertException("Guest can't book!", null, "guest.cantbook");
+        }
+
+        // --- 6) Create appointment ---
+        Appointment appointment = new Appointment();
+        appointment.setGuest(guest);
+        appointment.setBusinessEmployee(employee);
+
+        // Offering
+        Offering offering = offeringRepository
+            .findById(dto.getOfferingId())
+            .orElseThrow(() -> new RuntimeException("No offering found for id: " + dto.getOfferingId()));
+        appointment.setOffering(offering);
+
+        // --- 7) Set status ---
         if (business.getAppointmentApprovalRequired()) {
             appointment.setStatus(AppointmentStatus.PENDING);
         } else {
             appointment.setStatus(AppointmentStatus.CONFIRMED);
         }
 
-        //set guest
-        Guest guest = guestRepository
-            .findByEmail(createAppointmentByGuestDTO.getEmail(), business.getId())
-            .orElseGet(() -> {
-                Guest newGuest = new Guest();
-                newGuest.setEmail(createAppointmentByGuestDTO.getEmail());
-                newGuest.setName(createAppointmentByGuestDTO.getName());
-                newGuest.setPhoneNumber(createAppointmentByGuestDTO.getPhoneNumber());
-                newGuest.setBusiness(business);
-                newGuest.setCanBook(true);
-                return guestRepository.save(newGuest);
-            });
-
-        if (!guest.getCanBook()) {
-            LOG.debug("Guest can not book because it's not allowed guest id:- {}, can book: {}", guest.getCanBook(), guest.getCanBook());
-            throw new BadRequestAlertException("Guest can't book!", null, "guest.cantbook");
-        }
-
-        appointment.setGuest(guest);
-        Offering offering = offeringRepository
-            .findById(createAppointmentByGuestDTO.getOfferingId())
-            .orElseThrow(() -> new RuntimeException("No offering found for id: " + createAppointmentByGuestDTO.getOfferingId()));
-
-        appointment.setOffering(offering);
-
-        //set startDate and endDate
-        ZonedDateTime startDate = ZonedDateTime.of(
-            createAppointmentByGuestDTO.getDate(),
-            createAppointmentByGuestDTO.getTime(),
-            ZoneId.systemDefault()
-        );
-
-        ZonedDateTime endDate = startDate.plusMinutes(offering.getDurationMinutes());
+        // --- 8) Set startDate & endDate ---
+        ZoneId zone = ZoneId.of("Europe/Budapest");
+        Instant startDate = dto.getDate().atTime(dto.getTime()).atZone(zone).toInstant();
+        Instant endDate = startDate.plus(Duration.ofMinutes(offering.getDurationMinutes()));
 
         appointment.setStartDate(startDate);
         appointment.setEndDate(endDate);
+
         appointment.setModifierToken(UUID.randomUUID().toString());
 
+        // --- 9) Save appointment and return DTO ---
         return appointmentMapper.toDto(appointmentRepository.save(appointment));
     }
 
@@ -361,9 +371,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public AppointmentDTO approveAppointment(Long appointmentId) {
+    public AppointmentDTO approveAppointment(Long appointmentId, Long employeeId) {
         Appointment appointment = appointmentRepository
-            .findByIdAndLoggedInOwner(appointmentId)
+            .findByIdAndLoggedInOwner(appointmentId, employeeId)
             .orElseThrow(() -> new EntityNotFoundException("appointment"));
         appointment.setStatus(AppointmentStatus.CONFIRMED);
 
@@ -372,9 +382,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public AppointmentDTO cancelAppointment(Long appointmentId) {
+    public AppointmentDTO cancelAppointment(Long appointmentId, Long employeeId) {
         Appointment appointment = appointmentRepository
-            .findByIdAndLoggedInOwner(appointmentId)
+            .findByIdAndLoggedInOwner(appointmentId, employeeId)
             .orElseThrow(() -> new EntityNotFoundException("appointment"));
         appointment.setStatus(AppointmentStatus.CANCELLED);
 
@@ -382,68 +392,75 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     //checking the appointment is available return TRUE if yes else FALSE
-    public boolean isSlotAvailable(Long businessId, LocalDate date, LocalTime time, Long offeringId) {
-        // --- 0) explicit Budapest-zóna ---
+    public boolean isSlotAvailable(Long businessId, Long employeeId, LocalDate date, LocalTime time, Long offeringId) {
         ZoneId zone = ZoneId.of("Europe/Budapest");
 
-        // --- 1) Offering hossz lekérése ---
-        Offering offering = offeringRepository
-            .findById(offeringId)
-            .orElseThrow(() -> new EntityNotFoundException("Offering not found: " + offeringId));
-        Duration slotLength = Duration.ofMinutes(offering.getDurationMinutes());
+        // Offering lekérése a hossz miatt
+        Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new RuntimeException("Offering not found"));
 
-        // --- 2) slotStart / slotEnd ---
+        Duration duration = Duration.ofMinutes(offering.getDurationMinutes());
+
+        // Slot kezdete és vége
         ZonedDateTime slotStart = ZonedDateTime.of(date, time, zone);
-        ZonedDateTime slotEnd = slotStart.plus(slotLength);
-        LOG.debug("  → slotStart = {}, slotEnd = {}", slotStart, slotEnd);
+        ZonedDateTime slotEnd = slotStart.plus(duration);
 
-        // --- 3) múlt kizárása ---
+        // múlt kizárása
         if (slotStart.isBefore(ZonedDateTime.now(zone))) {
-            LOG.debug("  → reject: past slot");
             return false;
         }
 
-        // --- 4) Ütköző foglalások ellenőrzése ---
-        List<Appointment> appointments = appointmentRepository.findByBusinessIdAndDateRange(
+        // Nap eleje és vége Instant-re
+        Instant dayStart = date.atStartOfDay(zone).toInstant();
+        Instant dayEnd = date.plusDays(1).atStartOfDay(zone).toInstant();
+
+        // Appointments lekérése employee szinten
+        List<Appointment> appointments = appointmentRepository.findByBusinessIdAndEmployeeIdAndDateRange(
             businessId,
-            date.atStartOfDay(zone),
-            date.plusDays(1).atStartOfDay(zone)
+            employeeId,
+            dayStart,
+            dayEnd
         );
-        appointments.forEach(a -> LOG.debug("    existing appt: {} – {}", a.getStartDate(), a.getEndDate()));
-        boolean overlaps = appointments.stream().anyMatch(a -> slotStart.isBefore(a.getEndDate()) && slotEnd.isAfter(a.getStartDate()));
-        if (overlaps) {
-            LOG.debug("  → reject: overlap detected");
-            return false;
-        }
 
-        // --- 5) Munkaidő-sávok kigyűjtése ---
-        Optional<CustomWorkingHours> customOpt = customWorkingHoursRepository.findByBusinessIdAndWorkDate(businessId, date);
+        Instant slotStartInstant = slotStart.toInstant();
+        Instant slotEndInstant = slotEnd.toInstant();
+
+        // Időütközés ellenőrzés
+        boolean overlaps = appointments
+            .stream()
+            .anyMatch(a -> slotStartInstant.isBefore(a.getEndDate()) && slotEndInstant.isAfter(a.getStartDate()));
+
+        if (overlaps) return false;
+
+        // Egyedi munkaidő employee szinten
+        Optional<CustomWorkingHours> customOpt = customWorkingHoursRepository.findByBusinessIdAndEmployeeIdAndWorkDate(
+            businessId,
+            employeeId,
+            date
+        );
+
         if (customOpt.isPresent()) {
             CustomWorkingHours cwh = customOpt.get();
-            LOG.debug("  → using CUSTOM WH: {} – {}", cwh.getStartTime(), cwh.getEndTime());
-            boolean ok = !slotStart.isBefore(cwh.getStartTime()) && !slotEnd.isAfter(cwh.getEndTime());
-            LOG.debug("     → in custom hours? {}", ok);
-            return ok;
+
+            ZonedDateTime whStart = cwh.getStartTime();
+            ZonedDateTime whEnd = cwh.getEndTime();
+
+            // Slot belefér-e az egyedi munkaidőbe?
+            return !slotStart.isBefore(whStart) && !slotEnd.isAfter(whEnd);
         }
 
+        // Default working hours employee szinten
         int dow = date.getDayOfWeek().getValue();
-        LOG.debug("  → default dayOfWeek = {}", dow);
-        List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndDayOfWeek(businessId, dow);
-        whList.forEach(wh -> LOG.debug("    default WH: {} – {}", wh.getStartTime(), wh.getEndTime()));
+        List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndEmployeeIdAndDayOfWeek(businessId, employeeId, dow);
 
-        // --- 6) Default sávok ellenőrzése ---
         for (WorkingHours wh : whList) {
             ZonedDateTime whStart = date.atTime(wh.getStartTime()).atZone(zone);
             ZonedDateTime whEnd = date.atTime(wh.getEndTime()).atZone(zone);
-            boolean ok = !slotStart.isBefore(whStart) && !slotEnd.isAfter(whEnd);
-            LOG.debug("check against {}–{}: {}", whStart, whEnd, ok);
-            if (ok) {
-                LOG.debug("  → accept: fits in default working hours");
+
+            if (!slotStart.isBefore(whStart) && !slotEnd.isAfter(whEnd)) {
                 return true;
             }
         }
 
-        LOG.debug("  → reject: no working-hours slot fits");
         return false;
     }
 }

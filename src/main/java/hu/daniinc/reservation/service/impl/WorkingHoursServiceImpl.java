@@ -1,12 +1,15 @@
 package hu.daniinc.reservation.service.impl;
 
 import hu.daniinc.reservation.domain.Business;
+import hu.daniinc.reservation.domain.BusinessEmployee;
 import hu.daniinc.reservation.domain.WorkingHours;
+import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.repository.WorkingHoursRepository;
 import hu.daniinc.reservation.service.WorkingHoursService;
 import hu.daniinc.reservation.service.dto.WorkingHoursDTO;
 import hu.daniinc.reservation.service.mapper.WorkingHoursMapper;
+import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,15 +37,18 @@ public class WorkingHoursServiceImpl implements WorkingHoursService {
 
     private final WorkingHoursMapper workingHoursMapper;
     private final BusinessRepository businessRepository;
+    private final BusinessEmployeeRepository businessEmployeeRepository;
 
     public WorkingHoursServiceImpl(
         WorkingHoursRepository workingHoursRepository,
         WorkingHoursMapper workingHoursMapper,
-        BusinessRepository businessRepository
+        BusinessRepository businessRepository,
+        BusinessEmployeeRepository businessEmployeeRepository
     ) {
         this.workingHoursRepository = workingHoursRepository;
         this.workingHoursMapper = workingHoursMapper;
         this.businessRepository = businessRepository;
+        this.businessEmployeeRepository = businessEmployeeRepository;
     }
 
     @Override
@@ -97,24 +103,28 @@ public class WorkingHoursServiceImpl implements WorkingHoursService {
     }
 
     @Override
-    public List<WorkingHoursDTO> getAllByLoggedInUser() {
-        return workingHoursRepository.findByBusinessUserLogin().stream().map(workingHoursMapper::toDto).collect(Collectors.toList());
+    public List<WorkingHoursDTO> getAllByBusinessAndEmployeeId(Long businessId, Long employeeId) {
+        return workingHoursRepository
+            .findAllByBusinessAndEmployeeId(businessId, employeeId)
+            .stream()
+            .map(workingHoursMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     @Override
-    public Void updateWorkingHours(List<WorkingHoursDTO> newHours) {
-        Business business = businessRepository
-            .findBusinessByLoginAndBusinessId(1L)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
-
+    public Void updateWorkingHours(Long businessId, Long employeeId, List<WorkingHoursDTO> newHours) {
         // Get existing working hours
-        List<WorkingHours> existingHours = workingHoursRepository.findByBusinessUserLogin();
+        Set<WorkingHours> existingHours = workingHoursRepository.findAllByBusinessAndEmployeeId(businessId, employeeId);
 
         // Extract IDs from new DTOs
         Set<Long> newHourIds = newHours.stream().map(WorkingHoursDTO::getId).filter(Objects::nonNull).collect(Collectors.toSet());
 
         // Delete hours not present in the new list
         existingHours.stream().filter(hour -> !newHourIds.contains(hour.getId())).forEach(workingHoursRepository::delete);
+
+        BusinessEmployee employee = businessEmployeeRepository
+            .findById(employeeId)
+            .orElseThrow(() -> new GeneralException("Employee not found!", "employee-not-found", HttpStatus.NOT_FOUND));
 
         // Process each DTO
         for (WorkingHoursDTO dto : newHours) {
@@ -133,7 +143,7 @@ public class WorkingHoursServiceImpl implements WorkingHoursService {
             } else {
                 // Create new entry
                 WorkingHours newHour = new WorkingHours();
-                newHour.setBusiness(business);
+                newHour.setBusinessEmployee(employee);
                 newHour.setDayOfWeek(dto.getDayOfWeek());
                 newHour.setStartTime(dto.getStartTime());
                 newHour.setEndTime(dto.getEndTime());
@@ -142,5 +152,15 @@ public class WorkingHoursServiceImpl implements WorkingHoursService {
         }
 
         return null;
+    }
+
+    //return all the working hours by businessId -> logged in user
+    @Override
+    public List<WorkingHoursDTO> getAllOwnWorkingHours(Long businessId) {
+        return workingHoursRepository
+            .findByBusinessUserLogin(businessId)
+            .stream()
+            .map(workingHoursMapper::toDto)
+            .collect(Collectors.toList());
     }
 }

@@ -59,17 +59,9 @@ public class Business implements Serializable {
     private User owner;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
-    @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
-    private Set<WorkingHours> workingHours = new HashSet<>();
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
     private Set<CustomWorkingHours> customWorkingHours = new HashSet<>();
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
-    @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
-    private Set<Guest> guests = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
     @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
@@ -91,6 +83,9 @@ public class Business implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
     @JsonIgnoreProperties(value = { "business" })
     private Set<BusinessEmployee> businessEmployees;
+
+    @OneToMany(mappedBy = "business")
+    private Set<BusinessOpeningHours> openingHours = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -122,14 +117,6 @@ public class Business implements Serializable {
     public Business name(String name) {
         this.setName(name);
         return this;
-    }
-
-    public Set<Guest> getGuests() {
-        return guests;
-    }
-
-    public void setGuests(Set<Guest> guests) {
-        this.guests = guests;
     }
 
     public void setName(String name) {
@@ -272,37 +259,6 @@ public class Business implements Serializable {
         this.businessRatings = businessRatings;
     }
 
-    public Set<WorkingHours> getWorkingHours() {
-        return this.workingHours;
-    }
-
-    public void setWorkingHours(Set<WorkingHours> workingHours) {
-        if (this.workingHours != null) {
-            this.workingHours.forEach(i -> i.setBusiness(null));
-        }
-        if (workingHours != null) {
-            workingHours.forEach(i -> i.setBusiness(this));
-        }
-        this.workingHours = workingHours;
-    }
-
-    public Business workingHours(Set<WorkingHours> workingHours) {
-        this.setWorkingHours(workingHours);
-        return this;
-    }
-
-    public Business addWorkingHours(WorkingHours workingHours) {
-        this.workingHours.add(workingHours);
-        workingHours.setBusiness(this);
-        return this;
-    }
-
-    public Business removeWorkingHours(WorkingHours workingHours) {
-        this.workingHours.remove(workingHours);
-        workingHours.setBusiness(null);
-        return this;
-    }
-
     public Set<CustomWorkingHours> getCustomWorkingHours() {
         return this.customWorkingHours;
     }
@@ -332,6 +288,14 @@ public class Business implements Serializable {
         this.customWorkingHours.remove(customWorkingHours);
         customWorkingHours.setBusiness(null);
         return this;
+    }
+
+    public Set<BusinessOpeningHours> getOpeningHours() {
+        return openingHours;
+    }
+
+    public void setOpeningHours(Set<BusinessOpeningHours> openingHours) {
+        this.openingHours = openingHours;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

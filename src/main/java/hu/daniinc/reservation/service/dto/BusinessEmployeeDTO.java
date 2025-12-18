@@ -33,6 +33,10 @@ public class BusinessEmployeeDTO {
 
     private Set<AppointmentDTO> appointments = new HashSet<>();
 
+    private Set<WorkingHoursDTO> workingHours = new HashSet<>();
+
+    private Set<GuestDTO> guests = new HashSet<>();
+
     public Long getId() {
         return id;
     }
@@ -119,5 +123,21 @@ public class BusinessEmployeeDTO {
 
     public void setAppointments(Set<AppointmentDTO> appointments) {
         this.appointments = appointments;
+    }
+
+    public Set<WorkingHoursDTO> getWorkingHours() {
+        return workingHours;
+    }
+
+    public void setWorkingHours(Set<WorkingHoursDTO> workingHours) {
+        this.workingHours = workingHours;
+    }
+
+    public Set<GuestDTO> getGuests() {
+        return guests;
+    }
+
+    public void setGuests(Set<GuestDTO> guests) {
+        this.guests = guests;
     }
 }

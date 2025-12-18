@@ -1,9 +1,13 @@
 package hu.daniinc.reservation.service.dto;
 
+import hu.daniinc.reservation.domain.BusinessOpeningHours;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A DTO for the {@link hu.daniinc.reservation.domain.BusinessOpeningHours} entity.
@@ -17,10 +21,12 @@ public class BusinessOpeningHoursDTO implements Serializable {
     private Integer dayOfWeek;
 
     @NotNull
-    private ZonedDateTime startTime;
+    private LocalTime startTime;
 
     @NotNull
-    private ZonedDateTime endTime;
+    private LocalTime endTime;
+
+    private Set<BusinessOpeningHoursDTO> openingHours = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -38,20 +44,28 @@ public class BusinessOpeningHoursDTO implements Serializable {
         this.dayOfWeek = dayOfWeek;
     }
 
-    public ZonedDateTime getStartTime() {
+    public LocalTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(ZonedDateTime startTime) {
+    public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
 
-    public ZonedDateTime getEndTime() {
+    public LocalTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(ZonedDateTime endTime) {
+    public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
+    }
+
+    public Set<BusinessOpeningHoursDTO> getOpeningHours() {
+        return openingHours;
+    }
+
+    public void setOpeningHours(Set<BusinessOpeningHoursDTO> openingHours) {
+        this.openingHours = openingHours;
     }
 
     @Override

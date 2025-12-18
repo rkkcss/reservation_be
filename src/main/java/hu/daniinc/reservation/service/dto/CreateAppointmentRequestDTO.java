@@ -1,30 +1,31 @@
 package hu.daniinc.reservation.service.dto;
 
 import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
-import java.time.ZonedDateTime;
+import java.time.Instant;
+import java.time.Instant;
 
 public class CreateAppointmentRequestDTO {
 
-    private ZonedDateTime startDate;
-    private ZonedDateTime endDate;
+    private Instant startDate;
+    private Instant endDate;
     private String note;
     private Long guestId;
     private Long offeringId;
     private AppointmentStatus status;
 
-    public ZonedDateTime getStartDate() {
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(ZonedDateTime startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 
-    public ZonedDateTime getEndDate() {
+    public Instant getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(ZonedDateTime endDate) {
+    public void setEndDate(Instant endDate) {
         this.endDate = endDate;
     }
 

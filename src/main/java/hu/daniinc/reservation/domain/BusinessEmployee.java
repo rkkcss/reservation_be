@@ -1,6 +1,7 @@
 package hu.daniinc.reservation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.domain.enumeration.BusinessRole;
@@ -63,6 +64,14 @@ public class BusinessEmployee {
     @OneToMany(mappedBy = "businessEmployee", fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Offering> offerings = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "businessEmployee")
+    @JsonIgnoreProperties(value = { "businessEmployee" }, allowSetters = true)
+    private Set<WorkingHours> workingHours = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "businessEmployee")
+    @JsonIgnoreProperties(value = { "businessEmployee" }, allowSetters = true)
+    private Set<Guest> guests = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -168,5 +177,38 @@ public class BusinessEmployee {
 
     public void setOfferings(Set<Offering> offerings) {
         this.offerings = offerings;
+    }
+
+    public Set<WorkingHours> getWorkingHours() {
+        return this.workingHours;
+    }
+
+    public void setWorkingHours(Set<WorkingHours> workingHours) {
+        if (this.workingHours != null) {
+            this.workingHours.forEach(i -> i.setBusinessEmployee(null));
+        }
+        if (workingHours != null) {
+            workingHours.forEach(i -> i.setBusinessEmployee(this));
+        }
+        this.workingHours = workingHours;
+    }
+
+    public BusinessEmployee workingHours(Set<WorkingHours> workingHours) {
+        this.setWorkingHours(workingHours);
+        return this;
+    }
+
+    public BusinessEmployee addWorkingHours(WorkingHours workingHours) {
+        this.workingHours.add(workingHours);
+        workingHours.setBusinessEmployee(this);
+        return this;
+    }
+
+    public Set<Guest> getGuests() {
+        return guests;
+    }
+
+    public void setGuests(Set<Guest> guests) {
+        this.guests = guests;
     }
 }

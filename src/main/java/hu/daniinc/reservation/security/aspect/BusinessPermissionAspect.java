@@ -49,7 +49,7 @@ public class BusinessPermissionAspect {
 
         boolean authorized;
 
-        // --- if all permissions required
+        // if all permissions required
         if (requireAll) {
             authorized = Arrays.stream(requiredPerms).allMatch(employeePerms::contains);
         }

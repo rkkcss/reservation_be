@@ -17,6 +17,7 @@ import org.mapstruct.*;
 public interface AppointmentMapper extends EntityMapper<AppointmentDTO, Appointment> {
     @Mapping(target = "guest", source = "guest", qualifiedByName = "guestId")
     @Mapping(target = "offering", source = "offering", qualifiedByName = "offeringMap")
+    @Mapping(target = "businessEmployee.appointments", ignore = true)
     AppointmentDTO toDto(Appointment s);
 
     @Named("guestId")

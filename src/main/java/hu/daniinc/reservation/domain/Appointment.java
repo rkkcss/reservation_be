@@ -1,18 +1,16 @@
 package hu.daniinc.reservation.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.Instant;
+import java.time.chrono.ChronoZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -36,18 +34,19 @@ public class Appointment implements Serializable {
 
     @NotNull
     @Column(name = "start_date", nullable = false)
-    private ZonedDateTime startDate;
+    private Instant startDate;
 
     @NotNull
     @Column(name = "end_date", nullable = false)
-    private ZonedDateTime endDate;
+    private Instant endDate;
 
     @CreationTimestamp
     @Column(name = "created_date", nullable = false, updatable = false)
-    private ZonedDateTime createdDate;
+    private Instant createdDate;
 
     @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
+    @LastModifiedDate
+    private Instant modifiedDate;
 
     @Size(max = 300)
     @Column(name = "note", length = 300)
@@ -88,55 +87,55 @@ public class Appointment implements Serializable {
         this.id = id;
     }
 
-    public ZonedDateTime getStartDate() {
+    public Instant getStartDate() {
         return this.startDate;
     }
 
-    public Appointment startDate(ZonedDateTime startDate) {
+    public Appointment startDate(Instant startDate) {
         this.setStartDate(startDate);
         return this;
     }
 
-    public void setStartDate(ZonedDateTime startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 
-    public ZonedDateTime getEndDate() {
+    public Instant getEndDate() {
         return this.endDate;
     }
 
-    public Appointment endDate(ZonedDateTime endDate) {
+    public Appointment endDate(Instant endDate) {
         this.setEndDate(endDate);
         return this;
     }
 
-    public void setEndDate(ZonedDateTime endDate) {
+    public void setEndDate(Instant endDate) {
         this.endDate = endDate;
     }
 
-    public ZonedDateTime getCreatedDate() {
+    public Instant getCreatedDate() {
         return this.createdDate;
     }
 
-    public Appointment createdDate(ZonedDateTime createdDate) {
+    public Appointment createdDate(Instant createdDate) {
         this.setCreatedDate(createdDate);
         return this;
     }
 
-    public void setCreatedDate(ZonedDateTime createdDate) {
+    public void setCreatedDate(Instant createdDate) {
         this.createdDate = createdDate;
     }
 
-    public ZonedDateTime getModifiedDate() {
+    public Instant getModifiedDate() {
         return this.modifiedDate;
     }
 
-    public Appointment modifiedDate(ZonedDateTime modifiedDate) {
+    public Appointment modifiedDate(Instant modifiedDate) {
         this.setModifiedDate(modifiedDate);
         return this;
     }
 
-    public void setModifiedDate(ZonedDateTime modifiedDate) {
+    public void setModifiedDate(Instant modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
 

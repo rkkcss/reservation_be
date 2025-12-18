@@ -25,6 +25,8 @@ public class CreateAppointmentByGuestDTO {
     @NotNull
     private Long businessId;
 
+    private Long employeeId;
+
     public CreateAppointmentByGuestDTO() {}
 
     public Long getBusinessId() {
@@ -81,5 +83,13 @@ public class CreateAppointmentByGuestDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
     }
 }

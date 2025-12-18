@@ -1,14 +1,18 @@
 package hu.daniinc.reservation.web.rest;
 
+import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.AppointmentRepository;
+import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
 import hu.daniinc.reservation.service.AppointmentService;
 import hu.daniinc.reservation.service.dto.*;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
+import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -61,12 +65,18 @@ public class AppointmentResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new appointmentDTO, or with status {@code 400 (Bad Request)} if the appointment has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("")
-    public ResponseEntity<AppointmentDTO> createAppointment(@Valid @RequestBody CreateAppointmentByGuestDTO createAppointmentByGuestDTO)
-        throws URISyntaxException {
+    @PostMapping("/business/{businessId}/business-employee/{employeeId}")
+    public ResponseEntity<AppointmentDTO> createAppointment(
+        @PathVariable("businessId") Long businessId,
+        @PathVariable("employeeId") Long employeeId,
+        @Valid @RequestBody CreateAppointmentByGuestDTO createAppointmentByGuestDTO
+    ) throws URISyntaxException {
         LOG.debug("REST request to save Appointment : {}", createAppointmentByGuestDTO);
+        if (businessId == null || businessId == 0 || employeeId == null || employeeId == 0) {
+            throw new BadRequestAlertException("Invalid input", ENTITY_NAME, "idnull");
+        }
 
-        AppointmentDTO appointmentDTO = appointmentService.saveAppointmentByGuest(createAppointmentByGuestDTO);
+        AppointmentDTO appointmentDTO = appointmentService.saveAppointmentByGuest(businessId, employeeId, createAppointmentByGuestDTO);
         return ResponseEntity.created(new URI("/api/appointments/" + appointmentDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, appointmentDTO.getId().toString()))
             .body(appointmentDTO);
@@ -158,12 +168,13 @@ public class AppointmentResource {
      */
     @GetMapping("")
     public ResponseEntity<List<AppointmentDTO>> getAllAppointments(
-        @RequestParam ZonedDateTime startDate,
-        @RequestParam ZonedDateTime endDate,
-        @RequestParam Long businessId
+        @RequestParam Instant startDate,
+        @RequestParam Instant endDate,
+        @RequestParam Long businessId,
+        @RequestParam String employeeName
     ) {
         LOG.debug("REST request to get a page of Appointments");
-        List<AppointmentDTO> result = appointmentService.findOverlappingAppointments(startDate, endDate, businessId);
+        List<AppointmentDTO> result = appointmentService.findOverlappingAppointments(startDate, endDate, businessId, employeeName);
         return ResponseEntity.ok().body(result);
     }
 
@@ -195,29 +206,29 @@ public class AppointmentResource {
             .build();
     }
 
-    @GetMapping("/businesses/{businessId}/available-slots")
+    @GetMapping("/businesses/{businessId}/employees/{employeeId}/available-slots")
     public Map<LocalDate, List<String>> getAvailableSlots(
         @PathVariable Long businessId,
+        @PathVariable Long employeeId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-        @RequestParam(required = false) Long durationMinutes // opcionális
+        @RequestParam(required = false) Long durationMinutes
     ) {
         Duration slotDuration = (durationMinutes != null) ? Duration.ofMinutes(durationMinutes) : Duration.ofMinutes(30);
 
-        Map<LocalDate, List<ZonedDateTime>> slotsMap = appointmentService.getAvailableSlotsBetweenDates(
+        Map<LocalDate, List<Instant>> slotsMap = appointmentService.getAvailableSlotsBetweenDates(
             businessId,
+            employeeId,
             startDate,
             endDate,
             slotDuration
         );
 
-        // JSON-serializáció miatt ZonedDateTime -> ISO string pl. "2025-06-02T09:00:00+02:00"
+        // JSON-serialization
         return slotsMap
             .entrySet()
             .stream()
-            .collect(
-                Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(zdt -> zdt.toString()).collect(Collectors.toList()))
-            );
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(Instant::toString).collect(Collectors.toList())));
     }
 
     @GetMapping("/cancel/{modifierToken}")
@@ -243,15 +254,23 @@ public class AppointmentResource {
         return ResponseEntity.ok(appointmentService.getAllPendingAppointments(businessId));
     }
 
-    @PatchMapping("/{id}/approve")
-    public ResponseEntity<AppointmentDTO> approveAppointment(@PathVariable(value = "id") Long id) {
+    @PatchMapping("/{id}/business-employee/{employeeId}/approve")
+    @RequiredBusinessPermission(value = BusinessPermission.EDIT_OWN_BOOKINGS, businessIdParam = "employeeId")
+    public ResponseEntity<AppointmentDTO> approveAppointment(
+        @PathVariable(value = "id") Long id,
+        @PathVariable(value = "employeeId") Long employeeId
+    ) {
         LOG.debug("REST request to approve Appointment : {}", id);
-        return ResponseEntity.status(HttpStatus.OK).body(appointmentService.approveAppointment(id));
+        return ResponseEntity.status(HttpStatus.OK).body(appointmentService.approveAppointment(id, employeeId));
     }
 
-    @PatchMapping("/{id}/cancel")
-    public ResponseEntity<AppointmentDTO> cancelAppointment(@PathVariable(value = "id") Long id) {
+    @PatchMapping("/{id}/business-employee/{employeeId}/cancel")
+    @RequiredBusinessPermission(value = BusinessPermission.EDIT_OWN_BOOKINGS, businessIdParam = "employeeId")
+    public ResponseEntity<AppointmentDTO> cancelAppointment(
+        @PathVariable(value = "id") Long id,
+        @PathVariable(value = "employeeId") Long employeeId
+    ) {
         LOG.debug("REST request to cancel Appointment by owner : {}", id);
-        return ResponseEntity.status(HttpStatus.OK).body(appointmentService.cancelAppointment(id));
+        return ResponseEntity.status(HttpStatus.OK).body(appointmentService.cancelAppointment(id, employeeId));
     }
 }

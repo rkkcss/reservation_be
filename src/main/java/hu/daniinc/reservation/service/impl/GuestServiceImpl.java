@@ -33,24 +33,26 @@ public class GuestServiceImpl implements GuestService {
     private final GuestMapper guestMapper;
     private final BusinessRepository businessRepository;
     private final BusinessServiceImpl businessServiceImpl;
+    private final BusinessEmployeeServiceImpl businessEmployeeServiceImpl;
 
     public GuestServiceImpl(
         GuestRepository guestRepository,
         GuestMapper guestMapper,
         BusinessRepository businessRepository,
-        BusinessServiceImpl businessServiceImpl
+        BusinessServiceImpl businessServiceImpl,
+        BusinessEmployeeServiceImpl businessEmployeeServiceImpl
     ) {
         this.guestRepository = guestRepository;
         this.guestMapper = guestMapper;
         this.businessRepository = businessRepository;
         this.businessServiceImpl = businessServiceImpl;
+        this.businessEmployeeServiceImpl = businessEmployeeServiceImpl;
     }
 
     @Override
     public GuestDTO save(GuestDTO guestDTO) {
         LOG.debug("Request to save Guest : {}", guestDTO);
         Guest guest = guestMapper.toEntity(guestDTO);
-        guest.setBusiness(businessServiceImpl.getAuthenticatedBusiness());
         guest = guestRepository.save(guest);
         return guestMapper.toDto(guest);
     }

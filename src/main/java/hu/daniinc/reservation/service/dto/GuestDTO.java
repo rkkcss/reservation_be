@@ -22,6 +22,8 @@ public class GuestDTO implements Serializable {
 
     private Boolean canBook = true;
 
+    private BusinessEmployeeDTO businessEmployee;
+
     public Long getId() {
         return id;
     }
@@ -61,6 +63,8 @@ public class GuestDTO implements Serializable {
     public void setCanBook(Boolean canBook) {
         this.canBook = canBook;
     }
+
+    private BusinessEmployeeDTO businessEmployeeDTO;
 
     @Override
     public boolean equals(Object o) {

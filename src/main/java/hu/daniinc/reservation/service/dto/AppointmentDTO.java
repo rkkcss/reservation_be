@@ -3,8 +3,9 @@ package hu.daniinc.reservation.service.dto;
 import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.Objects;
 
 /**
@@ -16,15 +17,15 @@ public class AppointmentDTO implements Serializable {
     private Long id;
 
     @NotNull
-    private ZonedDateTime startDate;
+    private Instant startDate;
 
     @NotNull
-    private ZonedDateTime endDate;
+    private Instant endDate;
 
     @NotNull
-    private ZonedDateTime createdDate;
+    private Instant createdDate;
 
-    private ZonedDateTime modifiedDate;
+    private Instant modifiedDate;
 
     private BusinessEmployeeDTO businessEmployee;
 
@@ -46,35 +47,35 @@ public class AppointmentDTO implements Serializable {
         this.id = id;
     }
 
-    public ZonedDateTime getStartDate() {
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(ZonedDateTime startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 
-    public ZonedDateTime getEndDate() {
+    public Instant getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(ZonedDateTime endDate) {
+    public void setEndDate(Instant endDate) {
         this.endDate = endDate;
     }
 
-    public ZonedDateTime getCreatedDate() {
+    public Instant getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(ZonedDateTime createdDate) {
+    public void setCreatedDate(Instant createdDate) {
         this.createdDate = createdDate;
     }
 
-    public ZonedDateTime getModifiedDate() {
+    public Instant getModifiedDate() {
         return modifiedDate;
     }
 
-    public void setModifiedDate(ZonedDateTime modifiedDate) {
+    public void setModifiedDate(Instant modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
 
