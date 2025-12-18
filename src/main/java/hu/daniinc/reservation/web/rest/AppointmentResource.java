@@ -163,7 +163,7 @@ public class AppointmentResource {
     }
 
     /**
-     * {@code GET  /appointments} : get all the appointments.
+     * {@code GET  /appointments} : get all the appointments by business.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of appointments in body.
      */
     @GetMapping("")
