@@ -3,6 +3,7 @@ package hu.daniinc.reservation.config;
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
+import hu.daniinc.reservation.repository.PersistentTokenRepository;
 import hu.daniinc.reservation.security.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -55,11 +56,18 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
         http
             .cors(withDefaults())
-            .csrf(csrf ->
-                csrf
-                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                    .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-            )
+            .csrf(csrf -> {
+                CookieCsrfTokenRepository tokenRepository = new CookieCsrfTokenRepository();
+                tokenRepository.setCookieHttpOnly(false);
+                tokenRepository.setCookiePath("/");
+
+                // Production beállítások
+                if (!env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))) {
+                    tokenRepository.setCookieCustomizer(cookie -> cookie.domain(".booklyapp.me").sameSite("None").secure(true));
+                }
+
+                csrf.csrfTokenRepository(tokenRepository).csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler());
+            })
             .authorizeHttpRequests(authz ->
                 // prettier-ignore
                 authz
