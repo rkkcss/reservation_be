@@ -55,7 +55,7 @@ public class Business implements Serializable {
     private String bannerUrl;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
+    //    @JoinColumn(unique = true)
     private User owner;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")

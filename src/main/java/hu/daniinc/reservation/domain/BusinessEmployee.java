@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
+import hu.daniinc.reservation.domain.enumeration.BusinessPermissionHandler;
 import hu.daniinc.reservation.domain.enumeration.BusinessRole;
 import jakarta.persistence.*;
 import java.time.Instant;
@@ -210,5 +211,16 @@ public class BusinessEmployee {
 
     public void setGuests(Set<Guest> guests) {
         this.guests = guests;
+    }
+
+    //create owner
+
+    public static BusinessEmployee owner(Business business, User user) {
+        BusinessEmployee be = new BusinessEmployee();
+        be.business = business;
+        be.user = user;
+        be.role = BusinessRole.OWNER;
+        be.permissions = BusinessPermissionHandler.OWNER.getPermissions();
+        return be;
     }
 }

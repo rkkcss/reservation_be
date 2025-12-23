@@ -4,13 +4,12 @@ import hu.daniinc.reservation.domain.*;
 import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
 import hu.daniinc.reservation.repository.*;
 import hu.daniinc.reservation.service.AppointmentService;
-import hu.daniinc.reservation.service.dto.AppointmentDTO;
-import hu.daniinc.reservation.service.dto.CreateAppointmentByGuestDTO;
-import hu.daniinc.reservation.service.dto.CreateAppointmentRequestDTO;
-import hu.daniinc.reservation.service.dto.UpdateAppointmentDTO;
+import hu.daniinc.reservation.service.UserService;
+import hu.daniinc.reservation.service.dto.*;
 import hu.daniinc.reservation.service.mapper.AppointmentMapper;
 import hu.daniinc.reservation.service.specifications.AppointmentsSpecification;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
+import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import hu.daniinc.reservation.web.rest.errors.NotFoundException;
 import io.undertow.util.BadRequestException;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +19,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +42,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final GuestRepository guestRepository;
     private final GuestServiceImpl guestServiceImpl;
     private final BusinessEmployeeRepository businessEmployeeRepository;
+    private final UserService userService;
+    private final BusinessEmployeeServiceImpl businessEmployeeServiceImpl;
 
     public AppointmentServiceImpl(
         AppointmentRepository appointmentRepository,
@@ -52,7 +54,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         OfferingRepository offeringRepository,
         GuestRepository guestRepository,
         GuestServiceImpl guestServiceImpl,
-        BusinessEmployeeRepository businessEmployeeRepository
+        BusinessEmployeeRepository businessEmployeeRepository,
+        UserService userService,
+        BusinessEmployeeServiceImpl businessEmployeeServiceImpl
     ) {
         this.appointmentRepository = appointmentRepository;
         this.appointmentMapper = appointmentMapper;
@@ -63,6 +67,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.guestRepository = guestRepository;
         this.guestServiceImpl = guestServiceImpl;
         this.businessEmployeeRepository = businessEmployeeRepository;
+        this.userService = userService;
+        this.businessEmployeeServiceImpl = businessEmployeeServiceImpl;
     }
 
     @Override
@@ -241,18 +247,17 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public AppointmentDTO saveByOwner(CreateAppointmentRequestDTO createAppointmentRequestDTO) {
+    public AppointmentDTO saveByOwner(Long employeeId, Long businessId, CreateAppointmentRequestDTO createAppointmentRequestDTO) {
+        BusinessEmployee employee = businessEmployeeRepository
+            .findByUserLoginAndBusinessId(businessId)
+            .orElseThrow(() -> new GeneralException("Employee not found!", "employee-not-found", HttpStatus.NOT_FOUND));
+
         Appointment appointment = new Appointment();
         appointment.setStartDate(createAppointmentRequestDTO.getStartDate());
         appointment.setEndDate(createAppointmentRequestDTO.getEndDate());
         appointment.setNote(createAppointmentRequestDTO.getNote());
-
+        appointment.setBusinessEmployee(employee);
         appointment.setCreatedDate(Instant.now());
-
-        Business ownerBusiness = businessRepository
-            .findBusinessByLoginAndBusinessId(1L)
-            .orElseThrow(() -> new RuntimeException("No business found for login"));
-        //        appointment.setBusinessEmployee(ownerBusiness);
 
         //set offering
         offeringRepository.findByIdToBusiness(createAppointmentRequestDTO.getOfferingId()).ifPresent(appointment::setOffering);

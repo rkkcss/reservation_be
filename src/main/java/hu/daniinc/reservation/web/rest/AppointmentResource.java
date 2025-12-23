@@ -82,12 +82,15 @@ public class AppointmentResource {
             .body(appointmentDTO);
     }
 
-    @PostMapping("/create-by-owner")
+    @PostMapping("/business/{businessId}/business-employee/{employeeId}/own")
+    @RequiredBusinessPermission(BusinessPermission.CREATE_BOOKING)
     public ResponseEntity<AppointmentDTO> createAppointmentByOwner(
-        @Valid @RequestBody CreateAppointmentRequestDTO createAppointmentRequestDTO
+        @Valid @RequestBody CreateAppointmentRequestDTO createAppointmentRequestDTO,
+        @PathVariable("businessId") Long businessId,
+        @PathVariable("employeeId") Long employeeId
     ) throws URISyntaxException {
         LOG.debug("REST request to save Appointment by owner : {}", createAppointmentRequestDTO);
-        AppointmentDTO appointmentDTO = appointmentService.saveByOwner(createAppointmentRequestDTO);
+        AppointmentDTO appointmentDTO = appointmentService.saveByOwner(employeeId, businessId, createAppointmentRequestDTO);
         return ResponseEntity.created(new URI("/api/appointments/" + appointmentDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, appointmentDTO.getId().toString()))
             .body(appointmentDTO);

@@ -74,7 +74,7 @@ public interface AppointmentService {
         Duration slotLength
     );
 
-    AppointmentDTO saveByOwner(CreateAppointmentRequestDTO createAppointmentRequestDTO);
+    AppointmentDTO saveByOwner(Long employeeId, Long businessId, CreateAppointmentRequestDTO createAppointmentRequestDTO);
 
     AppointmentDTO saveAppointmentByGuest(Long businessId, Long employeeId, CreateAppointmentByGuestDTO createAppointmentByGuestDTO);
 

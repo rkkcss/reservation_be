@@ -3,6 +3,7 @@ package hu.daniinc.reservation.service;
 import hu.daniinc.reservation.config.Constants;
 import hu.daniinc.reservation.domain.*;
 import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
+import hu.daniinc.reservation.domain.enumeration.BusinessRole;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import hu.daniinc.reservation.repository.*;
 import hu.daniinc.reservation.security.AuthoritiesConstants;
@@ -122,23 +123,23 @@ public class UserService {
             });
     }
 
+    @Transactional
     public User registerUser(AdminUserDTO userDTO, String password) {
-        userRepository
-            .findOneByLogin(userDTO.getLogin().toLowerCase())
-            .ifPresent(existingUser -> {
-                boolean removed = removeNonActivatedUser(existingUser);
-                if (!removed) {
-                    throw new UsernameAlreadyUsedException();
-                }
-            });
-        userRepository
-            .findOneByEmailIgnoreCase(userDTO.getEmail())
-            .ifPresent(existingUser -> {
-                boolean removed = removeNonActivatedUser(existingUser);
-                if (!removed) {
-                    throw new EmailAlreadyUsedException();
-                }
-            });
+        Optional<User> existingUserByLogin = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase());
+        existingUserByLogin.ifPresent(user -> {
+            boolean removed = removeNonActivatedUser(user);
+            if (!removed) {
+                throw new UsernameAlreadyUsedException();
+            }
+        });
+
+        Optional<User> existingUserByEmail = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
+        existingUserByEmail.ifPresent(user -> {
+            boolean removed = removeNonActivatedUser(user);
+            if (!removed) {
+                throw new EmailAlreadyUsedException();
+            }
+        });
 
         User newUser = new User();
         String encryptedPassword = passwordEncoder.encode(password);
@@ -152,13 +153,13 @@ public class UserService {
         newUser.setActivated(false);
         newUser.setActivationKey(RandomUtil.generateActivationKey());
 
+        // Authorities
         Set<Authority> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
 
         userRepository.save(newUser);
 
-        // Business creating
         Business business = new Business();
         business.setName(newUser.getFirstName() + "'s Business");
         business.setOwner(newUser);
@@ -168,13 +169,15 @@ public class UserService {
         business.setAppointmentApprovalRequired(Boolean.FALSE);
         businessRepository.save(business);
 
-        userRepository.save(newUser);
+        BusinessEmployee be = BusinessEmployee.owner(business, newUser);
+        businessEmployeeRepository.save(be);
 
         this.clearUserCaches(newUser);
         LOG.debug("Created Information for User: {}", newUser);
         return newUser;
     }
 
+    @Transactional
     public User registerWithInvitation(AdminUserDTO userDTO, String password, String token, HttpServletRequest request) {
         userRepository
             .findOneByLogin(userDTO.getLogin().toLowerCase())
