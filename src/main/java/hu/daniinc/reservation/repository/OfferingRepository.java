@@ -1,6 +1,8 @@
 package hu.daniinc.reservation.repository;
 
 import hu.daniinc.reservation.domain.Offering;
+import hu.daniinc.reservation.service.dto.TopOfferingStatisticDTO;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -41,4 +43,25 @@ public interface OfferingRepository extends JpaRepository<Offering, Long>, JpaSp
 
     @Query("select o from Offering o where o.businessEmployee.business.id = :businessId and o.id = :offerId")
     Optional<Offering> findByOfferingIdAndBusinessId(@Param("offerId") Long offerId, @Param("businessId") Long businessId);
+
+    @Query(
+        """
+            SELECT new hu.daniinc.reservation.service.dto.TopOfferingStatisticDTO(
+                a.offering.title,
+                COUNT(a.id)
+            )
+            FROM Appointment a
+            WHERE a.businessEmployee.business.id = :businessId
+            AND (:businessEmployeeSearch IS NULL OR a.businessEmployee.id = :businessEmployeeSearch)
+            AND a.createdDate BETWEEN :from AND :to
+            GROUP BY a.offering.title
+            ORDER BY COUNT(a.id) DESC
+        """
+    )
+    List<TopOfferingStatisticDTO> findTopOfferingsByBusiness(
+        @Param("businessId") Long businessId,
+        @Param("from") Instant from,
+        @Param("to") Instant to,
+        @Param("businessEmployeeSearch") Long businessEmployeeSearch
+    );
 }

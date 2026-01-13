@@ -5,6 +5,7 @@ import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.domain.enumeration.BusinessRole;
 import jakarta.persistence.*;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,7 +23,7 @@ public class BusinessEmployeeInviteDTO {
     private Set<BusinessPermission> permissions = new HashSet<>();
 
     private String token;
-    private ZonedDateTime expiresAt;
+    private Instant expiresAt;
     private boolean used;
 
     private User invitedBy;
@@ -77,11 +78,11 @@ public class BusinessEmployeeInviteDTO {
         this.token = token;
     }
 
-    public ZonedDateTime getExpiresAt() {
+    public Instant getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(ZonedDateTime expiresAt) {
+    public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
     }
 

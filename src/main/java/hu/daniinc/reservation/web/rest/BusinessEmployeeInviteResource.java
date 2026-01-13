@@ -73,10 +73,15 @@ public class BusinessEmployeeInviteResource {
     @PostMapping("/activate")
     public ResponseEntity<Void> activateBusinessEmployeeInvite(
         @RequestParam("token") String token,
-        @Valid @RequestBody ManagedUserVM managedUserVM,
+        @Valid @RequestBody(required = false) ManagedUserVM managedUserVM,
         HttpServletRequest request
     ) {
-        businessEmployeeInviteService.activateBusinessEmployeeWithToken(token, managedUserVM, request);
+        if (managedUserVM == null) {
+            businessEmployeeInviteService.activateAlreadyRegisteredBusinessEmployeeWithToken(token);
+        } else {
+            businessEmployeeInviteService.activateBusinessEmployeeWithToken(token, managedUserVM, request);
+        }
+
         return ResponseEntity.noContent().build();
     }
 }

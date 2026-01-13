@@ -2,6 +2,7 @@ package hu.daniinc.reservation.repository;
 
 import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.service.dto.AppointmentDTO;
+import hu.daniinc.reservation.service.dto.IncomeChartDTO;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -68,5 +69,31 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
         @Param("employeeId") Long employeeId,
         @Param("startDate") Instant startDate,
         @Param("endDate") Instant endDate
+    );
+
+    //find optional appointment BY Appointment ID and Business ID
+    @Query("select a from Appointment a where a.businessEmployee.business.id = :businessId and a.id = :appointmentId")
+    Optional<Appointment> findByBusinessAndAppointmentId(@Param("businessId") Long businessId, @Param("appointmentId") Long appointmentId);
+
+    //for statistic income
+    @Query(
+        """
+            SELECT new hu.daniinc.reservation.service.dto.IncomeChartDTO(
+                CAST(CAST(a.createdDate AS date) AS string),
+                SUM(a.offering.price)
+            )
+            FROM Appointment a
+            WHERE a.createdDate BETWEEN :start AND :end
+            AND a.businessEmployee.business.id = :businessId
+            AND (:employeeId IS NULL OR a.businessEmployee.user.id = :employeeId)
+            GROUP BY CAST(CAST(a.createdDate AS date) AS string)
+            ORDER BY CAST(CAST(a.createdDate AS date) AS string) ASC
+        """
+    )
+    List<IncomeChartDTO> getDailyStats(
+        @Param("businessId") Long businessId,
+        @Param("start") Instant start,
+        @Param("end") Instant end,
+        @Param("employeeId") Long employeeId
     );
 }

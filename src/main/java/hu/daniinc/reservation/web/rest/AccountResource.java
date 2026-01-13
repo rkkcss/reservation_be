@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.*;
 import org.apache.commons.lang3.StringUtils;
@@ -102,7 +103,7 @@ public class AccountResource {
             .findByToken(inviteToken)
             .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
 
-        if (invite.isUsed() || invite.getExpiresAt().isBefore(ZonedDateTime.now())) {
+        if (invite.isUsed() || invite.getExpiresAt().isBefore(Instant.now())) {
             throw new IllegalArgumentException("Token expired or already used");
         }
 

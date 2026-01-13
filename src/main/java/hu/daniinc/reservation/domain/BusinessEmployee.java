@@ -11,6 +11,8 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -66,7 +68,7 @@ public class BusinessEmployee {
     @JsonIgnore
     private Set<Offering> offerings = new HashSet<>();
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "businessEmployee")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "businessEmployee", cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = { "businessEmployee" }, allowSetters = true)
     private Set<WorkingHours> workingHours = new HashSet<>();
 

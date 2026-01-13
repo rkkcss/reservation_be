@@ -4,15 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.Instant;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.annotation.CreatedDate;
 
 /**
  * A BusinessRating.
  */
 @Entity
 @Table(name = "business_rating")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class BusinessRating implements Serializable {
 
@@ -45,6 +47,10 @@ public class BusinessRating implements Serializable {
     @JsonIgnore
     private Guest guest;
 
+    @CreatedDate
+    @Column(updatable = false)
+    private Instant createdDate;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -67,6 +73,14 @@ public class BusinessRating implements Serializable {
     public BusinessRating number(Integer number) {
         this.setNumber(number);
         return this;
+    }
+
+    public Instant getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = createdDate;
     }
 
     public void setNumber(Integer number) {

@@ -2,6 +2,7 @@ package hu.daniinc.reservation.repository;
 
 import hu.daniinc.reservation.domain.BusinessRating;
 import hu.daniinc.reservation.service.dto.BusinessRatingDTO;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;

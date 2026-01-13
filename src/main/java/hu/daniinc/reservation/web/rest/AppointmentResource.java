@@ -140,9 +140,11 @@ public class AppointmentResource {
      * or with status {@code 500 (Internal Server Error)} if the appointmentDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{id}/business/{businessId}", consumes = { "application/json", "application/merge-patch+json" })
+    @RequiredBusinessPermission(value = { BusinessPermission.EDIT_OWN_BOOKINGS, BusinessPermission.EDIT_ALL_BOOKINGS })
     public ResponseEntity<AppointmentDTO> partialUpdateAppointment(
         @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "businessId") final Long businessId,
         @NotNull @RequestBody UpdateAppointmentDTO updateAppointmentDTO
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update Appointment partially : {}, {}", id, updateAppointmentDTO);
@@ -153,9 +155,9 @@ public class AppointmentResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!appointmentRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
+        appointmentRepository
+            .findByBusinessAndAppointmentId(businessId, id)
+            .orElseThrow(() -> new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
 
         Optional<AppointmentDTO> result = appointmentService.partialUpdate(updateAppointmentDTO);
 

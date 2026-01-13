@@ -5,10 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.annotation.CreatedDate;
 
 /**
  * A Guest.
@@ -51,7 +53,19 @@ public class Guest implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private BusinessEmployee businessEmployee;
 
+    @CreatedDate
+    @Column(updatable = false)
+    private Instant createdDate;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
+
+    public Instant getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = createdDate;
+    }
 
     public Long getId() {
         return this.id;

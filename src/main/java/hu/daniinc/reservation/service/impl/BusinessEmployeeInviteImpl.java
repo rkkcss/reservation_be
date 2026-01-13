@@ -20,8 +20,11 @@ import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import hu.daniinc.reservation.web.rest.vm.ManagedUserVM;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.UUID;
 import org.hibernate.SessionException;
 import org.springframework.data.domain.Page;
@@ -84,7 +87,7 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
         invite.setPermissions(dto.getPermissions());
         invite.setRole(dto.getRole());
         invite.setToken(UUID.randomUUID().toString());
-        invite.setExpiresAt(dto.getExpiresAt() != null ? dto.getExpiresAt() : ZonedDateTime.now().plusDays(7));
+        invite.setExpiresAt(dto.getExpiresAt() != null ? dto.getExpiresAt() : Instant.now().plus(7, ChronoUnit.DAYS));
 
         BusinessEmployeeInvite result = businessEmployeeInviteRepository.save(invite);
 
@@ -119,7 +122,7 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
             throw new GeneralException("Token already used", "used-token", HttpStatus.CONFLICT);
         }
 
-        if (invite.getExpiresAt().isBefore(ZonedDateTime.now())) {
+        if (invite.getExpiresAt().isBefore(Instant.now())) {
             throw new GeneralException("Token expired", "expired-token", HttpStatus.GONE);
         }
         boolean userExists = userRepository.findOneByEmailIgnoreCase(invite.getEmail()).isPresent();
@@ -154,12 +157,25 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
 
     @Transactional
     public void activateAlreadyRegisteredBusinessEmployeeWithToken(String token) {
+        Optional<User> loggedInUser = userService.getUserWithAuthorities();
+        if (loggedInUser.isEmpty()) {
+            throw new GeneralException("No logged in user!", "no-logged-in-user", HttpStatus.BAD_REQUEST);
+        }
+
         BusinessEmployeeInvite invite = validateToken(token);
+
+        if (!invite.getEmail().equalsIgnoreCase(loggedInUser.get().getEmail())) {
+            throw new GeneralException("Invitation is not yours", "invitation-not-yours", HttpStatus.BAD_REQUEST);
+        }
 
         User user = getUserByEmail(invite.getEmail());
 
         BusinessEmployee newEmployee = createBusinessEmployee(user, invite);
 
+        //set token to used
+        invite.setUsed(true);
+
+        businessEmployeeInviteRepository.save(invite);
         businessEmployeeRepository.save(newEmployee);
     }
 
@@ -168,7 +184,7 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
             .findByToken(token)
             .orElseThrow(() -> new GeneralException("Invalid token", "cant-find", HttpStatus.BAD_REQUEST));
 
-        if (invite.isUsed() || invite.getExpiresAt().isBefore(ZonedDateTime.now())) {
+        if (invite.isUsed() || invite.getExpiresAt().isBefore(Instant.now())) {
             throw new GeneralException("Token already used or expired", "used-token-or-expired", HttpStatus.CONFLICT);
         }
 

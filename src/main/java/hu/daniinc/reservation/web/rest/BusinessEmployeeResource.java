@@ -58,7 +58,7 @@ public class BusinessEmployeeResource {
     }
 
     //get business employees by business ID
-    @RequiredBusinessPermission(BusinessPermission.VIEW_EMPLOYEES)
+    //    @RequiredBusinessPermission(BusinessPermission.VIEW_EMPLOYEES)
     @GetMapping("/business/{businessId}/employees")
     public ResponseEntity<List<BusinessEmployeeDTO>> getBusinessEmployees(@PathVariable Long businessId, Pageable pageable) {
         if (businessId == null) {

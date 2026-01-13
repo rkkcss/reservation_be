@@ -2,6 +2,7 @@ package hu.daniinc.reservation.service.dto;
 
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -25,6 +26,8 @@ public class BusinessRatingDTO implements Serializable {
     private BusinessDTO business;
 
     private GuestDTO guest;
+
+    private Instant createdDate;
 
     public Long getId() {
         return id;
@@ -56,6 +59,14 @@ public class BusinessRatingDTO implements Serializable {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Instant getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = createdDate;
     }
 
     public GuestDTO getGuest() {
