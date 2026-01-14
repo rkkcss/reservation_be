@@ -66,12 +66,7 @@ public class StatisticServiceImpl implements StatisticService {
 
     @Override
     public CustomerDistributionDTO getCustomerDistribution(Long businessId, Instant from, Instant to, Long employeeId) {
-        System.out.println("=== getCustomerDistribution START ===");
-        System.out.println("businessId: " + businessId + ", employeeId: " + employeeId);
-        System.out.println("from: " + from + ", to: " + to);
-
         Long totalUnique = statisticRepository.countUniqueCustomers(businessId, employeeId, from, to);
-        System.out.println("totalUnique: " + totalUnique);
 
         double returningPer = 0.0;
         double newPer = 0.0;
@@ -81,19 +76,12 @@ public class StatisticServiceImpl implements StatisticService {
 
         if (totalUnique > 0) {
             Long returningCount = statisticRepository.countReturningCustomers(businessId, employeeId, from, to);
-            System.out.println("returningCount: " + returningCount);
             newCount = totalUnique - returningCount;
 
             returningPer = (returningCount.doubleValue() / totalUnique) * 100;
             newPer = 100.0 - returningPer;
 
             List<Object[]> topData = statisticRepository.findTopCustomer(businessId, employeeId, from, to, PageRequest.of(0, 5));
-            System.out.println("topData size: " + topData.size());
-
-            for (int i = 0; i < topData.size(); i++) {
-                Object[] row = topData.get(i);
-                System.out.println("Top #" + (i + 1) + ": name='" + row[0] + "', bookings=" + row[1]);
-            }
 
             if (!topData.isEmpty()) {
                 Object[] row = topData.get(0);
@@ -102,8 +90,6 @@ public class StatisticServiceImpl implements StatisticService {
             }
             return new CustomerDistributionDTO(returningPer, newPer, name, bookings, returningCount, newCount);
         }
-
-        System.out.println("=== FINAL: name='" + name + "', bookings=" + bookings + " ===");
         return new CustomerDistributionDTO(returningPer, newPer, name, bookings);
     }
 }
