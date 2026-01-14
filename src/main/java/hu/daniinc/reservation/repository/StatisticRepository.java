@@ -82,31 +82,38 @@ public interface StatisticRepository extends JpaRepository<Appointment, Long> {
     @Query(
         """
             SELECT COUNT(DISTINCT a.guest.id)
-            FROM Appointment a
-            WHERE a.businessEmployee.business.id = :businessId
-            AND (:employeeId IS NULL OR a.businessEmployee.user.id = :employeeId)
-            AND a.guest.id IN (
-                SELECT a2.guest.id
-                FROM Appointment a2
-                WHERE a2.businessEmployee.business.id = :businessId
-                AND (:employeeId IS NULL OR a2.businessEmployee.user.id = :employeeId)
-                GROUP BY a2.guest.id
-                HAVING COUNT(a2.id) > 1
-            )
+             FROM Appointment a
+             WHERE a.businessEmployee.business.id = :businessId
+             AND (:employeeId IS NULL OR a.businessEmployee.user.id = :employeeId)
+             AND a.createdDate BETWEEN :from AND :to
+             AND a.guest.id IN (
+                 SELECT a2.guest.id
+                 FROM Appointment a2
+                 WHERE a2.businessEmployee.business.id = :businessId
+                 AND (:employeeId IS NULL OR a2.businessEmployee.user.id = :employeeId)
+                 AND a2.createdDate < :from
+             )
         """
     )
-    Long countReturningCustomers(Long businessId, Long employeeId);
+    Long countReturningCustomers(Long businessId, Long employeeId, Instant from, Instant to);
 
     //most active guest
     @Query(
         """
-            SELECT a.guest.name, COUNT(a.id)
-            FROM Appointment a
-            WHERE a.businessEmployee.business.id = :businessId
-            AND (:employeeId IS NULL OR a.businessEmployee.user.id = :employeeId)
-            GROUP BY a.guest.id, a.guest.name
-            ORDER BY COUNT(a.id) DESC
+             SELECT a.guest.name, COUNT(a.id)
+             FROM Appointment a
+             WHERE a.businessEmployee.business.id = :businessId
+             AND (:employeeId IS NULL OR a.businessEmployee.user.id = :employeeId)
+             AND a.createdDate BETWEEN :from AND :to
+             GROUP BY a.guest.id, a.guest.name
+             ORDER BY COUNT(a.id) DESC
         """
     )
-    List<Object[]> findTopCustomer(@Param("businessId") Long businessId, @Param("employeeId") Long employeeId, Pageable pageable);
+    List<Object[]> findTopCustomer(
+        @Param("businessId") Long businessId,
+        @Param("employeeId") Long employeeId,
+        @Param("from") Instant from,
+        @Param("to") Instant to,
+        Pageable pageable
+    );
 }
