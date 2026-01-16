@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{email.reminder.title}">Emlékeztető</title>
+</head>
+<body>
+<p th:text="'Kedves ' + ${guest.name} + '!'">Kedves Vendég!</p>
+<p>Emlékeztetni szeretnénk a hamarosan esedékes időpontodra:</p>
+<p>
+  <strong th:text="${appointmentDate}">2026-01-14 10:00</strong>
+</p>
+<p>Üdvözlettel,<br/>A Csapat</p>
+</body>
+</html>

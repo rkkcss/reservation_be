@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.service;
 
+import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.domain.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -116,5 +117,21 @@ public class MailService {
     public void sendPasswordResetMail(User user) {
         LOG.debug("Sending password reset email to '{}'", user.getEmail());
         sendEmailFromTemplateSync(user, "mail/passwordResetEmail", "email.reset.title");
+    }
+
+    @Async
+    public void sendAppointmentReminder(Guest guest, String appointmentDate) {
+        LOG.debug("Emlékeztető email küldése a vendégnek: {}", guest.getEmail());
+
+        Context context = new Context();
+        context.setVariable("appointmentDate", appointmentDate);
+        context.setVariable("guest", guest); // A template-ben így ${guest.name} néven éred el
+
+        // Itt a JHipster alap sendEmailFromTemplate-je User-t várhat.
+        // Ha a Guest-ed nem a User-ből származik, használd a generikusabb sendEmail metódust:
+        String content = templateEngine.process("mail/appointmentReminderEmail", context);
+        String subject = messageSource.getMessage("email.reminder.title", null, Locale.getDefault());
+
+        sendEmail(guest.getEmail(), subject, content, false, true);
     }
 }

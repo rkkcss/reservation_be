@@ -6,7 +6,9 @@ import hu.daniinc.reservation.repository.*;
 import hu.daniinc.reservation.service.AppointmentService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.*;
+import hu.daniinc.reservation.service.jobs.AppointmentReminderJob;
 import hu.daniinc.reservation.service.mapper.AppointmentMapper;
+import hu.daniinc.reservation.service.quartz.AppointmentReminderService;
 import hu.daniinc.reservation.service.specifications.AppointmentsSpecification;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
@@ -14,14 +16,19 @@ import hu.daniinc.reservation.web.rest.errors.NotFoundException;
 import io.undertow.util.BadRequestException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Service Implementation for managing {@link hu.daniinc.reservation.domain.Appointment}.
@@ -40,10 +47,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final BusinessRepository businessRepository;
     private final OfferingRepository offeringRepository;
     private final GuestRepository guestRepository;
-    private final GuestServiceImpl guestServiceImpl;
     private final BusinessEmployeeRepository businessEmployeeRepository;
-    private final UserService userService;
-    private final BusinessEmployeeServiceImpl businessEmployeeServiceImpl;
+    private final AppointmentReminderService appointmentReminderService;
 
     public AppointmentServiceImpl(
         AppointmentRepository appointmentRepository,
@@ -53,10 +58,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         BusinessRepository businessRepository,
         OfferingRepository offeringRepository,
         GuestRepository guestRepository,
-        GuestServiceImpl guestServiceImpl,
         BusinessEmployeeRepository businessEmployeeRepository,
-        UserService userService,
-        BusinessEmployeeServiceImpl businessEmployeeServiceImpl
+        AppointmentReminderService appointmentReminderService
     ) {
         this.appointmentRepository = appointmentRepository;
         this.appointmentMapper = appointmentMapper;
@@ -65,10 +68,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.businessRepository = businessRepository;
         this.offeringRepository = offeringRepository;
         this.guestRepository = guestRepository;
-        this.guestServiceImpl = guestServiceImpl;
         this.businessEmployeeRepository = businessEmployeeRepository;
-        this.userService = userService;
-        this.businessEmployeeServiceImpl = businessEmployeeServiceImpl;
+        this.appointmentReminderService = appointmentReminderService;
     }
 
     @Override
@@ -343,8 +344,16 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setModifierToken(UUID.randomUUID().toString());
 
-        // --- 9) Save appointment and return DTO ---
-        return appointmentMapper.toDto(appointmentRepository.save(appointment));
+        // --- 9) Save appointment
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        // --- 10) Schedule Email Reminder ---
+        if (savedAppointment.getStatus() == AppointmentStatus.CONFIRMED) {
+            appointmentReminderService.scheduleEmailReminder(savedAppointment);
+        }
+
+        //return DTO ---
+        return appointmentMapper.toDto(savedAppointment);
     }
 
     //get and appointment by guest name and appointment ID

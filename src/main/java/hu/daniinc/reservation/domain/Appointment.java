@@ -58,10 +58,10 @@ public class Appointment implements Serializable {
     private AppointmentStatus status;
 
     @JsonIgnoreProperties(value = { "appointments" }, allowSetters = true)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Guest guest;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "business_employee_id")
     @JsonIgnoreProperties(value = { "businessEmployee" })
     private BusinessEmployee businessEmployee;

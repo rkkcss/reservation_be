@@ -21,6 +21,11 @@ logging:
     hu.daniinc.reservation: DEBUG
 
 spring:
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone=UTC:
   devtools:
     restart:
       enabled: true

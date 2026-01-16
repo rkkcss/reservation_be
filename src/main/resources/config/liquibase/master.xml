@@ -41,5 +41,6 @@
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 
     <include file="config/liquibase/changelog/20250528T1530_remove_appointment_from_offering.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20240101000000_added_quartz_tables.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
