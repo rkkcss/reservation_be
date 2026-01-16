@@ -38,18 +38,12 @@ spring:
             instanceName: ReservationScheduler
             instanceId: AUTO
           jobStore:
-            class: org.quartz.impl.jdbcjobstore.JobStoreTX
             driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-            dataSource: myDS # EZ KELL IDE!
             tablePrefix: QRTZ_
             isClustered: true
             misfireThreshold: 60000
           threadPool:
-            class: org.quartz.simpl.SimpleThreadPool
             threadCount: 5
-          dataSource:
-            myDS:
-              provider: hikaricp # vagy hagyd ki, a Spring Boot auto-configure-álja
   devtools:
     restart:
       enabled: false
