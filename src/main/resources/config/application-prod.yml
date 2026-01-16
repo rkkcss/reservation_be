@@ -38,11 +38,15 @@ spring:
             instanceName: ReservationScheduler
             instanceId: AUTO
           jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
             driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+            dataSource: quartzDS
             tablePrefix: QRTZ_
             isClustered: true
             misfireThreshold: 60000
+            useProperties: false
           threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
             threadCount: 5
   devtools:
     restart:
