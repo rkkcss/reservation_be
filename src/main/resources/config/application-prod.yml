@@ -41,12 +41,13 @@ spring:
             driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
             tablePrefix: QRTZ_
             isClustered: true
-            useProperties: false
-            misfireThreshold: 60000
-          threadPool:
-            class: org.quartz.simpl.SimpleThreadPool
-            threadCount: 5
-            threadPriority: 5
+            # Itt mondjuk meg a Quartz-nak, hogy keresse a 'springDataSource' nevű bean-t
+            dataSource: springDataSource
+          # Itt definiáljuk a dataSource részleteit a Quartz számára
+          dataSource:
+            springDataSource:
+              # A JHipster/Spring Boot automatikusan kitölti ezeket a fő datasource-ból
+              validationQuery: 'select 1'
   devtools:
     restart:
       enabled: false
