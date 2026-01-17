@@ -30,24 +30,24 @@ spring:
     job-store-type: jdbc
     jdbc:
       initialize-schema: never
-    wait-for-jobs-to-complete-on-shutdown: true
     properties:
       org:
         quartz:
           scheduler:
             instanceName: ReservationScheduler
             instanceId: AUTO
+            idleWaitTime: 5000
           jobStore:
             class: org.quartz.impl.jdbcjobstore.JobStoreTX
             driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-            dataSource: quartzDS
             tablePrefix: QRTZ_
             isClustered: true
-            misfireThreshold: 60000
             useProperties: false
+            misfireThreshold: 60000
           threadPool:
             class: org.quartz.simpl.SimpleThreadPool
             threadCount: 5
+            threadPriority: 5
   devtools:
     restart:
       enabled: false
@@ -65,10 +65,10 @@ spring:
   liquibase:
     contexts: prod
   mail:
-    host: ${SPRING_MAIL_HOST}
-    port: ${SPRING_MAIL_PORT}
-    username: ${SPRING_MAIL_USERNAME}
-    password: ${SPRING_MAIL_PASSWORD}
+    host: ${SPRING_MAIL_HOST:}
+    port: ${SPRING_MAIL_PORT:}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
   thymeleaf:
     cache: true
 
