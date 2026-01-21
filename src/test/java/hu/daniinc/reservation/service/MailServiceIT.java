@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import hu.daniinc.reservation.IntegrationTest;
 import hu.daniinc.reservation.config.Constants;
 import hu.daniinc.reservation.domain.User;
+import hu.daniinc.reservation.service.impl.FakeMailService;
 import jakarta.mail.Multipart;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeBodyPart;
@@ -32,7 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import tech.jhipster.config.JHipsterProperties;
 
 /**
- * Integration tests for {@link MailService}.
+ * Integration tests for {@link FakeMailService}.
  */
 @IntegrationTest
 class MailServiceIT {
@@ -55,7 +56,7 @@ class MailServiceIT {
     private ArgumentCaptor<MimeMessage> messageCaptor;
 
     @Autowired
-    private MailService mailService;
+    private FakeMailService mailService;
 
     @BeforeEach
     public void setup() {

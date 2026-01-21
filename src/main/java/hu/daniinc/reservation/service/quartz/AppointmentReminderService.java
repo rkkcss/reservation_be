@@ -1,9 +1,6 @@
 package hu.daniinc.reservation.service.quartz;
 
 import hu.daniinc.reservation.domain.Appointment;
-import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
-import hu.daniinc.reservation.repository.AppointmentRepository;
-import hu.daniinc.reservation.service.MailService;
 import hu.daniinc.reservation.service.jobs.AppointmentReminderJob;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

@@ -13,9 +13,11 @@
 # Full reference is available at:
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
-
+# this is for onboarding version handling
+app.onboarding-version: 1
 ---
 # Conditionally disable springdoc on missing api-docs profile
+
 spring:
   quartz:
     job-store-type: jdbc

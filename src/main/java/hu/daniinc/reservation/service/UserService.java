@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,6 +62,9 @@ public class UserService {
     private final BusinessEmployeeRepository businessEmployeeRepository;
     private final DomainUserDetailsService userDetailsService;
 
+    @Value("${app.onboarding-version}")
+    private Integer onboardingVersion;
+
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
@@ -83,6 +87,7 @@ public class UserService {
         this.userDetailsService = userDetailsService;
     }
 
+    @Transactional
     public Optional<User> activateRegistration(String key) {
         LOG.debug("Activating user for activation key {}", key);
         return userRepository
@@ -91,6 +96,19 @@ public class UserService {
                 // activate given user for the registration key.
                 user.setActivated(true);
                 user.setActivationKey(null);
+
+                Business business = new Business();
+                business.setName(user.getFirstName() + "'s Business");
+                business.setOwner(user);
+                business.setAddress(user.getFirstName() + "'s Address");
+                business.setMaxWeeksInAdvance(0);
+                business.setTheme(BusinessTheme.DEFAULT);
+                business.setAppointmentApprovalRequired(Boolean.FALSE);
+                businessRepository.save(business);
+
+                BusinessEmployee be = BusinessEmployee.owner(business, user);
+                businessEmployeeRepository.save(be);
+
                 this.clearUserCaches(user);
                 LOG.debug("Activated user: {}", user);
                 return user;
@@ -159,18 +177,6 @@ public class UserService {
         newUser.setAuthorities(authorities);
 
         userRepository.save(newUser);
-
-        Business business = new Business();
-        business.setName(newUser.getFirstName() + "'s Business");
-        business.setOwner(newUser);
-        business.setAddress(newUser.getFirstName() + "'s Address");
-        business.setMaxWeeksInAdvance(0);
-        business.setTheme(BusinessTheme.DEFAULT);
-        business.setAppointmentApprovalRequired(Boolean.FALSE);
-        businessRepository.save(business);
-
-        BusinessEmployee be = BusinessEmployee.owner(business, newUser);
-        businessEmployeeRepository.save(be);
 
         this.clearUserCaches(newUser);
         LOG.debug("Created Information for User: {}", newUser);
@@ -482,5 +488,21 @@ public class UserService {
 
         loggedInUser.setLogin(login);
         userRepository.save(loggedInUser);
+    }
+
+    @Transactional
+    public void increaseOnboardingVersion() {
+        User user =
+            this.getUserWithAuthorities()
+                .orElseThrow(() -> new GeneralException("Logged in user not found", "user-not-found", HttpStatus.NOT_FOUND));
+        int current = user.getOnboardingVersion() != null ? user.getOnboardingVersion() : 0;
+
+        if (current < onboardingVersion) {
+            user.setOnboardingVersion(current + 1);
+            userRepository.save(user);
+            LOG.debug("Onboarding növelve: {} -> {} a felhasználónál: {}", current, current + 1, user.getLogin());
+        } else {
+            LOG.debug("A felhasználó ({}) már elérte a maximális onboarding verziót: {}", user.getLogin(), onboardingVersion);
+        }
     }
 }

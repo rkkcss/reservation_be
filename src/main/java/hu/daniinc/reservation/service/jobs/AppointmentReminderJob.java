@@ -2,7 +2,7 @@ package hu.daniinc.reservation.service.jobs;
 
 import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
 import hu.daniinc.reservation.repository.AppointmentRepository;
-import hu.daniinc.reservation.service.MailService;
+import hu.daniinc.reservation.service.impl.FakeMailService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -16,7 +16,7 @@ public class AppointmentReminderJob implements Job {
     private static final Logger LOG = LoggerFactory.getLogger(AppointmentReminderJob.class);
 
     @Autowired
-    private MailService mailService;
+    private FakeMailService mailService;
 
     @Autowired
     private AppointmentRepository appointmentRepository;

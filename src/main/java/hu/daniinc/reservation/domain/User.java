@@ -82,6 +82,9 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @Column(name = "reset_date")
     private Instant resetDate = null;
 
+    @Column(name = "onboarding_version")
+    private Integer onboardingVersion = 0;
+
     @JsonIgnore
     @ManyToMany
     @JoinTable(
@@ -209,6 +212,18 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     public void setPersistentTokens(Set<PersistentToken> persistentTokens) {
         this.persistentTokens = persistentTokens;
+    }
+
+    public Integer getOnboardingVersion() {
+        return onboardingVersion;
+    }
+
+    public void setOnboardingVersion(Integer onboardingVersion) {
+        this.onboardingVersion = onboardingVersion;
+    }
+
+    public void increaseOnboardingVersion() {
+        this.onboardingVersion++;
     }
 
     @Override

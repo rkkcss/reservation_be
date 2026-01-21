@@ -1,14 +1,17 @@
-package hu.daniinc.reservation.service;
+package hu.daniinc.reservation.service.impl;
 
 import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.domain.User;
+import hu.daniinc.reservation.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -16,6 +19,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+import tech.jhipster.config.JHipsterConstants;
 import tech.jhipster.config.JHipsterProperties;
 
 /**
@@ -24,9 +28,10 @@ import tech.jhipster.config.JHipsterProperties;
  * We use the {@link Async} annotation to send emails asynchronously.
  */
 @Service
-public class MailService {
+@Profile(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT)
+public class FakeMailService implements EmailService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MailService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FakeMailService.class);
 
     private static final String USER = "user";
 
@@ -40,7 +45,10 @@ public class MailService {
 
     private final SpringTemplateEngine templateEngine;
 
-    public MailService(
+    @Value("${jhipster.mail.base-url}")
+    private String baseUrl;
+
+    public FakeMailService(
         JHipsterProperties jHipsterProperties,
         JavaMailSender javaMailSender,
         MessageSource messageSource,
@@ -53,8 +61,21 @@ public class MailService {
     }
 
     @Async
+    @Override
     public void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
         sendEmailSync(to, subject, content, isMultipart, isHtml);
+    }
+
+    @Override
+    public void sendRegistrationEmail(User to) {
+        Context context = new Context();
+        context.setVariable("user", to);
+        context.setVariable("baseUrl", baseUrl);
+
+        String content = templateEngine.process("mail/activationEmail", context);
+        String subject = "Sikeres regisztráció (LOCAL TEST)";
+
+        this.sendEmail(to.getEmail(), subject, content, false, true);
     }
 
     private void sendEmailSync(String to, String subject, String content, boolean isMultipart, boolean isHtml) {

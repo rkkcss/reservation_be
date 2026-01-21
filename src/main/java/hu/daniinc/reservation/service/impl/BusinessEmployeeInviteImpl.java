@@ -10,7 +10,6 @@ import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.repository.UserRepository;
 import hu.daniinc.reservation.service.BusinessEmployeeInviteService;
-import hu.daniinc.reservation.service.MailService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.BusinessEmployeeActivateDTO;
 import hu.daniinc.reservation.service.dto.BusinessEmployeeInviteDTO;
@@ -21,7 +20,6 @@ import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import hu.daniinc.reservation.web.rest.vm.ManagedUserVM;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Optional;
@@ -43,7 +41,7 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
     private final UserService userService;
     private final BusinessEmployeeMapperImpl businessEmployeeMapperImpl;
     private final BusinessEmployeeInviteMapper businessEmployeeInviteMapper;
-    private final MailService mailService;
+    private final FakeMailService mailService;
     private final UserRepository userRepository;
     private final BusinessEmployeeRepository businessEmployeeRepository;
 
@@ -53,7 +51,7 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
         UserService userService,
         BusinessEmployeeMapperImpl businessEmployeeMapperImpl,
         BusinessEmployeeInviteMapper businessEmployeeInviteMapper,
-        MailService mailService,
+        FakeMailService mailService,
         UserRepository userRepository,
         BusinessEmployeeRepository businessEmployeeRepository
     ) {

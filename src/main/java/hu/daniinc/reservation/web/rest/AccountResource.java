@@ -9,7 +9,7 @@ import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.PersistentTokenRepository;
 import hu.daniinc.reservation.repository.UserRepository;
 import hu.daniinc.reservation.security.SecurityUtils;
-import hu.daniinc.reservation.service.MailService;
+import hu.daniinc.reservation.service.EmailService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.AdminUserDTO;
 import hu.daniinc.reservation.service.dto.PasswordChangeDTO;
@@ -23,7 +23,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -57,26 +56,26 @@ public class AccountResource {
 
     private final UserService userService;
 
-    private final MailService mailService;
-
     private final PersistentTokenRepository persistentTokenRepository;
+
+    private final EmailService emailService;
 
     public AccountResource(
         UserRepository userRepository,
         UserService userService,
-        MailService mailService,
         PersistentTokenRepository persistentTokenRepository,
         BusinessEmployeeInviteRepository businessEmployeeInviteRepository,
         BusinessEmployeeRepository businessEmployeeRepository,
-        UserMapper userMapper
+        UserMapper userMapper,
+        EmailService emailService
     ) {
         this.userRepository = userRepository;
         this.userService = userService;
-        this.mailService = mailService;
         this.persistentTokenRepository = persistentTokenRepository;
         this.businessEmployeeInviteRepository = businessEmployeeInviteRepository;
         this.businessEmployeeRepository = businessEmployeeRepository;
         this.userMapper = userMapper;
+        this.emailService = emailService;
     }
 
     /**
@@ -94,7 +93,7 @@ public class AccountResource {
             throw new InvalidPasswordException();
         }
         User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
-        mailService.sendActivationEmail(user);
+        emailService.sendRegistrationEmail(user);
     }
 
     @PostMapping("/register-with-invite")
@@ -262,7 +261,8 @@ public class AccountResource {
     public void requestPasswordReset(@RequestBody String mail) {
         Optional<User> user = userService.requestPasswordReset(mail);
         if (user.isPresent()) {
-            mailService.sendPasswordResetMail(user.orElseThrow());
+            //TODO: SEND password reset email implementation
+            //            mailService.sendPasswordResetMail(user.orElseThrow());
         } else {
             // Pretend the request has been successful to prevent checking which emails really exist
             // but log that an invalid attempt has been made
@@ -312,6 +312,12 @@ public class AccountResource {
     public ResponseEntity<Void> updateLogin(@RequestBody UserDTO userDTO) {
         userService.changeLogin(userDTO.getLogin());
 
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/account/tutorial/done")
+    public ResponseEntity<Void> updateDone() {
+        userService.increaseOnboardingVersion();
         return ResponseEntity.noContent().build();
     }
 }

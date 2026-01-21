@@ -4,9 +4,9 @@ import hu.daniinc.reservation.config.Constants;
 import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.repository.UserRepository;
 import hu.daniinc.reservation.security.AuthoritiesConstants;
-import hu.daniinc.reservation.service.MailService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.AdminUserDTO;
+import hu.daniinc.reservation.service.impl.FakeMailService;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import hu.daniinc.reservation.web.rest.errors.EmailAlreadyUsedException;
 import hu.daniinc.reservation.web.rest.errors.LoginAlreadyUsedException;
@@ -84,9 +84,9 @@ public class UserResource {
 
     private final UserRepository userRepository;
 
-    private final MailService mailService;
+    private final FakeMailService mailService;
 
-    public UserResource(UserService userService, UserRepository userRepository, MailService mailService) {
+    public UserResource(UserService userService, UserRepository userRepository, FakeMailService mailService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.mailService = mailService;

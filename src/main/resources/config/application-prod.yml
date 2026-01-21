@@ -12,7 +12,8 @@
 # Full reference is available at:
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
-
+brevo.api.key: ${SPRING_MAIL_API_KEY}
+brevo.api.url: https://api.brevo.com/v3/smtp/email
 logging:
   level:
     ROOT: INFO
@@ -117,7 +118,7 @@ jhipster:
       # security key (this key should be unique for your application, and kept secret)
       key: 24b084410039b38b23aed7a9dc292fd0b89d55aec51ed6a65d13484be8a01c7b44c64aec15d7ed5bf97872c53f11764ce15c
   mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://my-server-url-to-change # Modify according to your server's URL
+    base-url: https://booklyapp.me # Modify according to your server's URL
   logging:
     use-json-format: false # By default, logs are not in Json format
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
