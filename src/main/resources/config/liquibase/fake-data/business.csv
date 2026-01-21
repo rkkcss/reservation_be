@@ -1,11 +1,11 @@
-id;name;created_date;description;address;phone_number;break_between_appointments_min;logo;banner_url;theme
-1;Crystal szépségszalon;2025-05-27T15:08:55;+46302345334;Prémium szolgáltatások Budapest szívében;beside lóbab;23213;ahová but;primitív polinom lélekbúvár;PINK
-2;pedig ahá;2025-05-27T11:33:18;állj sétál alul;késő;békebontás valósul;29556;afelől időközben limfocita;pedig shimeji;BLACK
-3;hesszöl kétélű nyitva;2025-05-27T11:58:05;soha akaratlanul;éjjel-nappal Sarkcsillag;egybegyűjt;29557;összeadás;lábhoz;ORANGE
-4;since pssz;2025-05-27T21:56:18;habár beneath;hisz beragyog időközben;ameddig követő till;9618;átmenetileg;asztalszék;BLACK
-5;ahá miként aboard;2025-05-28T09:27:09;at;haha turistáskodás exponenciálisan;magatartásilag dehogy;26367;ameddig ó;mérsékel inside;DEFAULT
-6;pertli többszemközt;2025-05-28T05:39:51;kapható plus bár;lélekmelengető;pro;29726;északnyugati;anti rájuk belül;DEFAULT
-7;pedig for vagy;2025-05-27T17:06:24;olvasgat illetőleg;ablakkönyöklő;gazdagodik;13520;megközelíthetetlen aboard könyvízű;agyonázik afelé;ORANGE
-8;lógat ezért tartós;2025-05-27T20:39:40;felnyerít among kántál;mézel abcúg;szétkürtöl;15227;kumulatív;ejha;BLACK
-9;kockázatmentes bíz;2025-05-28T09:59:32;onto;minus minus hihihi;lesiet elkészít;5018;annálfogva;bár körbejár szűzies;BLUE
-10;dehát;2025-05-27T22:19:32;csacsacsa hacsak nem hahaha;örökzöld abszolút;ohohó bárcsak;8530;bacilushordozó;állj;BLUE
+id;name;created_date;description;address;phone_number;break_between_appointments_min;logo;banner_url;theme;time_zone
+1;Crystal szépségszalon;2025-05-27T15:08:55;+46302345334;Prémium szolgáltatások Budapest szívében;beside lóbab;23213;ahová but;primitív polinom lélekbúvár;PINK;Europe/Budapest
+2;pedig ahá;2025-05-27T11:33:18;állj sétál alul;késő;békebontás valósul;29556;afelől időközben limfocita;pedig shimeji;BLACK;Europe/Budapest
+3;hesszöl kétélű nyitva;2025-05-27T11:58:05;soha akaratlanul;éjjel-nappal Sarkcsillag;egybegyűjt;29557;összeadás;lábhoz;ORANGE;Europe/Budapest
+4;since pssz;2025-05-27T21:56:18;habár beneath;hisz beragyog időközben;ameddig követő till;9618;átmenetileg;asztalszék;BLACK;Europe/Budapest
+5;ahá miként aboard;2025-05-28T09:27:09;at;haha turistáskodás exponenciálisan;magatartásilag dehogy;26367;ameddig ó;mérsékel inside;DEFAULT;Europe/Budapest
+6;pertli többszemközt;2025-05-28T05:39:51;kapható plus bár;lélekmelengető;pro;29726;északnyugati;anti rájuk belül;DEFAULT;Europe/Budapest
+7;pedig for vagy;2025-05-27T17:06:24;olvasgat illetőleg;ablakkönyöklő;gazdagodik;13520;megközelíthetetlen aboard könyvízű;agyonázik afelé;ORANGE;Europe/Budapest
+8;lógat ezért tartós;2025-05-27T20:39:40;felnyerít among kántál;mézel abcúg;szétkürtöl;15227;kumulatív;ejha;BLACK;Europe/Budapest
+9;kockázatmentes bíz;2025-05-28T09:59:32;onto;minus minus hihihi;lesiet elkészít;5018;annálfogva;bár körbejár szűzies;BLUE;Europe/Budapest
+10;dehát;2025-05-27T22:19:32;csacsacsa hacsak nem hahaha;örökzöld abszolút;ohohó bárcsak;8530;bacilushordozó;állj;BLUE;Europe/Budapest

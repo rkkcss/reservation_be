@@ -2,6 +2,7 @@ package hu.daniinc.reservation.service.dto;
 
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -18,10 +19,10 @@ public class CustomWorkingHoursDTO implements Serializable {
     private LocalDate workDate;
 
     @NotNull
-    private ZonedDateTime startTime;
+    private Instant startTime;
 
     @NotNull
-    private ZonedDateTime endTime;
+    private Instant endTime;
 
     private BusinessDTO business;
 
@@ -41,19 +42,19 @@ public class CustomWorkingHoursDTO implements Serializable {
         this.workDate = workDate;
     }
 
-    public ZonedDateTime getStartTime() {
+    public Instant getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(ZonedDateTime startTime) {
+    public void setStartTime(Instant startTime) {
         this.startTime = startTime;
     }
 
-    public ZonedDateTime getEndTime() {
+    public Instant getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(ZonedDateTime endTime) {
+    public void setEndTime(Instant endTime) {
         this.endTime = endTime;
     }
 

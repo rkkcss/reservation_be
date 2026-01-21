@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
@@ -32,11 +33,11 @@ public class CustomWorkingHours implements Serializable {
 
     @NotNull
     @Column(name = "start_time", nullable = false)
-    private ZonedDateTime startTime;
+    private Instant startTime;
 
     @NotNull
     @Column(name = "end_time", nullable = false)
-    private ZonedDateTime endTime;
+    private Instant endTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "user", "appointment", "workingHours", "customWorkingHours", "offerings" }, allowSetters = true)
@@ -70,29 +71,29 @@ public class CustomWorkingHours implements Serializable {
         this.workDate = workDate;
     }
 
-    public ZonedDateTime getStartTime() {
+    public Instant getStartTime() {
         return this.startTime;
     }
 
-    public CustomWorkingHours startTime(ZonedDateTime startTime) {
+    public CustomWorkingHours startTime(Instant startTime) {
         this.setStartTime(startTime);
         return this;
     }
 
-    public void setStartTime(ZonedDateTime startTime) {
+    public void setStartTime(Instant startTime) {
         this.startTime = startTime;
     }
 
-    public ZonedDateTime getEndTime() {
+    public Instant getEndTime() {
         return this.endTime;
     }
 
-    public CustomWorkingHours endTime(ZonedDateTime endTime) {
+    public CustomWorkingHours endTime(Instant endTime) {
         this.setEndTime(endTime);
         return this;
     }
 
-    public void setEndTime(ZonedDateTime endTime) {
+    public void setEndTime(Instant endTime) {
         this.endTime = endTime;
     }
 

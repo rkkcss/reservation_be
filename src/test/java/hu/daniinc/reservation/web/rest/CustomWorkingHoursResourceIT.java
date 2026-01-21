@@ -82,7 +82,10 @@ class CustomWorkingHoursResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static CustomWorkingHours createEntity() {
-        return new CustomWorkingHours().workDate(DEFAULT_WORK_DATE).startTime(DEFAULT_START_TIME).endTime(DEFAULT_END_TIME);
+        return new CustomWorkingHours()
+            .workDate(DEFAULT_WORK_DATE)
+            .startTime(DEFAULT_START_TIME.toInstant())
+            .endTime(DEFAULT_END_TIME.toInstant());
     }
 
     /**
@@ -92,7 +95,10 @@ class CustomWorkingHoursResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static CustomWorkingHours createUpdatedEntity() {
-        return new CustomWorkingHours().workDate(UPDATED_WORK_DATE).startTime(UPDATED_START_TIME).endTime(UPDATED_END_TIME);
+        return new CustomWorkingHours()
+            .workDate(UPDATED_WORK_DATE)
+            .startTime(UPDATED_START_TIME.toInstant())
+            .endTime(UPDATED_END_TIME.toInstant());
     }
 
     @BeforeEach
@@ -282,7 +288,10 @@ class CustomWorkingHoursResourceIT {
         CustomWorkingHours updatedCustomWorkingHours = customWorkingHoursRepository.findById(customWorkingHours.getId()).orElseThrow();
         // Disconnect from session so that the updates on updatedCustomWorkingHours are not directly saved in db
         em.detach(updatedCustomWorkingHours);
-        updatedCustomWorkingHours.workDate(UPDATED_WORK_DATE).startTime(UPDATED_START_TIME).endTime(UPDATED_END_TIME);
+        updatedCustomWorkingHours
+            .workDate(UPDATED_WORK_DATE)
+            .startTime(UPDATED_START_TIME.toInstant())
+            .endTime(UPDATED_END_TIME.toInstant());
         CustomWorkingHoursDTO customWorkingHoursDTO = customWorkingHoursMapper.toDto(updatedCustomWorkingHours);
 
         restCustomWorkingHoursMockMvc
@@ -380,7 +389,7 @@ class CustomWorkingHoursResourceIT {
         CustomWorkingHours partialUpdatedCustomWorkingHours = new CustomWorkingHours();
         partialUpdatedCustomWorkingHours.setId(customWorkingHours.getId());
 
-        partialUpdatedCustomWorkingHours.endTime(UPDATED_END_TIME);
+        partialUpdatedCustomWorkingHours.endTime(UPDATED_END_TIME.toInstant());
 
         restCustomWorkingHoursMockMvc
             .perform(
@@ -412,7 +421,10 @@ class CustomWorkingHoursResourceIT {
         CustomWorkingHours partialUpdatedCustomWorkingHours = new CustomWorkingHours();
         partialUpdatedCustomWorkingHours.setId(customWorkingHours.getId());
 
-        partialUpdatedCustomWorkingHours.workDate(UPDATED_WORK_DATE).startTime(UPDATED_START_TIME).endTime(UPDATED_END_TIME);
+        partialUpdatedCustomWorkingHours
+            .workDate(UPDATED_WORK_DATE)
+            .startTime(UPDATED_START_TIME.toInstant())
+            .endTime(UPDATED_END_TIME.toInstant());
 
         restCustomWorkingHoursMockMvc
             .perform(

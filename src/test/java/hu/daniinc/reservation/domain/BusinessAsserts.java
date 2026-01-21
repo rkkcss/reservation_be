@@ -52,7 +52,7 @@ public class BusinessAsserts {
             .satisfies(a ->
                 assertThat(a.getCreatedDate())
                     .as("check createdDate")
-                    .usingComparator(zonedDataTimeSameInstant)
+                    //                    .usingComparator(zonedDataTimeSameInstant)
                     .isEqualTo(expected.getCreatedDate())
             )
             .satisfies(a -> assertThat(a.getDescription()).as("check description").isEqualTo(expected.getDescription()))

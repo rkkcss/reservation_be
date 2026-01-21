@@ -63,6 +63,10 @@
         <constraints nullable="false" />
       </column>
 
+      <column name="time_zone" type="varchar(64)" defaultValue="Europe/Budapest">
+        <constraints nullable="false" />
+      </column>
+
       <!-- !!! REMOVED business_employee_id !!! -->
       <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
     </createTable>
@@ -93,6 +97,7 @@
       <column name="owner_id" type="numeric"/>
       <column name="max_weeks_in_advance" type="numeric"/>
       <column name="theme" type="string"/>
+      <column name="time_zone" type="string" />
 
       <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
     </loadData>

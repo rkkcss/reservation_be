@@ -86,6 +86,9 @@ public class Business implements Serializable {
     @OneToMany(mappedBy = "business")
     private Set<BusinessOpeningHours> openingHours = new HashSet<>();
 
+    @Column(name = "time_zone", length = 64, nullable = false)
+    private String timeZone = "Europe/Budapest";
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -295,6 +298,14 @@ public class Business implements Serializable {
 
     public void setOpeningHours(Set<BusinessOpeningHours> openingHours) {
         this.openingHours = openingHours;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

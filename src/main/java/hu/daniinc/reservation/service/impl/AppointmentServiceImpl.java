@@ -158,20 +158,22 @@ public class AppointmentServiceImpl implements AppointmentService {
     ) {
         Map<LocalDate, List<Instant>> availableSlotsMap = new LinkedHashMap<>();
 
+        // 1. Business lekérése (időzóna és max foglalási idő miatt)
         Business business = businessRepository.findById(businessId).orElseThrow(() -> new EntityNotFoundException("Business not found"));
 
-        // Max előre foglalható idő
-        Integer maxWeeks = business.getMaxWeeksInAdvance(); // pl. 26
+        // Időzóna dinamikus kezelése
+        ZoneId zone = ZoneId.of(business.getTimeZone() != null ? business.getTimeZone() : "Europe/Budapest");
+
+        // 2. Max előre foglalható idő korlátozása
+        Integer maxWeeks = business.getMaxWeeksInAdvance();
         if (maxWeeks != null && maxWeeks > 0) {
-            LocalDate maxAllowedDate = LocalDate.now().plusWeeks(maxWeeks);
+            LocalDate maxAllowedDate = LocalDate.now(zone).plusWeeks(maxWeeks);
             if (to.isAfter(maxAllowedDate)) {
                 to = maxAllowedDate;
             }
         }
 
-        ZoneId zone = ZoneId.of("Europe/Budapest");
-
-        // Lekérjük az összes releváns appointmentet employee-specifikusan
+        // 3. Összes releváns foglalás lekérése a tartományra
         Instant overallStart = from.atStartOfDay(zone).toInstant();
         Instant overallEnd = to.plusDays(1).atStartOfDay(zone).toInstant();
 
@@ -182,10 +184,13 @@ public class AppointmentServiceImpl implements AppointmentService {
             overallEnd
         );
 
-        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
-            List<Instant> slots = new ArrayList<>();
+        Instant now = Instant.now();
 
-            // Custom working hours employee-specifikusan
+        // 4. Napokon való végigfutás
+        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
+            List<Instant> potentialSlots = new ArrayList<>();
+
+            // Egyedi munkaidő ellenőrzés
             Optional<CustomWorkingHours> customOpt = customWorkingHoursRepository.findByBusinessIdAndEmployeeIdAndWorkDate(
                 businessId,
                 employeeId,
@@ -194,43 +199,28 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             if (customOpt.isPresent()) {
                 CustomWorkingHours cwh = customOpt.get();
-                Instant start = cwh.getStartTime().toInstant();
-                Instant end = cwh.getEndTime().toInstant();
-
-                Instant current = start;
-                while (!current.plus(slotLength).isAfter(end)) {
-                    slots.add(current);
-                    current = current.plus(slotLength);
-                }
+                generateSlots(potentialSlots, cwh.getStartTime(), cwh.getEndTime(), slotLength);
             } else {
-                // Default working hours employee-specifikusan
+                // Alapértelmezett munkaidő
                 int dayOfWeek = date.getDayOfWeek().getValue();
-                List<WorkingHours> workingHoursList = workingHoursRepository.findByBusinessIdAndEmployeeIdAndDayOfWeek(
+                List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndEmployeeIdAndDayOfWeek(
                     businessId,
                     employeeId,
                     dayOfWeek
                 );
 
-                if (workingHoursList.isEmpty()) continue;
-
-                for (WorkingHours wh : workingHoursList) {
+                for (WorkingHours wh : whList) {
+                    // Itt vetítjük rá a LocalTime-ot az adott napra a cég zónájában
                     Instant start = date.atTime(wh.getStartTime()).atZone(zone).toInstant();
                     Instant end = date.atTime(wh.getEndTime()).atZone(zone).toInstant();
-
-                    Instant current = start;
-                    while (!current.plus(slotLength).isAfter(end)) {
-                        slots.add(current);
-                        current = current.plus(slotLength);
-                    }
+                    generateSlots(potentialSlots, start, end, slotLength);
                 }
             }
 
-            // Szűrés ütköző foglalások alapján
-            Instant now = Instant.now();
-
-            List<Instant> available = slots
+            // 5. Szűrés: Múltbeli időpontok és ütközések kiszűrése
+            List<Instant> available = potentialSlots
                 .stream()
-                .filter(slot -> !slot.isBefore(now))
+                .filter(slot -> !slot.isBefore(now)) // Ne legyen a múltban
                 .filter(slot ->
                     allAppointments
                         .stream()
@@ -244,6 +234,17 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         return availableSlotsMap;
+    }
+
+    /**
+     * Segédmetódus a slotok legenerálásához két időpont között
+     */
+    private void generateSlots(List<Instant> slots, Instant start, Instant end, Duration slotLength) {
+        Instant current = start;
+        while (!current.plus(slotLength).isAfter(end)) {
+            slots.add(current);
+            current = current.plus(slotLength);
+        }
     }
 
     @Override
@@ -277,28 +278,30 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     public AppointmentDTO saveAppointmentByGuest(Long businessId, Long employeeId, CreateAppointmentByGuestDTO dto) {
-        // --- 1) Check if the business has the offering ---
+        // 1. Business lekérése az elején (kell az időzóna és az approval beállítás miatt)
+        Business business = businessRepository
+            .findById(businessId)
+            .orElseThrow(() -> new EntityNotFoundException("Business not found with id: " + businessId));
+
+        // Időzóna meghatározása (ha a cégnek nincs megadva, default Europe/Budapest)
+        ZoneId zone = ZoneId.of(business.getTimeZone() != null ? business.getTimeZone() : "Europe/Budapest");
+
+        // 2. Ellenőrizzük, hogy a cég nyújtja-e ezt a szolgáltatást
         if (!offeringRepository.isBusinessHasTheOffer(dto.getOfferingId(), businessId)) {
-            LOG.error("Business: {} doesn't have the offer with id: {}", businessId, dto.getOfferingId());
             throw new RuntimeException("Business doesn't have the offer with id: " + dto.getOfferingId());
         }
 
-        // --- 2) Check if employee exists ---
+        // 3. Alkalmazott létezésének ellenőrzése
         BusinessEmployee employee = businessEmployeeRepository
             .findByBusinessIdAndEmployeeId(businessId, employeeId)
             .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
 
-        // --- 3) Check if slot is available for this employee ---
-        if (!isSlotAvailable(businessId, employee.getId(), dto.getDate(), dto.getTime(), dto.getOfferingId())) {
-            throw new BadRequestAlertException("Appointment is reserved!", null, "appointment.reserved");
+        // 4. Szabad hely ellenőrzése (átadjuk a kinyert zónát)
+        if (!isSlotAvailable(businessId, employee.getId(), dto.getDate(), dto.getTime(), dto.getOfferingId(), zone)) {
+            throw new BadRequestAlertException("Appointment is reserved or outside working hours!", null, "appointment.reserved");
         }
 
-        // --- 4) Retrieve business ---
-        Business business = businessRepository
-            .findById(businessId)
-            .orElseThrow(() -> new EntityNotFoundException("No business found for login"));
-
-        // --- 5) Set guest ---
+        // 5. Vendég kezelése
         Guest guest = guestRepository
             .findByEmail(dto.getEmail(), business.getId())
             .orElseGet(() -> {
@@ -312,47 +315,35 @@ public class AppointmentServiceImpl implements AppointmentService {
             });
 
         if (!guest.getCanBook()) {
-            LOG.debug("Guest cannot book: guest id {}, canBook: {}", guest.getId(), guest.getCanBook());
             throw new BadRequestAlertException("Guest can't book!", null, "guest.cantbook");
         }
 
-        // --- 6) Create appointment ---
+        // 6. Foglalás létrehozása
         Appointment appointment = new Appointment();
         appointment.setGuest(guest);
         appointment.setBusinessEmployee(employee);
 
-        // Offering
-        Offering offering = offeringRepository
-            .findById(dto.getOfferingId())
-            .orElseThrow(() -> new RuntimeException("No offering found for id: " + dto.getOfferingId()));
+        Offering offering = offeringRepository.findById(dto.getOfferingId()).orElseThrow(() -> new RuntimeException("No offering found"));
         appointment.setOffering(offering);
 
-        // --- 7) Set status ---
-        if (business.getAppointmentApprovalRequired()) {
-            appointment.setStatus(AppointmentStatus.PENDING);
-        } else {
-            appointment.setStatus(AppointmentStatus.CONFIRMED);
-        }
+        // Státusz beállítása
+        appointment.setStatus(business.getAppointmentApprovalRequired() ? AppointmentStatus.PENDING : AppointmentStatus.CONFIRMED);
 
-        // --- 8) Set startDate & endDate ---
-        ZoneId zone = ZoneId.of("Europe/Budapest");
+        // Start és End dátum kiszámítása Instant-ként
         Instant startDate = dto.getDate().atTime(dto.getTime()).atZone(zone).toInstant();
-        Instant endDate = startDate.plus(Duration.ofMinutes(offering.getDurationMinutes()));
+        Instant endDate = startDate.plusSeconds(offering.getDurationMinutes() * 60L);
 
         appointment.setStartDate(startDate);
         appointment.setEndDate(endDate);
-
         appointment.setModifierToken(UUID.randomUUID().toString());
 
-        // --- 9) Save appointment
+        // 7. Mentés és Reminder
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
-        // --- 10) Schedule Email Reminder ---
         if (savedAppointment.getStatus() == AppointmentStatus.CONFIRMED) {
             appointmentReminderService.scheduleEmailReminder(savedAppointment);
         }
 
-        //return DTO ---
         return appointmentMapper.toDto(savedAppointment);
     }
 
@@ -406,28 +397,24 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     //checking the appointment is available return TRUE if yes else FALSE
-    public boolean isSlotAvailable(Long businessId, Long employeeId, LocalDate date, LocalTime time, Long offeringId) {
-        ZoneId zone = ZoneId.of("Europe/Budapest");
-
+    public boolean isSlotAvailable(Long businessId, Long employeeId, LocalDate date, LocalTime time, Long offeringId, ZoneId zone) {
         // Offering lekérése a hossz miatt
         Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new RuntimeException("Offering not found"));
 
-        Duration duration = Duration.ofMinutes(offering.getDurationMinutes());
+        // 1. Slot kiszámítása a cég időzónájában, majd konvertálás Instant-ra
+        Instant slotStart = date.atTime(time).atZone(zone).toInstant();
+        Instant slotEnd = slotStart.plusSeconds(offering.getDurationMinutes() * 60L);
 
-        // Slot kezdete és vége
-        ZonedDateTime slotStart = ZonedDateTime.of(date, time, zone);
-        ZonedDateTime slotEnd = slotStart.plus(duration);
-
-        // múlt kizárása
-        if (slotStart.isBefore(ZonedDateTime.now(zone))) {
+        // 2. Múlt kizárása (azonnali ellenőrzés UTC szerint)
+        if (slotStart.isBefore(Instant.now())) {
+            LOG.debug("Booking attempt in the past: {}", slotStart);
             return false;
         }
 
-        // Nap eleje és vége Instant-re
+        // 3. Meglévő foglalások (Appointments) ellenőrzése
         Instant dayStart = date.atStartOfDay(zone).toInstant();
         Instant dayEnd = date.plusDays(1).atStartOfDay(zone).toInstant();
 
-        // Appointments lekérése employee szinten
         List<Appointment> appointments = appointmentRepository.findByBusinessIdAndEmployeeIdAndDateRange(
             businessId,
             employeeId,
@@ -435,17 +422,14 @@ public class AppointmentServiceImpl implements AppointmentService {
             dayEnd
         );
 
-        Instant slotStartInstant = slotStart.toInstant();
-        Instant slotEndInstant = slotEnd.toInstant();
+        boolean overlaps = appointments.stream().anyMatch(a -> slotStart.isBefore(a.getEndDate()) && slotEnd.isAfter(a.getStartDate()));
 
-        // Időütközés ellenőrzés
-        boolean overlaps = appointments
-            .stream()
-            .anyMatch(a -> slotStartInstant.isBefore(a.getEndDate()) && slotEndInstant.isAfter(a.getStartDate()));
+        if (overlaps) {
+            LOG.debug("Slot overlaps with existing appointment for employee {}", employeeId);
+            return false;
+        }
 
-        if (overlaps) return false;
-
-        // Egyedi munkaidő employee szinten
+        // 4. Munkaidő ellenőrzése (Egyedi munkaidő elsőbbséget élvez)
         Optional<CustomWorkingHours> customOpt = customWorkingHoursRepository.findByBusinessIdAndEmployeeIdAndWorkDate(
             businessId,
             employeeId,
@@ -454,27 +438,25 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         if (customOpt.isPresent()) {
             CustomWorkingHours cwh = customOpt.get();
-
-            ZonedDateTime whStart = cwh.getStartTime();
-            ZonedDateTime whEnd = cwh.getEndTime();
-
-            // Slot belefér-e az egyedi munkaidőbe?
-            return !slotStart.isBefore(whStart) && !slotEnd.isAfter(whEnd);
+            // Feltételezzük, hogy a DB-ben a CustomWorkingHours már Instant (UTC)
+            return !slotStart.isBefore(cwh.getStartTime()) && !slotEnd.isAfter(cwh.getEndTime());
         }
 
-        // Default working hours employee szinten
+        // 5. Alapértelmezett munkaidő ellenőrzése
         int dow = date.getDayOfWeek().getValue();
         List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndEmployeeIdAndDayOfWeek(businessId, employeeId, dow);
 
         for (WorkingHours wh : whList) {
-            ZonedDateTime whStart = date.atTime(wh.getStartTime()).atZone(zone);
-            ZonedDateTime whEnd = date.atTime(wh.getEndTime()).atZone(zone);
+            // LocalTime-ot rávetítjük az adott napra a cég zónájában
+            Instant whStart = date.atTime(wh.getStartTime()).atZone(zone).toInstant();
+            Instant whEnd = date.atTime(wh.getEndTime()).atZone(zone).toInstant();
 
             if (!slotStart.isBefore(whStart) && !slotEnd.isAfter(whEnd)) {
-                return true;
+                return true; // Belefér a munkaidőbe
             }
         }
 
+        LOG.debug("No working hours defined or slot is outside of working hours for employee {}", employeeId);
         return false;
     }
 }
