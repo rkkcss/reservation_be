@@ -6,7 +6,6 @@ import hu.daniinc.reservation.repository.UserRepository;
 import hu.daniinc.reservation.security.AuthoritiesConstants;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.AdminUserDTO;
-import hu.daniinc.reservation.service.impl.FakeMailService;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import hu.daniinc.reservation.web.rest.errors.EmailAlreadyUsedException;
 import hu.daniinc.reservation.web.rest.errors.LoginAlreadyUsedException;
@@ -84,12 +83,9 @@ public class UserResource {
 
     private final UserRepository userRepository;
 
-    private final FakeMailService mailService;
-
-    public UserResource(UserService userService, UserRepository userRepository, FakeMailService mailService) {
+    public UserResource(UserService userService, UserRepository userRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
-        this.mailService = mailService;
     }
 
     /**
@@ -118,7 +114,7 @@ public class UserResource {
             throw new EmailAlreadyUsedException();
         } else {
             User newUser = userService.createUser(userDTO);
-            mailService.sendCreationEmail(newUser);
+            //            emailService.sendCreationEmail(newUser);
             return ResponseEntity.created(new URI("/api/admin/users/" + newUser.getLogin()))
                 .headers(HeaderUtil.createAlert(applicationName, "userManagement.created", newUser.getLogin()))
                 .body(newUser);

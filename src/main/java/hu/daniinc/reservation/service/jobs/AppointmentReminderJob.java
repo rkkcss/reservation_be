@@ -2,6 +2,7 @@ package hu.daniinc.reservation.service.jobs;
 
 import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
 import hu.daniinc.reservation.repository.AppointmentRepository;
+import hu.daniinc.reservation.service.EmailService;
 import hu.daniinc.reservation.service.impl.FakeMailService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -16,7 +17,7 @@ public class AppointmentReminderJob implements Job {
     private static final Logger LOG = LoggerFactory.getLogger(AppointmentReminderJob.class);
 
     @Autowired
-    private FakeMailService mailService;
+    private EmailService emailService;
 
     @Autowired
     private AppointmentRepository appointmentRepository;
@@ -43,7 +44,7 @@ public class AppointmentReminderJob implements Job {
 
                         if (app.getStatus() != AppointmentStatus.CANCELLED) {
                             LOG.info("📨 Email küldése indul...");
-                            mailService.sendAppointmentReminder(app.getGuest(), app.getStartDate().toString());
+                            emailService.sendAppointmentReminder(app.getGuest(), app.getStartDate());
                             LOG.info("✅ Email sikeresen elküldve!");
                         } else {
                             LOG.warn("⚠️ Az appointment törölve lett, email NEM kerül kiküldésre");

@@ -1,7 +1,9 @@
 package hu.daniinc.reservation.service.impl;
 
+import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.service.EmailService;
+import java.time.Instant;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -43,6 +45,9 @@ public class MailApiService implements EmailService {
 
         this.sendEmail(user.getEmail(), subject, content, false, false);
     }
+
+    @Override
+    public void sendAppointmentReminder(Guest guest, Instant startDate) {}
 
     @Override
     public void sendEmail(String toEmail, String subject, String content, boolean isMultipart, boolean isHtml) {

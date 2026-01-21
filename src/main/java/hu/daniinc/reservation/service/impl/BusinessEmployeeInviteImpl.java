@@ -10,6 +10,7 @@ import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.repository.UserRepository;
 import hu.daniinc.reservation.service.BusinessEmployeeInviteService;
+import hu.daniinc.reservation.service.EmailService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.BusinessEmployeeActivateDTO;
 import hu.daniinc.reservation.service.dto.BusinessEmployeeInviteDTO;
@@ -39,9 +40,8 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
     private final BusinessEmployeeInviteRepository businessEmployeeInviteRepository;
     private final BusinessRepository businessRepository;
     private final UserService userService;
-    private final BusinessEmployeeMapperImpl businessEmployeeMapperImpl;
     private final BusinessEmployeeInviteMapper businessEmployeeInviteMapper;
-    private final FakeMailService mailService;
+    private final EmailService emailService;
     private final UserRepository userRepository;
     private final BusinessEmployeeRepository businessEmployeeRepository;
 
@@ -51,16 +51,15 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
         UserService userService,
         BusinessEmployeeMapperImpl businessEmployeeMapperImpl,
         BusinessEmployeeInviteMapper businessEmployeeInviteMapper,
-        FakeMailService mailService,
+        EmailService emailService,
         UserRepository userRepository,
         BusinessEmployeeRepository businessEmployeeRepository
     ) {
         this.businessEmployeeInviteRepository = businessEmployeeInviteRepository;
         this.businessRepository = businessRepository;
         this.userService = userService;
-        this.businessEmployeeMapperImpl = businessEmployeeMapperImpl;
         this.businessEmployeeInviteMapper = businessEmployeeInviteMapper;
-        this.mailService = mailService;
+        this.emailService = emailService;
         this.userRepository = userRepository;
         this.businessEmployeeRepository = businessEmployeeRepository;
     }
@@ -90,7 +89,7 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
         BusinessEmployeeInvite result = businessEmployeeInviteRepository.save(invite);
 
         // send email
-        mailService.sendEmail(
+        emailService.sendEmail(
             dto.getEmail(),
             "Felkérés csatlakozáshoz",
             "http://localhost:5173/employee-invite/" + invite.getToken(),

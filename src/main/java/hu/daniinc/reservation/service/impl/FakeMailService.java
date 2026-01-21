@@ -6,6 +6,7 @@ import hu.daniinc.reservation.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,9 @@ public class FakeMailService implements EmailService {
 
         this.sendEmail(to.getEmail(), subject, content, false, true);
     }
+
+    @Override
+    public void sendAppointmentReminder(Guest guest, Instant startDate) {}
 
     private void sendEmailSync(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
         LOG.debug(
