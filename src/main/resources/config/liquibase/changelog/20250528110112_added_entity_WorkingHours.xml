@@ -28,8 +28,6 @@
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="working_hours" columnName="start_time" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="working_hours" columnName="end_time" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
