@@ -15,7 +15,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  */
 @Entity
 @Table(name = "working_hours")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class WorkingHours implements Serializable {
 
@@ -39,8 +39,8 @@ public class WorkingHours implements Serializable {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "user", "appointments", "workingHours", "customWorkingHours", "offerings" }, allowSetters = true)
+    @ManyToOne(fetch = FetchType.EAGER)
+    //    @JsonIgnoreProperties(value = { "user", "appointments", "workingHours", "customWorkingHours", "offerings" }, allowSetters = true)
     @JsonIgnore
     private BusinessEmployee businessEmployee;
 

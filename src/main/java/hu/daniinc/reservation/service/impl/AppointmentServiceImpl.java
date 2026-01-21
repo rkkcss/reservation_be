@@ -297,7 +297,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
 
         // 4. Szabad hely ellenőrzése (átadjuk a kinyert zónát)
-        if (!isSlotAvailable(businessId, employee.getId(), dto.getDate(), dto.getTime(), dto.getOfferingId(), zone)) {
+        if (!isSlotAvailable(businessId, employeeId, dto.getDate(), dto.getTime(), dto.getOfferingId(), zone)) {
             throw new BadRequestAlertException("Appointment is reserved or outside working hours!", null, "appointment.reserved");
         }
 
@@ -447,12 +447,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndEmployeeIdAndDayOfWeek(businessId, employeeId, dow);
 
         for (WorkingHours wh : whList) {
-            // LocalTime-ot rávetítjük az adott napra a cég zónájában
             Instant whStart = date.atTime(wh.getStartTime()).atZone(zone).toInstant();
             Instant whEnd = date.atTime(wh.getEndTime()).atZone(zone).toInstant();
 
             if (!slotStart.isBefore(whStart) && !slotEnd.isAfter(whEnd)) {
-                return true; // Belefér a munkaidőbe
+                return true;
             }
         }
 
