@@ -13,11 +13,4 @@ public class QuartzConfig {
     public AutowiringSpringBeanJobFactory autowiringSpringBeanJobFactory() {
         return new AutowiringSpringBeanJobFactory();
     }
-
-    @Bean
-    public SchedulerFactoryBeanCustomizer schedulerFactoryBeanCustomizer(DataSource dataSource) {
-        return schedulerFactoryBean -> {
-            schedulerFactoryBean.setDataSource(dataSource);
-        };
-    }
 }

@@ -40,6 +40,8 @@ spring:
             instanceName: ReservationScheduler
             instanceId: AUTO
           jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
             tablePrefix: QRTZ_
             isClustered: true
             clusterCheckinInterval: 20000
