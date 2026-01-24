@@ -15,7 +15,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public class QuartzConfig {
@@ -24,23 +23,19 @@ public class QuartzConfig {
 
     private final AutowiringSpringBeanJobFactory jobFactory;
     private final DataSource dataSource;
-    private final PlatformTransactionManager transactionManager;
 
-    public QuartzConfig(AutowiringSpringBeanJobFactory jobFactory, DataSource dataSource, PlatformTransactionManager transactionManager) {
+    public QuartzConfig(AutowiringSpringBeanJobFactory jobFactory, DataSource dataSource) {
         this.jobFactory = jobFactory;
         this.dataSource = dataSource;
-        this.transactionManager = transactionManager;
     }
 
     @Bean
     public SchedulerFactoryBeanCustomizer schedulerFactoryBeanCustomizer() {
         return schedulerFactoryBean -> {
             schedulerFactoryBean.setJobFactory(jobFactory);
-            schedulerFactoryBean.setDataSource(dataSource);
-            schedulerFactoryBean.setTransactionManager(transactionManager);
             schedulerFactoryBean.setOverwriteExistingJobs(true);
-            schedulerFactoryBean.setWaitForJobsToCompleteOnShutdown(true);
             schedulerFactoryBean.setAutoStartup(false);
+            // A DataSource-t és TransactionManager-t a Spring Boot automatikusan beállítja
         };
     }
 
@@ -71,15 +66,12 @@ public class QuartzConfig {
     private boolean validateQuartzTables() {
         try (Connection conn = dataSource.getConnection()) {
             DatabaseMetaData metaData = conn.getMetaData();
-
-            // Próbáld mindkét esettel (kis- és nagybetű)
             ResultSet tables = metaData.getTables(null, null, "qrtz_%", null);
-            int tableCount = countTables(tables);
 
-            if (tableCount == 0) {
-                // Próbáld nagybetűvel is
-                tables = metaData.getTables(null, null, "QRTZ_%", null);
-                tableCount = countTables(tables);
+            int tableCount = 0;
+            while (tables.next()) {
+                tableCount++;
+                log.debug("Found Quartz table: {}", tables.getString("TABLE_NAME"));
             }
 
             if (tableCount < 11) {
@@ -94,14 +86,5 @@ public class QuartzConfig {
             log.error("❌ Failed to validate Quartz tables", e);
             return false;
         }
-    }
-
-    private int countTables(ResultSet tables) throws SQLException {
-        int count = 0;
-        while (tables.next()) {
-            count++;
-            log.debug("Found Quartz table: {}", tables.getString("TABLE_NAME"));
-        }
-        return count;
     }
 }
