@@ -16,9 +16,9 @@ brevo.api.key: ${SPRING_MAIL_API_KEY}
 brevo.api.url: https://api.brevo.com/v3/smtp/email
 logging:
   level:
-    ROOT: INFO
-    tech.jhipster: INFO
-    hu.daniinc.reservation: INFO
+    ROOT: DEBUG
+    tech.jhipster: DEBUG
+    hu.daniinc.reservation: DEBUG
 
 management:
   prometheus:
