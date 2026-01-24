@@ -31,7 +31,20 @@ spring:
     job-store-type: jdbc
     jdbc:
       initialize-schema: always
+    overwrite-existing-jobs: true
     wait-for-jobs-to-complete-on-shutdown: true
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: ReservationScheduler
+            instanceId: AUTO
+          jobStore:
+            tablePrefix: QRTZ_
+            isClustered: true
+            clusterCheckinInterval: 20000
+          threadPool:
+            threadCount: 5
   devtools:
     restart:
       enabled: false
