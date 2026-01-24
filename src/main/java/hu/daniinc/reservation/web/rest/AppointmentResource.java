@@ -172,6 +172,7 @@ public class AppointmentResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of appointments in body.
      */
     @GetMapping("")
+    @RequiredBusinessPermission(value = { BusinessPermission.VIEW_OWN_SCHEDULE, BusinessPermission.VIEW_ALL_SCHEDULE })
     public ResponseEntity<List<AppointmentDTO>> getAllAppointments(
         @RequestParam Instant startDate,
         @RequestParam Instant endDate,
@@ -259,14 +260,14 @@ public class AppointmentResource {
         return ResponseEntity.ok(appointmentService.getAllPendingAppointments(businessId));
     }
 
-    @PatchMapping("/{id}/business-employee/{employeeId}/approve")
+    @PatchMapping("/{appointmentId}/business-employee/{employeeId}/approve")
     @RequiredBusinessPermission(value = BusinessPermission.EDIT_OWN_BOOKINGS, businessIdParam = "employeeId")
     public ResponseEntity<AppointmentDTO> approveAppointment(
-        @PathVariable(value = "id") Long id,
+        @PathVariable(value = "appointmentId") Long appointmentId,
         @PathVariable(value = "employeeId") Long employeeId
     ) {
-        LOG.debug("REST request to approve Appointment : {}", id);
-        return ResponseEntity.status(HttpStatus.OK).body(appointmentService.approveAppointment(id, employeeId));
+        LOG.debug("REST request to approve Appointment : {}", appointmentId);
+        return ResponseEntity.status(HttpStatus.OK).body(appointmentService.approveAppointment(appointmentId, employeeId));
     }
 
     @PatchMapping("/{id}/business-employee/{employeeId}/cancel")

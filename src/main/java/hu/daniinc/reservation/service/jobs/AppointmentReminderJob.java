@@ -44,7 +44,7 @@ public class AppointmentReminderJob implements Job {
 
                         if (app.getStatus() != AppointmentStatus.CANCELLED) {
                             LOG.info("📨 Email küldése indul...");
-                            emailService.sendAppointmentReminder(app.getGuest(), app.getStartDate());
+                            emailService.sendAppointmentReminder(app.getGuest(), app);
                             LOG.info("✅ Email sikeresen elküldve!");
                         } else {
                             LOG.warn("⚠️ Az appointment törölve lett, email NEM kerül kiküldésre");

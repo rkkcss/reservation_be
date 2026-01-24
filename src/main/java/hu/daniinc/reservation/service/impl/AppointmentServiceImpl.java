@@ -2,6 +2,7 @@ package hu.daniinc.reservation.service.impl;
 
 import hu.daniinc.reservation.domain.*;
 import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
+import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.*;
 import hu.daniinc.reservation.service.AppointmentService;
 import hu.daniinc.reservation.service.UserService;
@@ -49,6 +50,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final GuestRepository guestRepository;
     private final BusinessEmployeeRepository businessEmployeeRepository;
     private final AppointmentReminderService appointmentReminderService;
+    private final UserService userService;
 
     public AppointmentServiceImpl(
         AppointmentRepository appointmentRepository,
@@ -59,7 +61,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         OfferingRepository offeringRepository,
         GuestRepository guestRepository,
         BusinessEmployeeRepository businessEmployeeRepository,
-        AppointmentReminderService appointmentReminderService
+        AppointmentReminderService appointmentReminderService,
+        UserService userService
     ) {
         this.appointmentRepository = appointmentRepository;
         this.appointmentMapper = appointmentMapper;
@@ -70,6 +73,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.guestRepository = guestRepository;
         this.businessEmployeeRepository = businessEmployeeRepository;
         this.appointmentReminderService = appointmentReminderService;
+        this.userService = userService;
     }
 
     @Override
@@ -116,13 +120,28 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional(readOnly = true)
     public List<AppointmentDTO> findOverlappingAppointments(Instant startDate, Instant endDate, Long businessId, String employeeFullName) {
+        User user = userService
+            .getUserWithAuthorities()
+            .orElseThrow(() -> new GeneralException("No user logged in!", "no-user-logged-in", HttpStatus.NOT_FOUND));
+        BusinessEmployee businessEmployee = businessEmployeeRepository
+            .findByUserLoginAndBusinessId(businessId)
+            .orElseThrow(() ->
+                new GeneralException("No employee logged in for businessId: " + businessId, "no-employee-logged-in", HttpStatus.NOT_FOUND)
+            );
+
+        String myName = user.getFullName();
+
+        //if employee don't have permission to view all or different employee, we set the filter name to the logged in employee
+        if (!myName.equals(employeeFullName) && !businessEmployee.hasPermission(BusinessPermission.VIEW_ALL_SCHEDULE)) {
+            LOG.warn("Unauthorized access attempt by {}: requested {}, allowed {}", user.getLogin(), employeeFullName, myName);
+            employeeFullName = myName;
+        }
         Specification<Appointment> spec = AppointmentsSpecification.overlappingAppointmentsByEmployeeName(
             startDate,
             endDate,
             businessId,
             employeeFullName
         );
-
         return appointmentRepository.findAll(spec).stream().map(appointmentMapper::toDto).toList();
     }
 

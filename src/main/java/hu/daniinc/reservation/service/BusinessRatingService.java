@@ -1,6 +1,7 @@
 package hu.daniinc.reservation.service;
 
 import hu.daniinc.reservation.service.dto.BusinessRatingDTO;
+import hu.daniinc.reservation.service.dto.BusinessRatingSummaryDTO;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,4 +58,6 @@ public interface BusinessRatingService {
     void delete(Long id);
 
     Page<BusinessRatingDTO> findAllByBusinessId(Long businessId, Pageable pageable);
+
+    Double getAverageRatingForBusiness(Long businessId);
 }

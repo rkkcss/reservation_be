@@ -226,6 +226,13 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
         this.onboardingVersion++;
     }
 
+    public String getFullName() {
+        if (firstName == null && lastName == null) {
+            return login;
+        }
+        return (StringUtils.trimToEmpty(firstName) + " " + StringUtils.trimToEmpty(lastName)).trim();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

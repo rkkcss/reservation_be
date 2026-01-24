@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.service.impl;
 
+import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.service.EmailService;
@@ -47,7 +48,7 @@ public class MailApiService implements EmailService {
     }
 
     @Override
-    public void sendAppointmentReminder(Guest guest, Instant startDate) {}
+    public void sendAppointmentReminder(Guest guest, Appointment appointment) {}
 
     @Override
     public void sendEmail(String toEmail, String subject, String content, boolean isMultipart, boolean isHtml) {

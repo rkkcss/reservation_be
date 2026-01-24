@@ -53,6 +53,8 @@ public class AdminUserDTO implements Serializable {
 
     private Integer onboardingVersion = 0;
 
+    private String fullName;
+
     public AdminUserDTO() {
         // Empty constructor needed for Jackson.
     }
@@ -72,6 +74,7 @@ public class AdminUserDTO implements Serializable {
         this.lastModifiedDate = user.getLastModifiedDate();
         this.authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
         this.onboardingVersion = user.getOnboardingVersion();
+        this.fullName = user.getFullName();
     }
 
     public Long getId() {
@@ -184,6 +187,14 @@ public class AdminUserDTO implements Serializable {
 
     public void setOnboardingVersion(Integer onboardingVersion) {
         this.onboardingVersion = onboardingVersion;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     // prettier-ignore

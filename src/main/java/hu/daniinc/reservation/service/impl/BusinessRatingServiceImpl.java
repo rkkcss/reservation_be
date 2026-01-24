@@ -4,6 +4,7 @@ import hu.daniinc.reservation.domain.BusinessRating;
 import hu.daniinc.reservation.repository.BusinessRatingRepository;
 import hu.daniinc.reservation.service.BusinessRatingService;
 import hu.daniinc.reservation.service.dto.BusinessRatingDTO;
+import hu.daniinc.reservation.service.dto.BusinessRatingSummaryDTO;
 import hu.daniinc.reservation.service.mapper.BusinessRatingMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -85,5 +86,10 @@ public class BusinessRatingServiceImpl implements BusinessRatingService {
     @Override
     public Page<BusinessRatingDTO> findAllByBusinessId(Long businessId, Pageable pageable) {
         return businessRatingRepository.findAllByBusinessId(businessId, pageable).map(businessRatingMapper::toDto);
+    }
+
+    @Override
+    public Double getAverageRatingForBusiness(Long businessId) {
+        return businessRatingRepository.getAverageRatingForBusiness(businessId);
     }
 }

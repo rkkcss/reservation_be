@@ -55,8 +55,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
     @Query("select a from Appointment a where a.modifierToken = ?1")
     Optional<Appointment> findByModifierToken(String modifierToken);
 
-    @Query("select a from Appointment a where a.id = ?1 and a.businessEmployee.user.id = :employeeId")
-    Optional<Appointment> findByIdAndLoggedInOwner(Long appointmentId, Long employeeId);
+    @Query("select a from Appointment a where a.id = :appointmentId and a.businessEmployee.user.id = :employeeId")
+    Optional<Appointment> findByIdAndLoggedInOwner(@Param("appointmentId") Long appointmentId, @Param("employeeId") Long employeeId);
 
     @Query(
         "SELECT a FROM Appointment a " +

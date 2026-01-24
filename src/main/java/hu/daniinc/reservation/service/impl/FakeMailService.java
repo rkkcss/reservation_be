@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.service.impl;
 
+import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.service.EmailService;
@@ -79,9 +80,6 @@ public class FakeMailService implements EmailService {
         this.sendEmail(to.getEmail(), subject, content, false, true);
     }
 
-    @Override
-    public void sendAppointmentReminder(Guest guest, Instant startDate) {}
-
     private void sendEmailSync(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
         LOG.debug(
             "Send email[multipart '{}' and html '{}'] to '{}' with subject '{}' and content={}",
@@ -145,16 +143,16 @@ public class FakeMailService implements EmailService {
     }
 
     @Async
-    public void sendAppointmentReminder(Guest guest, String appointmentDate) {
+    public void sendAppointmentReminder(Guest guest, Appointment appointment) {
         LOG.debug("Emlékeztető email küldése a vendégnek: {}", guest.getEmail());
 
         Context context = new Context();
-        context.setVariable("appointmentDate", appointmentDate);
+        context.setVariable("appointment", appointment);
         context.setVariable("guest", guest); // A template-ben így ${guest.name} néven éred el
 
         // Itt a JHipster alap sendEmailFromTemplate-je User-t várhat.
         // Ha a Guest-ed nem a User-ből származik, használd a generikusabb sendEmail metódust:
-        String content = templateEngine.process("mail/appointmentReminderEmail", context);
+        String content = templateEngine.process("mail/appointmentReminder", context);
         String subject = messageSource.getMessage("email.reminder.title", null, Locale.getDefault());
 
         sendEmail(guest.getEmail(), subject, content, false, true);

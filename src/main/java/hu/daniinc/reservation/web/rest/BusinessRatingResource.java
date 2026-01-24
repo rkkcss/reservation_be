@@ -5,6 +5,7 @@ import hu.daniinc.reservation.repository.BusinessRatingRepository;
 import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
 import hu.daniinc.reservation.service.BusinessRatingService;
 import hu.daniinc.reservation.service.dto.BusinessRatingDTO;
+import hu.daniinc.reservation.service.dto.BusinessRatingSummaryDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -183,14 +184,21 @@ public class BusinessRatingResource {
     }
 
     @GetMapping("/business/{businessId}")
-    public ResponseEntity<List<BusinessRatingDTO>> getAllBusinessRatingsByBusinessId(
+    public ResponseEntity<BusinessRatingSummaryDTO> getAllBusinessRatingsByBusinessId(
         @PathVariable("businessId") Long businessId,
         Pageable pageable
     ) {
         LOG.debug("REST request to get BusinessRatings by businessId : {}", businessId);
 
         Page<BusinessRatingDTO> page = businessRatingService.findAllByBusinessId(businessId, pageable);
+        Double average = businessRatingService.getAverageRatingForBusiness(businessId);
+
+        BusinessRatingSummaryDTO body = new BusinessRatingSummaryDTO();
+        body.setRatings(page.getContent());
+        body.setAverageRating(average);
+
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 }

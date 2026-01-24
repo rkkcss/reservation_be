@@ -31,5 +31,6 @@ public interface BusinessEmployeeMapper extends EntityMapper<BusinessEmployeeDTO
     @Mapping(target = "lastName", source = "lastName")
     @Mapping(target = "email", source = "email")
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "fullName", source = "fullName")
     UserDTO userToAdminUserDTOMapper(User user);
 }

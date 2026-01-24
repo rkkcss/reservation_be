@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -16,4 +17,7 @@ import org.springframework.stereotype.Repository;
 public interface BusinessRatingRepository extends JpaRepository<BusinessRating, Long> {
     @Query("select br from BusinessRating br where br.business.id = ?1")
     Page<BusinessRating> findAllByBusinessId(Long businessId, Pageable pageable);
+
+    @Query("SELECT AVG(r.number) FROM BusinessRating r WHERE r.business.id = :businessId")
+    Double getAverageRatingForBusiness(@Param("businessId") Long businessId);
 }

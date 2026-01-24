@@ -50,7 +50,8 @@ public class Guest implements Serializable {
     @JsonIgnoreProperties(value = { "guest" })
     private Set<BusinessRating> businessRating = new HashSet<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "businessEmployee" })
     private BusinessEmployee businessEmployee;
 
     @CreatedDate

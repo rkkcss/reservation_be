@@ -30,7 +30,7 @@ spring:
   quartz:
     job-store-type: jdbc
     jdbc:
-      initialize-schema: never
+      initialize-schema: always # vagy "never" ha Flyway kezeli
     properties:
       org:
         quartz:
@@ -41,14 +41,16 @@ spring:
           jobStore:
             class: org.quartz.impl.jdbcjobstore.JobStoreTX
             driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-            tablePrefix: QRTZ_
+            tablePrefix: qrtz_
             isClustered: true
-            useProperties: false
+            useProperties: true
             misfireThreshold: 60000
+            clusterCheckinInterval: 20000 # <-- ADD ezt hozzá!
           threadPool:
             class: org.quartz.simpl.SimpleThreadPool
             threadCount: 5
             threadPriority: 5
+    wait-for-jobs-to-complete-on-shutdown: true
   devtools:
     restart:
       enabled: false

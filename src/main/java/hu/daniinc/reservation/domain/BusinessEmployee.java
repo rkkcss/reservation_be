@@ -31,7 +31,8 @@ public class BusinessEmployee {
     @JoinColumn(name = "business_id")
     private Business business;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "user" })
     @JoinColumn(name = "user_id")
     private User user;
 
