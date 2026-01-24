@@ -30,7 +30,7 @@ spring:
   quartz:
     job-store-type: jdbc
     jdbc:
-      initialize-schema: always
+      initialize-schema: never
     overwrite-existing-jobs: true
     wait-for-jobs-to-complete-on-shutdown: true
     properties:
@@ -40,8 +40,6 @@ spring:
             instanceName: ReservationScheduler
             instanceId: AUTO
           jobStore:
-            class: org.quartz.impl.jdbcjobstore.JobStoreTX
-            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
             tablePrefix: QRTZ_
             isClustered: true
             clusterCheckinInterval: 20000
