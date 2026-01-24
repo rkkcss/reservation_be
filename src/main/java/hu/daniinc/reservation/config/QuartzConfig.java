@@ -5,16 +5,21 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Properties;
 import javax.sql.DataSource;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.quartz.SchedulerFactoryBeanCustomizer;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.quartz.QuartzDataSource;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -33,14 +38,33 @@ public class QuartzConfig {
     }
 
     @Bean
-    public SchedulerFactoryBeanCustomizer schedulerFactoryBeanCustomizer() {
-        return schedulerFactoryBean -> {
-            schedulerFactoryBean.setJobFactory(jobFactory);
-            schedulerFactoryBean.setDataSource(dataSource);
-            schedulerFactoryBean.setTransactionManager(transactionManager);
-            schedulerFactoryBean.setOverwriteExistingJobs(true);
-            schedulerFactoryBean.setAutoStartup(false);
-        };
+    public SchedulerFactoryBean schedulerFactoryBean() {
+        SchedulerFactoryBean factory = new SchedulerFactoryBean();
+
+        factory.setJobFactory(jobFactory);
+        factory.setDataSource(dataSource);
+        factory.setTransactionManager(transactionManager);
+        factory.setOverwriteExistingJobs(true);
+        factory.setWaitForJobsToCompleteOnShutdown(true);
+        factory.setAutoStartup(false);
+
+        // Quartz properties
+        Properties properties = new Properties();
+        properties.setProperty("org.quartz.scheduler.instanceName", "ReservationScheduler");
+        properties.setProperty("org.quartz.scheduler.instanceId", "AUTO");
+        properties.setProperty("org.quartz.jobStore.class", "org.quartz.impl.jdbcjobstore.JobStoreTX");
+        properties.setProperty("org.quartz.jobStore.driverDelegateClass", "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate");
+        properties.setProperty("org.quartz.jobStore.tablePrefix", "qrtz_");
+        properties.setProperty("org.quartz.jobStore.isClustered", "true");
+        properties.setProperty("org.quartz.jobStore.clusterCheckinInterval", "20000");
+        properties.setProperty("org.quartz.jobStore.useProperties", "true");
+        properties.setProperty("org.quartz.jobStore.misfireThreshold", "60000");
+        properties.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
+        properties.setProperty("org.quartz.threadPool.threadCount", "5");
+
+        factory.setQuartzProperties(properties);
+
+        return factory;
     }
 
     @EventListener(ApplicationReadyEvent.class)
