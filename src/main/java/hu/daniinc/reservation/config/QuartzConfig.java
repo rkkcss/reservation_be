@@ -15,6 +15,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public class QuartzConfig {
@@ -23,19 +24,22 @@ public class QuartzConfig {
 
     private final AutowiringSpringBeanJobFactory jobFactory;
     private final DataSource dataSource;
+    private final PlatformTransactionManager transactionManager;
 
-    public QuartzConfig(AutowiringSpringBeanJobFactory jobFactory, DataSource dataSource) {
+    public QuartzConfig(AutowiringSpringBeanJobFactory jobFactory, DataSource dataSource, PlatformTransactionManager transactionManager) {
         this.jobFactory = jobFactory;
         this.dataSource = dataSource;
+        this.transactionManager = transactionManager;
     }
 
     @Bean
     public SchedulerFactoryBeanCustomizer schedulerFactoryBeanCustomizer() {
         return schedulerFactoryBean -> {
             schedulerFactoryBean.setJobFactory(jobFactory);
+            schedulerFactoryBean.setDataSource(dataSource);
+            schedulerFactoryBean.setTransactionManager(transactionManager);
             schedulerFactoryBean.setOverwriteExistingJobs(true);
             schedulerFactoryBean.setAutoStartup(false);
-            // A DataSource-t és TransactionManager-t a Spring Boot automatikusan beállítja
         };
     }
 
