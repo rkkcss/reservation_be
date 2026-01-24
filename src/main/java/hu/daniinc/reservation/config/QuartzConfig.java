@@ -1,6 +1,8 @@
 package hu.daniinc.reservation.config;
 
 import hu.daniinc.reservation.service.jobs.AutowiringSpringBeanJobFactory;
+import javax.sql.DataSource;
+import org.springframework.boot.autoconfigure.quartz.SchedulerFactoryBeanCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,5 +12,12 @@ public class QuartzConfig {
     @Bean
     public AutowiringSpringBeanJobFactory autowiringSpringBeanJobFactory() {
         return new AutowiringSpringBeanJobFactory();
+    }
+
+    @Bean
+    public SchedulerFactoryBeanCustomizer schedulerFactoryBeanCustomizer(DataSource dataSource) {
+        return schedulerFactoryBean -> {
+            schedulerFactoryBean.setDataSource(dataSource);
+        };
     }
 }

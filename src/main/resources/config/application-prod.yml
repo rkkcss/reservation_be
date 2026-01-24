@@ -42,16 +42,9 @@ spring:
           jobStore:
             class: org.quartz.impl.jdbcjobstore.JobStoreTX
             driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-            dataSource: quartzDataSource
             tablePrefix: QRTZ_
             isClustered: true
             clusterCheckinInterval: 20000
-          dataSource:
-            quartzDataSource:
-              driver: org.postgresql.Driver
-              URL: ${spring.datasource.url}
-              user: ${spring.datasource.username}
-              password: ${spring.datasource.password}
           threadPool:
             threadCount: 5
   devtools:
