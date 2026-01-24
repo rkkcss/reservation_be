@@ -18,6 +18,7 @@ logging:
   level:
     ROOT: DEBUG
     tech.jhipster: DEBUG
+    org.hibernate.SQL: DEBUG
     hu.daniinc.reservation: DEBUG
 
 management:
