@@ -62,7 +62,14 @@ public class BusinessEmployeeServiceImpl implements BusinessEmployeeService {
 
     @Override
     public Set<BusinessEmployeeDTO> findAllByLoggedInUser() {
-        return businessEmployeeRepository.findAllByUserLogin().stream().map(businessEmployeeMapper::toDto).collect(Collectors.toSet());
+        User user = userService
+            .getUserWithAuthorities()
+            .orElseThrow(() -> new GeneralException("not-found", "not-found", HttpStatus.NOT_FOUND));
+        return businessEmployeeRepository
+            .findAllByUserLogin(user.getLogin())
+            .stream()
+            .map(businessEmployeeMapper::toDto)
+            .collect(Collectors.toSet());
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -18,8 +19,8 @@ public interface BusinessEmployeeRepository extends JpaRepository<BusinessEmploy
     @Query("select be from BusinessEmployee be where be.business.id = ?1 and be.user.login = ?#{authentication.name}")
     Optional<BusinessEmployee> findByUserLoginAndBusinessId(Long businessId);
 
-    @Query("select be from BusinessEmployee be where be.user.login = ?#{authentication.name}")
-    Set<BusinessEmployee> findAllByUserLogin();
+    @Query("select be from BusinessEmployee be where be.user.login = :login")
+    Set<BusinessEmployee> findAllByUserLogin(@Param("login") String login);
 
     @Query(
         "select be from BusinessEmployee be " +
