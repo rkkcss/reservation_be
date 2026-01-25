@@ -61,6 +61,7 @@ public class BusinessEmployeeServiceImpl implements BusinessEmployeeService {
     }
 
     @Override
+    @Transactional
     public Set<BusinessEmployeeDTO> findAllByLoggedInUser() {
         User user = userService
             .getUserWithAuthorities()
