@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,13 +56,14 @@ public class GuestResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new guestDTO, or with status {@code 400 (Bad Request)} if the guest has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("")
-    public ResponseEntity<GuestDTO> createGuest(@Valid @RequestBody GuestDTO guestDTO) throws URISyntaxException {
+    @PostMapping("/business/{businessId}")
+    public ResponseEntity<GuestDTO> createGuest(@PathVariable("businessId") Long businessId, @Valid @RequestBody GuestDTO guestDTO)
+        throws URISyntaxException {
         LOG.debug("REST request to save Guest : {}", guestDTO);
         if (guestDTO.getId() != null) {
             throw new BadRequestAlertException("A new guest cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        guestDTO = guestService.save(guestDTO);
+        guestDTO = guestService.save(businessId, guestDTO);
         return ResponseEntity.created(new URI("/api/guests/" + guestDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, guestDTO.getId().toString()))
             .body(guestDTO);
@@ -143,18 +145,26 @@ public class GuestResource {
      * @param filter the filter of the request.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of guests in body.
      */
-    @GetMapping("")
+    @GetMapping("/business/{businessId}")
     public ResponseEntity<List<GuestDTO>> getAllGuests(
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
-        @RequestParam(name = "filter", required = false) String filter
+        @ParameterObject Pageable pageable,
+        @PathVariable(value = "businessId") Long businessId,
+        @RequestParam(name = "filter", required = false) String filter,
+        @RequestParam(name = "employeeSearchParam") String employeeSearchParam
     ) {
-        if ("appointment-is-null".equals(filter)) {
-            LOG.debug("REST request to get all Guests where appointment is null");
-            return new ResponseEntity<>(guestService.findAllWhereAppointmentIsNull(), HttpStatus.OK);
+        LOG.debug("REST request to get a page of Guests for business: {}", businessId);
+        Long employeeId = null;
+        if (!"all".equalsIgnoreCase(employeeSearchParam)) {
+            try {
+                employeeId = Long.parseLong(employeeSearchParam);
+            } catch (NumberFormatException e) {
+                LOG.warn("Invalid employeeSearchParam: {}, defaulting to 'all'", employeeSearchParam);
+            }
         }
-        LOG.debug("REST request to get a page of Guests");
-        Page<GuestDTO> page = guestService.findAllByLoggedInUser(pageable);
+        Page<GuestDTO> page = guestService.findAllWithSpecs(businessId, filter, employeeId, pageable);
+
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 

@@ -16,7 +16,7 @@ public interface GuestService {
      * @param guestDTO the entity to save.
      * @return the persisted entity.
      */
-    GuestDTO save(GuestDTO guestDTO);
+    GuestDTO save(Long businessId, GuestDTO guestDTO);
 
     /**
      * Updates a guest.
@@ -67,4 +67,6 @@ public interface GuestService {
     List<GuestDTO> findAllBySearchString(String searchString);
 
     Page<GuestDTO> findAllByLoggedInUser(Pageable pageable);
+
+    Page<GuestDTO> findAllWithSpecs(Long businessId, String filter, Long filterEmployeeId, Pageable pageable);
 }

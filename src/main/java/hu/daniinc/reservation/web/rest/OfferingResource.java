@@ -212,7 +212,7 @@ public class OfferingResource {
      * @param offerId the id of the offeringDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @PatchMapping("/{offerId}/business/{businessId}")
+    @DeleteMapping("/{offerId}/business/{businessId}")
     @RequiredBusinessPermission(value = { BusinessPermission.EDIT_ALL_SERVICES, BusinessPermission.EDIT_OWN_SERVICES })
     public ResponseEntity<Void> deleteOffering(@PathVariable("offerId") Long offerId, @PathVariable("businessId") Long businessId) {
         LOG.debug("REST request to delete Offering : {}", offerId);

@@ -482,12 +482,22 @@ public class UserService {
         User loggedInUser =
             this.getUserWithAuthorities().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
 
-        if (userRepository.existsByLogin(login) && !loggedInUser.getLogin().equals(login)) {
+        if (userRepository.existsByLoginIgnoreCase(login) && !loggedInUser.getLogin().equalsIgnoreCase(login)) {
             throw new RuntimeException("This login name is already taken!");
         }
 
         loggedInUser.setLogin(login);
         userRepository.save(loggedInUser);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+                login,
+                auth.getCredentials(),
+                auth.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+        }
     }
 
     @Transactional

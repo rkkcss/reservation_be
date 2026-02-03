@@ -32,6 +32,9 @@ public interface OfferingRepository extends JpaRepository<Offering, Long>, JpaSp
     )
     List<Offering> getAllByLoggedInEmployee(@Param(value = "businessId") Long businessId);
 
+    @Query("select o from Offering o where o.id = :offeringId and ?#{authentication.name} = o.businessEmployee.user.login")
+    Optional<Offering> findByIdToLoggedInUser(@Param("offeringId") Long offeringId);
+
     @Query("select o from Offering o where o.id = ?1 and o.businessEmployee.business.owner.login = ?#{authentication.name}")
     Optional<Offering> findByIdToBusiness(Long offeringId);
 

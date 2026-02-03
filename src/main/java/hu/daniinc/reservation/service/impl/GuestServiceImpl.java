@@ -1,12 +1,18 @@
 package hu.daniinc.reservation.service.impl;
 
 import hu.daniinc.reservation.domain.Business;
+import hu.daniinc.reservation.domain.BusinessEmployee;
 import hu.daniinc.reservation.domain.Guest;
+import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.repository.GuestRepository;
+import hu.daniinc.reservation.security.SecurityUtils;
 import hu.daniinc.reservation.service.GuestService;
+import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.GuestDTO;
 import hu.daniinc.reservation.service.mapper.GuestMapper;
+import hu.daniinc.reservation.service.specifications.GuestSpecification;
+import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,28 +40,29 @@ public class GuestServiceImpl implements GuestService {
     private final GuestRepository guestRepository;
 
     private final GuestMapper guestMapper;
-    private final BusinessRepository businessRepository;
-    private final BusinessServiceImpl businessServiceImpl;
-    private final BusinessEmployeeServiceImpl businessEmployeeServiceImpl;
+    private final BusinessEmployeeRepository businessEmployeeRepository;
+    private final UserService userService;
 
     public GuestServiceImpl(
         GuestRepository guestRepository,
         GuestMapper guestMapper,
-        BusinessRepository businessRepository,
-        BusinessServiceImpl businessServiceImpl,
-        BusinessEmployeeServiceImpl businessEmployeeServiceImpl
+        BusinessEmployeeRepository businessEmployeeRepository,
+        UserService userService
     ) {
         this.guestRepository = guestRepository;
         this.guestMapper = guestMapper;
-        this.businessRepository = businessRepository;
-        this.businessServiceImpl = businessServiceImpl;
-        this.businessEmployeeServiceImpl = businessEmployeeServiceImpl;
+        this.businessEmployeeRepository = businessEmployeeRepository;
+        this.userService = userService;
     }
 
     @Override
-    public GuestDTO save(GuestDTO guestDTO) {
+    public GuestDTO save(Long businessId, GuestDTO guestDTO) {
         LOG.debug("Request to save Guest : {}", guestDTO);
         Guest guest = guestMapper.toEntity(guestDTO);
+        BusinessEmployee be = businessEmployeeRepository
+            .findByUserLoginAndBusinessId(businessId)
+            .orElseThrow(() -> new GeneralException("business-employee-not-found", "business-employee-not-found", HttpStatus.NOT_FOUND));
+        guest.setBusinessEmployee(be);
         guest = guestRepository.save(guest);
         return guestMapper.toDto(guest);
     }
@@ -122,5 +132,23 @@ public class GuestServiceImpl implements GuestService {
     public Page<GuestDTO> findAllByLoggedInUser(Pageable pageable) {
         LOG.debug("Request to get all Guests by logged in user");
         return guestRepository.findAllByLoggedInUser(pageable).map(guestMapper::toDto);
+    }
+
+    @Override
+    public Page<GuestDTO> findAllWithSpecs(Long businessId, String filter, Long filterEmployeeId, Pageable pageable) {
+        BusinessEmployee currentEmployee = businessEmployeeRepository
+            .findByUserLoginAndBusinessId(businessId)
+            .orElseThrow(() -> new AccessDeniedException("Nincs jogosultságod ehhez az üzlethez!"));
+
+        // 2. Alap specifikáció összeállítása (biztonsági szűrővel)
+        Specification<Guest> spec = GuestSpecification.filterForUser(currentEmployee, filterEmployeeId);
+
+        // 3. Opcionális extra szűrők
+        if ("appointment-is-null".equals(filter)) {
+            spec = spec.and(GuestSpecification.appointmentIsNull());
+        }
+
+        // 4. Lekérdezés és DTO-vá alakítás
+        return guestRepository.findAll(spec, pageable).map(guestMapper::toDto);
     }
 }

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface GuestRepository extends JpaRepository<Guest, Long> {
+public interface GuestRepository extends JpaRepository<Guest, Long>, JpaSpecificationExecutor<Guest> {
     @Query(
         "SELECT g FROM Guest g " +
         "WHERE (LOWER(g.name) LIKE LOWER(CONCAT('%', ?1, '%')) " +

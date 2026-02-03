@@ -101,10 +101,15 @@ public class AppointmentServiceImpl implements AppointmentService {
             .findById(dto.getId())
             .map(existingAppointment -> {
                 //update offering
-                offeringRepository.findByIdToBusiness(dto.getOfferingId()).ifPresent(existingAppointment::setOffering);
+                offeringRepository.findByIdToLoggedInUser(dto.getOfferingId()).ifPresent(existingAppointment::setOffering);
 
                 //update guest
-                Optional.ofNullable(dto.getGuestId()).flatMap(guestRepository::findById).ifPresent(existingAppointment::setGuest);
+                Optional.ofNullable(dto.getGuestId())
+                    .flatMap(guestRepository::findById)
+                    .ifPresentOrElse(
+                        existingAppointment::setGuest, //if present -> set
+                        () -> existingAppointment.setGuest(null) // if not found or null -> set null
+                    );
 
                 //rest
                 existingAppointment.setStartDate(dto.getStartDate());

@@ -123,7 +123,7 @@ public class WorkingHoursServiceImpl implements WorkingHoursService {
         existingHours.stream().filter(hour -> !newHourIds.contains(hour.getId())).forEach(workingHoursRepository::delete);
 
         BusinessEmployee employee = businessEmployeeRepository
-            .findById(employeeId)
+            .findByEmployeeUserId(employeeId)
             .orElseThrow(() -> new GeneralException("Employee not found!", "employee-not-found", HttpStatus.NOT_FOUND));
 
         // Process each DTO

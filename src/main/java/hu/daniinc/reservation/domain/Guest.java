@@ -11,12 +11,14 @@ import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * A Guest.
  */
 @Entity
 @Table(name = "guest")
+@EntityListeners(AuditingEntityListener.class)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Guest implements Serializable {
 

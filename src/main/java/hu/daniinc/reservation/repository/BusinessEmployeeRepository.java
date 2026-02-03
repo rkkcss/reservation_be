@@ -1,5 +1,6 @@
 package hu.daniinc.reservation.repository;
 
+import hu.daniinc.reservation.domain.Business;
 import hu.daniinc.reservation.domain.BusinessEmployee;
 import hu.daniinc.reservation.service.dto.BusinessEmployeeDTO;
 import java.util.List;
@@ -44,4 +45,7 @@ public interface BusinessEmployeeRepository extends JpaRepository<BusinessEmploy
         "AND be.status <> 'INACTIVE'"
     )
     List<BusinessEmployee> findAllPublicByBusinessId(Long businessId);
+
+    @Query("select be from BusinessEmployee be where be.user.id = :employeeId")
+    Optional<BusinessEmployee> findByEmployeeUserId(@Param("employeeId") Long employeeId);
 }

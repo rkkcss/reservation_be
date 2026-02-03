@@ -75,7 +75,13 @@ public class GuestDTO implements Serializable {
         this.canBook = canBook;
     }
 
-    private BusinessEmployeeDTO businessEmployeeDTO;
+    public BusinessEmployeeDTO getBusinessEmployee() {
+        return businessEmployee;
+    }
+
+    public void setBusinessEmployee(BusinessEmployeeDTO businessEmployee) {
+        this.businessEmployee = businessEmployee;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -22,6 +22,8 @@ public interface StatisticRepository extends JpaRepository<Appointment, Long> {
             )
             FROM Appointment a
             WHERE a.businessEmployee.business.id = :businessId
+            AND a.offering IS NOT NULL
+            AND a.guest IS NOT NULL
             AND a.createdDate BETWEEN :from AND :to
             AND a.status != 'CANCELLED'
             AND a.status != 'PENDING'
