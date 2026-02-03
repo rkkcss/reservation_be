@@ -22,7 +22,8 @@ public enum BusinessPermissionHandler {
             BusinessPermission.VIEW_EMPLOYEES,
             BusinessPermission.MANAGE_BUSINESS_SETTINGS,
             BusinessPermission.EDIT_OWN_WORKING_HOURS,
-            BusinessPermission.EDIT_ALL_WORKING_HOURS
+            BusinessPermission.EDIT_ALL_WORKING_HOURS,
+            BusinessPermission.VIEW_ALL_GUESTS
         )
     );
 
