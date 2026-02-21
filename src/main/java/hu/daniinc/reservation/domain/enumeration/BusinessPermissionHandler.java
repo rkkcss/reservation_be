@@ -6,7 +6,6 @@ import java.util.Set;
 public enum BusinessPermissionHandler {
     OWNER(
         Set.of(
-            BusinessPermission.VIEW_OWN_SCHEDULE,
             BusinessPermission.VIEW_ALL_SCHEDULE,
             BusinessPermission.EDIT_OWN_SCHEDULE,
             BusinessPermission.EDIT_ALL_SCHEDULES,

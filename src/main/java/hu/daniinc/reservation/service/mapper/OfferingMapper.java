@@ -15,6 +15,7 @@ public interface OfferingMapper extends EntityMapper<OfferingDTO, Offering> {
     OfferingDTO toDto(Offering s);
 
     @Named("toDtoBusinessEmployee")
+    @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "appointments", source = "appointments", ignore = true)
     BusinessEmployeeDTO businessEmployeeToDto(BusinessEmployee businessEmployee);
 }

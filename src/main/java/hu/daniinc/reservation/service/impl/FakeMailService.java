@@ -80,6 +80,9 @@ public class FakeMailService implements EmailService {
         this.sendEmail(to.getEmail(), subject, content, false, true);
     }
 
+    @Override
+    public void sendAppointmentReservedEmail(Appointment appointment) {}
+
     private void sendEmailSync(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
         LOG.debug(
             "Send email[multipart '{}' and html '{}'] to '{}' with subject '{}' and content={}",
@@ -148,10 +151,8 @@ public class FakeMailService implements EmailService {
 
         Context context = new Context();
         context.setVariable("appointment", appointment);
-        context.setVariable("guest", guest); // A template-ben így ${guest.name} néven éred el
+        context.setVariable("guest", guest);
 
-        // Itt a JHipster alap sendEmailFromTemplate-je User-t várhat.
-        // Ha a Guest-ed nem a User-ből származik, használd a generikusabb sendEmail metódust:
         String content = templateEngine.process("mail/appointmentReminder", context);
         String subject = messageSource.getMessage("email.reminder.title", null, Locale.getDefault());
 

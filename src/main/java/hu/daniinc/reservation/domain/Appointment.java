@@ -66,7 +66,7 @@ public class Appointment implements Serializable {
     @JsonIgnoreProperties(value = { "businessEmployee" })
     private BusinessEmployee businessEmployee;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Offering offering;
 

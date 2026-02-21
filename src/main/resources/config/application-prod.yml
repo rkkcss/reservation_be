@@ -14,6 +14,7 @@
 # ===================================================================
 brevo.api.key: ${SPRING_MAIL_API_KEY}
 brevo.api.url: https://api.brevo.com/v3/smtp/email
+
 logging:
   level:
     ROOT: DEBUG
@@ -44,7 +45,7 @@ spring:
             driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
             tablePrefix: QRTZ_
             isClustered: true
-            useProperties: false
+            useProperties: true
             misfireThreshold: 60000
           threadPool:
             class: org.quartz.simpl.SimpleThreadPool

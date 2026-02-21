@@ -48,6 +48,9 @@ public class MailApiService implements EmailService {
     }
 
     @Override
+    public void sendAppointmentReservedEmail(Appointment appointment) {}
+
+    @Override
     public void sendAppointmentReminder(Guest guest, Appointment appointment) {}
 
     @Override

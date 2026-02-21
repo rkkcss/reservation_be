@@ -1,8 +1,10 @@
 package hu.daniinc.reservation.service.mapper;
 
 import hu.daniinc.reservation.domain.Business;
+import hu.daniinc.reservation.domain.BusinessOpeningHours;
 import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
+import hu.daniinc.reservation.service.dto.BusinessOpeningHoursDTO;
 import hu.daniinc.reservation.service.dto.UserDTO;
 import org.mapstruct.*;
 
@@ -16,6 +18,9 @@ public interface BusinessMapper extends EntityMapper<BusinessDTO, Business> {
     @Mapping(target = "theme", source = "theme")
     @Mapping(target = "openingHours", source = "openingHours")
     BusinessDTO toDto(Business s);
+
+    @Mapping(target = "business", ignore = true)
+    BusinessOpeningHoursDTO toOpeningHoursDto(BusinessOpeningHours entity);
 
     @Named("ownerId")
     @BeanMapping(ignoreByDefault = true)

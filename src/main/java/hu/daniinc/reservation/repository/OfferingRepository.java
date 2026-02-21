@@ -35,8 +35,8 @@ public interface OfferingRepository extends JpaRepository<Offering, Long>, JpaSp
     @Query("select o from Offering o where o.id = :offeringId and ?#{authentication.name} = o.businessEmployee.user.login")
     Optional<Offering> findByIdToLoggedInUser(@Param("offeringId") Long offeringId);
 
-    @Query("select o from Offering o where o.id = ?1 and o.businessEmployee.business.owner.login = ?#{authentication.name}")
-    Optional<Offering> findByIdToBusiness(Long offeringId);
+    @Query("select o from Offering o where o.id = :offeringId and o.businessEmployee.business.id = :businessId")
+    Optional<Offering> findByIdToBusiness(@Param("businessId") Long businessId, @Param("offeringId") Long offeringId);
 
     @Query("SELECT CASE WHEN COUNT(o) > 0 THEN TRUE ELSE FALSE END FROM Offering o WHERE o.id = ?1 and o.businessEmployee.business.id = ?2")
     Boolean isBusinessHasTheOffer(Long offeringId, Long businessId);

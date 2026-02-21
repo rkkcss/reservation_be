@@ -83,7 +83,7 @@ public class AppointmentResource {
     }
 
     @PostMapping("/business/{businessId}/business-employee/{employeeId}/own")
-    @RequiredBusinessPermission(BusinessPermission.CREATE_BOOKING)
+    @RequiredBusinessPermission({ BusinessPermission.CREATE_BOOKING, BusinessPermission.EDIT_ALL_BOOKINGS })
     public ResponseEntity<AppointmentDTO> createAppointmentByOwner(
         @Valid @RequestBody CreateAppointmentRequestDTO createAppointmentRequestDTO,
         @PathVariable("businessId") Long businessId,
@@ -172,7 +172,7 @@ public class AppointmentResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of appointments in body.
      */
     @GetMapping("")
-    @RequiredBusinessPermission(value = { BusinessPermission.VIEW_OWN_SCHEDULE, BusinessPermission.VIEW_ALL_SCHEDULE })
+    @RequiredBusinessPermission(value = { BusinessPermission.VIEW_ALL_SCHEDULE })
     public ResponseEntity<List<AppointmentDTO>> getAllAppointments(
         @RequestParam Instant startDate,
         @RequestParam Instant endDate,

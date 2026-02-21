@@ -1,13 +1,7 @@
 package hu.daniinc.reservation.service.mapper;
 
-import hu.daniinc.reservation.domain.Appointment;
-import hu.daniinc.reservation.domain.Business;
-import hu.daniinc.reservation.domain.Guest;
-import hu.daniinc.reservation.domain.Offering;
-import hu.daniinc.reservation.service.dto.AppointmentDTO;
-import hu.daniinc.reservation.service.dto.BusinessDTO;
-import hu.daniinc.reservation.service.dto.GuestDTO;
-import hu.daniinc.reservation.service.dto.OfferingDTO;
+import hu.daniinc.reservation.domain.*;
+import hu.daniinc.reservation.service.dto.*;
 import org.mapstruct.*;
 
 /**
@@ -16,8 +10,9 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface AppointmentMapper extends EntityMapper<AppointmentDTO, Appointment> {
     @Mapping(target = "guest", source = "guest", qualifiedByName = "guestId")
+    //    @Mapping(target = "guest.appointments", ignore = true)
     @Mapping(target = "offering", source = "offering", qualifiedByName = "offeringMap")
-    @Mapping(target = "businessEmployee.appointments", ignore = true)
+    @Mapping(target = "businessEmployee", source = "businessEmployee", qualifiedByName = "employeeSimple")
     AppointmentDTO toDto(Appointment s);
 
     @Named("guestId")
@@ -35,4 +30,14 @@ public interface AppointmentMapper extends EntityMapper<AppointmentDTO, Appointm
     @Mapping(target = "price", source = "price")
     @Mapping(target = "durationMinutes", source = "durationMinutes")
     OfferingDTO toDtoOffering(Offering offering);
+
+    @Named("employeeSimple")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "user.firstName", source = "user.firstName")
+    @Mapping(target = "user.lastName", source = "user.lastName")
+    @Mapping(target = "user.id", source = "user.id")
+    @Mapping(target = "user.fullName", source = "user.fullName")
+    @Mapping(target = "user.email", source = "user.email")
+    BusinessEmployeeDTO toDtoEmployeeSimple(BusinessEmployee employee);
 }

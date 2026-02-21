@@ -1,9 +1,11 @@
 package hu.daniinc.reservation.service;
 
 import hu.daniinc.reservation.service.dto.BusinessOpeningHoursDTO;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 /**
  * Service Interface for managing {@link hu.daniinc.reservation.domain.BusinessOpeningHours}.
@@ -55,4 +57,8 @@ public interface BusinessOpeningHoursService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    List<BusinessOpeningHoursDTO> findAllByBusinessId(Long businessId);
+
+    List<BusinessOpeningHoursDTO> saveOpeningHoursList(Long businessId, List<BusinessOpeningHoursDTO> businessOpeningHoursDTOs);
 }

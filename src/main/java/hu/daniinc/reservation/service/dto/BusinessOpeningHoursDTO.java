@@ -1,13 +1,9 @@
 package hu.daniinc.reservation.service.dto;
 
-import hu.daniinc.reservation.domain.BusinessOpeningHours;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * A DTO for the {@link hu.daniinc.reservation.domain.BusinessOpeningHours} entity.
@@ -26,7 +22,7 @@ public class BusinessOpeningHoursDTO implements Serializable {
     @NotNull
     private LocalTime endTime;
 
-    private Set<BusinessOpeningHoursDTO> openingHours = new HashSet<>();
+    private BusinessDTO business;
 
     public Long getId() {
         return id;
@@ -60,28 +56,26 @@ public class BusinessOpeningHoursDTO implements Serializable {
         this.endTime = endTime;
     }
 
-    public Set<BusinessOpeningHoursDTO> getOpeningHours() {
-        return openingHours;
+    public BusinessDTO getBusiness() {
+        return business;
     }
 
-    public void setOpeningHours(Set<BusinessOpeningHoursDTO> openingHours) {
-        this.openingHours = openingHours;
+    public void setBusiness(BusinessDTO business) {
+        this.business = business;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof BusinessOpeningHoursDTO)) {
-            return false;
-        }
-
-        BusinessOpeningHoursDTO businessOpeningHoursDTO = (BusinessOpeningHoursDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, businessOpeningHoursDTO.id);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BusinessOpeningHoursDTO that = (BusinessOpeningHoursDTO) o;
+        return (
+            Objects.equals(id, that.id) &&
+            Objects.equals(dayOfWeek, that.dayOfWeek) &&
+            Objects.equals(startTime, that.startTime) &&
+            Objects.equals(endTime, that.endTime) &&
+            Objects.equals(business, that.business)
+        );
     }
 
     @Override

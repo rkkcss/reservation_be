@@ -124,8 +124,8 @@ public class GuestServiceImpl implements GuestService {
     }
 
     @Override
-    public List<GuestDTO> findAllBySearchString(String searchString) {
-        return guestRepository.searchByName(searchString).stream().map(guestMapper::toDto).collect(Collectors.toList());
+    public List<GuestDTO> findAllBySearchString(Long businessId, String searchString) {
+        return guestRepository.searchByName(businessId, searchString).stream().map(guestMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
@@ -141,7 +141,7 @@ public class GuestServiceImpl implements GuestService {
             .orElseThrow(() -> new AccessDeniedException("Nincs jogosultságod ehhez az üzlethez!"));
 
         // 2. Alap specifikáció összeállítása (biztonsági szűrővel)
-        Specification<Guest> spec = GuestSpecification.filterForUser(currentEmployee, filterEmployeeId);
+        Specification<Guest> spec = GuestSpecification.filterForUser(filter, currentEmployee, filterEmployeeId);
 
         // 3. Opcionális extra szűrők
         if ("appointment-is-null".equals(filter)) {

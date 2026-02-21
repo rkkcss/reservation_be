@@ -8,6 +8,7 @@ import java.time.Instant;
 public interface EmailService {
     void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml);
     void sendRegistrationEmail(User to);
+    void sendAppointmentReservedEmail(Appointment appointment);
 
     void sendAppointmentReminder(Guest guest, Appointment appointment);
 }

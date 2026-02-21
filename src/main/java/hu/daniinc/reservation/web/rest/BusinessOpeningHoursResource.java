@@ -4,6 +4,7 @@ import hu.daniinc.reservation.repository.BusinessOpeningHoursRepository;
 import hu.daniinc.reservation.service.BusinessOpeningHoursService;
 import hu.daniinc.reservation.service.dto.BusinessOpeningHoursDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
+import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -163,7 +165,7 @@ public class BusinessOpeningHoursResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the businessOpeningHoursDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<BusinessOpeningHoursDTO> getBusinessOpeningHours(@PathVariable("id") Long id) {
+    public ResponseEntity<BusinessOpeningHoursDTO> getBusinessOpeningHour(@PathVariable("id") Long id) {
         LOG.debug("REST request to get BusinessOpeningHours : {}", id);
         Optional<BusinessOpeningHoursDTO> businessOpeningHoursDTO = businessOpeningHoursService.findOne(id);
         return ResponseUtil.wrapOrNotFound(businessOpeningHoursDTO);
@@ -182,5 +184,28 @@ public class BusinessOpeningHoursResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/business/{businessId}")
+    public ResponseEntity<List<BusinessOpeningHoursDTO>> getBusinessOpeningHours(@PathVariable("businessId") Long businessId) {
+        LOG.debug("REST request to get BusinessOpeningHours by businessId : {}", businessId);
+        if (businessId == null) {
+            throw new GeneralException("business id is null", "business-id-null", HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok(businessOpeningHoursService.findAllByBusinessId(businessId));
+    }
+
+    @PostMapping("/business/{businessId}")
+    public ResponseEntity<List<BusinessOpeningHoursDTO>> createBusinessOpeningHours(
+        @PathVariable("businessId") Long businessId,
+        @RequestBody List<BusinessOpeningHoursDTO> businessOpeningHoursDTOs
+    ) {
+        LOG.debug("REST request to save BusinessOpeningHours list : {}", businessId);
+        if (businessId == null) {
+            throw new GeneralException("business id is null", "business-id-null", HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+            businessOpeningHoursService.saveOpeningHoursList(businessId, businessOpeningHoursDTOs)
+        );
     }
 }

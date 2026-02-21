@@ -5,6 +5,7 @@ import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.*;
 import hu.daniinc.reservation.service.AppointmentService;
+import hu.daniinc.reservation.service.EmailService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.*;
 import hu.daniinc.reservation.service.jobs.AppointmentReminderJob;
@@ -41,7 +42,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private static final Logger LOG = LoggerFactory.getLogger(AppointmentServiceImpl.class);
 
     private final AppointmentRepository appointmentRepository;
-
+    private final EmailService emailService;
     private final AppointmentMapper appointmentMapper;
     private final CustomWorkingHoursRepository customWorkingHoursRepository;
     private final WorkingHoursRepository workingHoursRepository;
@@ -54,6 +55,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     public AppointmentServiceImpl(
         AppointmentRepository appointmentRepository,
+        EmailService emailService,
         AppointmentMapper appointmentMapper,
         CustomWorkingHoursRepository customWorkingHoursRepository,
         WorkingHoursRepository workingHoursRepository,
@@ -65,6 +67,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         UserService userService
     ) {
         this.appointmentRepository = appointmentRepository;
+        this.emailService = emailService;
         this.appointmentMapper = appointmentMapper;
         this.customWorkingHoursRepository = customWorkingHoursRepository;
         this.workingHoursRepository = workingHoursRepository;
@@ -275,7 +278,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     public AppointmentDTO saveByOwner(Long employeeId, Long businessId, CreateAppointmentRequestDTO createAppointmentRequestDTO) {
         BusinessEmployee employee = businessEmployeeRepository
-            .findByUserLoginAndBusinessId(businessId)
+            .findByBusinessIdAndEmployeeId(businessId, employeeId)
             .orElseThrow(() -> new GeneralException("Employee not found!", "employee-not-found", HttpStatus.NOT_FOUND));
 
         Appointment appointment = new Appointment();
@@ -286,7 +289,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setCreatedDate(Instant.now());
 
         //set offering
-        offeringRepository.findByIdToBusiness(createAppointmentRequestDTO.getOfferingId()).ifPresent(appointment::setOffering);
+        offeringRepository.findByIdToBusiness(businessId, createAppointmentRequestDTO.getOfferingId()).ifPresent(appointment::setOffering);
 
         //set status
         appointment.setStatus(createAppointmentRequestDTO.getStatus());
@@ -296,7 +299,11 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setModifierToken(UUID.randomUUID().toString());
 
-        return appointmentMapper.toDto(appointmentRepository.save(appointment));
+        Appointment saved = appointmentRepository.save(appointment);
+
+        emailService.sendAppointmentReminder(saved.getGuest(), saved);
+
+        return appointmentMapper.toDto(saved);
     }
 
     @Override

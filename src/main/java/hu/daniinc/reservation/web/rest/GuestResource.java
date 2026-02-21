@@ -196,9 +196,9 @@ public class GuestResource {
             .build();
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<GuestDTO>> searchGuests(@RequestParam String searchString) {
+    @GetMapping("/business/{businessId}/search")
+    public ResponseEntity<List<GuestDTO>> searchGuests(@PathVariable("businessId") Long businessId, @RequestParam String searchString) {
         LOG.debug("REST request to search Guests : {}", searchString);
-        return ResponseEntity.status(HttpStatus.OK).body(guestService.findAllBySearchString(searchString));
+        return ResponseEntity.status(HttpStatus.OK).body(guestService.findAllBySearchString(businessId, searchString));
     }
 }

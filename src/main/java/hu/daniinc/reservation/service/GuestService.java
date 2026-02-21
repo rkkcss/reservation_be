@@ -64,7 +64,7 @@ public interface GuestService {
      */
     void delete(Long id);
 
-    List<GuestDTO> findAllBySearchString(String searchString);
+    List<GuestDTO> findAllBySearchString(Long businessId, String searchString);
 
     Page<GuestDTO> findAllByLoggedInUser(Pageable pageable);
 

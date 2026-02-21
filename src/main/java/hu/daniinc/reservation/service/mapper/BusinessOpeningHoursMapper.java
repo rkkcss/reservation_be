@@ -8,4 +8,8 @@ import org.mapstruct.*;
  * Mapper for the entity {@link BusinessOpeningHours} and its DTO {@link BusinessOpeningHoursDTO}.
  */
 @Mapper(componentModel = "spring")
-public interface BusinessOpeningHoursMapper extends EntityMapper<BusinessOpeningHoursDTO, BusinessOpeningHours> {}
+public interface BusinessOpeningHoursMapper extends EntityMapper<BusinessOpeningHoursDTO, BusinessOpeningHours> {
+    @Override
+    @Mapping(target = "business", ignore = true)
+    BusinessOpeningHoursDTO toDto(BusinessOpeningHours businessOpeningHours);
+}
