@@ -172,7 +172,6 @@ public class AppointmentResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of appointments in body.
      */
     @GetMapping("")
-    @RequiredBusinessPermission(value = { BusinessPermission.VIEW_ALL_SCHEDULE })
     public ResponseEntity<List<AppointmentDTO>> getAllAppointments(
         @RequestParam Instant startDate,
         @RequestParam Instant endDate,

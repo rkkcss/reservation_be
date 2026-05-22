@@ -1,5 +1,7 @@
 package hu.daniinc.reservation.web.rest;
 
+import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
+import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
 import hu.daniinc.reservation.service.StatisticService;
 import hu.daniinc.reservation.service.dto.BusinessStatisticSummaryDTO;
 import hu.daniinc.reservation.service.dto.CustomerDistributionDTO;
@@ -22,6 +24,7 @@ public class StatisticResource {
     }
 
     @GetMapping("/business/{businessId}/income")
+    @RequiredBusinessPermission({ BusinessPermission.VIEW_ALL_STATISTICS, BusinessPermission.VIEW_OWN_STATISTICS })
     public ResponseEntity<List<IncomeChartDTO>> getIncomeByBusinessId(
         @PathVariable Long businessId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,

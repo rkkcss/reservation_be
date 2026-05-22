@@ -191,6 +191,7 @@ spring:
 server:
   servlet:
     session:
+      timeout: 8h
       cookie:
         http-only: true
 
