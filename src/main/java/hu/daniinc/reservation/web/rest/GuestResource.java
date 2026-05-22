@@ -1,6 +1,8 @@
 package hu.daniinc.reservation.web.rest;
 
+import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.GuestRepository;
+import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
 import hu.daniinc.reservation.service.GuestService;
 import hu.daniinc.reservation.service.dto.GuestDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;

@@ -201,10 +201,14 @@ public class BusinessResource {
         return ResponseEntity.ok().body(businessAppearanceDTO.getLogo());
     }
 
-    @PostMapping("/theme")
-    public ResponseEntity<BusinessTheme> changeBusinessTheme(@RequestBody BusinessAppearanceDTO businessAppearanceDTO) {
+    @PostMapping("/{businessId}/theme")
+    @RequiredBusinessPermission(BusinessPermission.MANAGE_BUSINESS_SETTINGS)
+    public ResponseEntity<BusinessTheme> changeBusinessTheme(
+        @PathVariable("businessId") Long businessId,
+        @RequestBody BusinessAppearanceDTO businessAppearanceDTO
+    ) {
         LOG.debug("REST request to change Business Theme : {}", businessAppearanceDTO.getTheme());
-        businessService.changeBusinessTheme(businessAppearanceDTO.getTheme());
+        businessService.changeBusinessThemeById(businessId, businessAppearanceDTO.getTheme());
         return ResponseEntity.ok().body(businessAppearanceDTO.getTheme());
     }
 }

@@ -123,11 +123,11 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     @Transactional
-    public void changeBusinessTheme(BusinessTheme theme) {
+    public void changeBusinessThemeById(Long businessId, BusinessTheme theme) {
         LOG.debug("Request to change Business Theme");
 
         Business business = businessRepository
-            .findBusinessByLoginAndBusinessId(1L)
+            .findBusinessByLoginAndBusinessId(businessId)
             .orElseThrow(() -> new EntityNotFoundException("No Business Found"));
 
         business.setTheme(theme);

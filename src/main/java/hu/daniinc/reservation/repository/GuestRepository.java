@@ -31,5 +31,5 @@ public interface GuestRepository extends JpaRepository<Guest, Long>, JpaSpecific
     Page<Guest> findAllByLoggedInUser(Pageable pageable);
 
     @Query("select g from Guest g where LOWER(g.email) = LOWER(?1) and g.businessEmployee.business.id = ?2")
-    Optional<Guest> findByEmail(String email, Long businessId);
+    Optional<Guest> findByEmailByBusinessId(String email, Long businessId);
 }

@@ -185,10 +185,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     ) {
         Map<LocalDate, List<Instant>> availableSlotsMap = new LinkedHashMap<>();
 
-        // 1. Business lekérése (időzóna és max foglalási idő miatt)
+        // 1. Business lekérése
         Business business = businessRepository.findById(businessId).orElseThrow(() -> new EntityNotFoundException("Business not found"));
 
-        // Időzóna dinamikus kezelése
         ZoneId zone = ZoneId.of(business.getTimeZone() != null ? business.getTimeZone() : "Europe/Budapest");
 
         // 2. Max előre foglalható idő korlátozása
@@ -200,7 +199,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
         }
 
-        // 3. Összes releváns foglalás lekérése a tartományra
+        // 3. Összes releváns foglalás lekérése - EGYSZER
         Instant overallStart = from.atStartOfDay(zone).toInstant();
         Instant overallEnd = to.plusDays(1).atStartOfDay(zone).toInstant();
 
@@ -211,13 +210,16 @@ public class AppointmentServiceImpl implements AppointmentService {
             overallEnd
         );
 
+        // ÚJ: WorkingHours lekérése EGYSZER a ciklus előtt
+        List<WorkingHours> allWorkingHours = workingHoursRepository.findByBusinessIdAndEmployeeId(businessId, employeeId);
+
         Instant now = Instant.now();
 
         // 4. Napokon való végigfutás
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
             List<Instant> potentialSlots = new ArrayList<>();
 
-            // Egyedi munkaidő ellenőrzés
+            // Egyedi munkaidő ellenőrzés - ez marad DB hívás (egyedi napok)
             Optional<CustomWorkingHours> customOpt = customWorkingHoursRepository.findByBusinessIdAndEmployeeIdAndWorkDate(
                 businessId,
                 employeeId,
@@ -228,26 +230,21 @@ public class AppointmentServiceImpl implements AppointmentService {
                 CustomWorkingHours cwh = customOpt.get();
                 generateSlots(potentialSlots, cwh.getStartTime(), cwh.getEndTime(), slotLength);
             } else {
-                // Alapértelmezett munkaidő
+                // ÚJ: Már nem DB hívás, csak szűrés a memóriában
                 int dayOfWeek = date.getDayOfWeek().getValue();
-                List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndEmployeeIdAndDayOfWeek(
-                    businessId,
-                    employeeId,
-                    dayOfWeek
-                );
+                List<WorkingHours> whList = allWorkingHours.stream().filter(wh -> wh.getDayOfWeek().equals(dayOfWeek)).toList();
 
                 for (WorkingHours wh : whList) {
-                    // Itt vetítjük rá a LocalTime-ot az adott napra a cég zónájában
                     Instant start = date.atTime(wh.getStartTime()).atZone(zone).toInstant();
                     Instant end = date.atTime(wh.getEndTime()).atZone(zone).toInstant();
                     generateSlots(potentialSlots, start, end, slotLength);
                 }
             }
 
-            // 5. Szűrés: Múltbeli időpontok és ütközések kiszűrése
+            // 5. Szűrés - változatlan
             List<Instant> available = potentialSlots
                 .stream()
-                .filter(slot -> !slot.isBefore(now)) // Ne legyen a múltban
+                .filter(slot -> !slot.isBefore(now))
                 .filter(slot ->
                     allAppointments
                         .stream()
@@ -334,7 +331,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         // 5. Vendég kezelése
         Guest guest = guestRepository
-            .findByEmail(dto.getEmail(), business.getId())
+            .findByEmailByBusinessId(dto.getEmail(), business.getId())
             .orElseGet(() -> {
                 Guest newGuest = new Guest();
                 newGuest.setEmail(dto.getEmail());
@@ -475,7 +472,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         // 5. Alapértelmezett munkaidő ellenőrzése
         int dow = date.getDayOfWeek().getValue();
-        List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndEmployeeIdAndDayOfWeek(businessId, employeeId, dow);
+        List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndEmployeeId(businessId, employeeId);
 
         for (WorkingHours wh : whList) {
             Instant whStart = date.atTime(wh.getStartTime()).atZone(zone).toInstant();

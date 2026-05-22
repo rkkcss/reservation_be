@@ -3,6 +3,7 @@ package hu.daniinc.reservation.repository;
 import hu.daniinc.reservation.domain.BusinessEmployeeInvite;
 import hu.daniinc.reservation.service.dto.BusinessEmployeeInviteDTO;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -34,4 +35,13 @@ public interface BusinessEmployeeInviteRepository extends CrudRepository<Busines
         "AND bei.expiresAt > current_timestamp"
     )
     Optional<BusinessEmployeeInvite> findOneByToken(@Param(value = "token") String token);
+
+    @Query(
+        "select bei from BusinessEmployeeInvite bei " +
+        "join fetch bei.business " +
+        "where bei.used = false " +
+        "AND bei.expiresAt > current_date " +
+        "AND lower(bei.email) = lower(:email)"
+    )
+    Set<BusinessEmployeeInvite> findPendingsByLoggedInUser(@Param("email") String email);
 }

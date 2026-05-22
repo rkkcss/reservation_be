@@ -18,17 +18,21 @@ import hu.daniinc.reservation.service.mapper.BusinessEmployeeInviteMapper;
 import hu.daniinc.reservation.service.mapper.BusinessEmployeeMapperImpl;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
+import hu.daniinc.reservation.web.rest.errors.NotFoundException;
 import hu.daniinc.reservation.web.rest.vm.ManagedUserVM;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.hibernate.SessionException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,13 +93,23 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
         BusinessEmployeeInvite result = businessEmployeeInviteRepository.save(invite);
 
         // send email
-        emailService.sendEmail(
-            dto.getEmail(),
-            "Felkérés csatlakozáshoz",
-            "http://localhost:5173/employee-invite/" + invite.getToken(),
-            false,
-            false
-        );
+        if (userRepository.findOneByEmailIgnoreCase(invite.getEmail()).isPresent()) {
+            emailService.sendEmail(
+                dto.getEmail(),
+                "Felkérés csatlakozáshoz",
+                "Meghivást kaptál egy csapathoz. Bejelentkezés után tudsz csatlakozni! http://localhost:5173/",
+                false,
+                false
+            );
+        } else {
+            emailService.sendEmail(
+                dto.getEmail(),
+                "Felkérés csatlakozáshoz",
+                "http://localhost:5173/employee-invite/" + invite.getToken(),
+                false,
+                false
+            );
+        }
 
         return businessEmployeeInviteMapper.toDto(result);
     }
@@ -174,6 +188,21 @@ public class BusinessEmployeeInviteImpl implements BusinessEmployeeInviteService
 
         businessEmployeeInviteRepository.save(invite);
         businessEmployeeRepository.save(newEmployee);
+    }
+
+    //get current logged in user's invitations
+    @Override
+    @Transactional
+    public Set<BusinessEmployeeInviteDTO> getPendingInvitationsByLoggedInUser() {
+        User loggedInUser = userService
+            .getUserWithAuthorities()
+            .orElseThrow(() -> new AuthorizationDeniedException("You are not authorised"));
+
+        return businessEmployeeInviteRepository
+            .findPendingsByLoggedInUser(loggedInUser.getEmail())
+            .stream()
+            .map(businessEmployeeInviteMapper::toDto)
+            .collect(Collectors.toSet());
     }
 
     private BusinessEmployeeInvite validateToken(String token) {

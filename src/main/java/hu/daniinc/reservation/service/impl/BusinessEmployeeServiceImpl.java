@@ -1,11 +1,13 @@
 package hu.daniinc.reservation.service.impl;
 
 import hu.daniinc.reservation.domain.BusinessEmployee;
+import hu.daniinc.reservation.domain.BusinessEmployeeInvite;
 import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.domain.enumeration.BusinessRole;
 import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.BusinessRepository;
+import hu.daniinc.reservation.service.BusinessEmployeeInviteService;
 import hu.daniinc.reservation.service.BusinessEmployeeService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.BusinessEmployeeDTO;
@@ -36,23 +38,20 @@ public class BusinessEmployeeServiceImpl implements BusinessEmployeeService {
 
     private static final Logger LOG = LoggerFactory.getLogger(BusinessEmployeeServiceImpl.class);
     private final UserService userService;
-    private final BusinessRepository businessRepository;
     private final BusinessEmployeeRepository businessEmployeeRepository;
     private final BusinessEmployeeMapper businessEmployeeMapper;
-    private final UserMapper userMapper;
+    private final BusinessEmployeeInviteService businessEmployeeInviteService;
 
     public BusinessEmployeeServiceImpl(
         UserService userService,
-        BusinessRepository businessRepository,
         BusinessEmployeeRepository businessEmployeeRepository,
         BusinessEmployeeMapper businessEmployeeMapper,
-        UserMapper userMapper
+        BusinessEmployeeInviteService businessEmployeeInviteService
     ) {
         this.userService = userService;
-        this.businessRepository = businessRepository;
         this.businessEmployeeRepository = businessEmployeeRepository;
         this.businessEmployeeMapper = businessEmployeeMapper;
-        this.userMapper = userMapper;
+        this.businessEmployeeInviteService = businessEmployeeInviteService;
     }
 
     @Override

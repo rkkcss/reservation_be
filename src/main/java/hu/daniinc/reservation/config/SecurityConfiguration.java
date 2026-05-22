@@ -3,8 +3,8 @@ package hu.daniinc.reservation.config;
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
-import hu.daniinc.reservation.repository.PersistentTokenRepository;
 import hu.daniinc.reservation.security.*;
+import hu.daniinc.reservation.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.function.Supplier;
@@ -16,7 +16,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -53,7 +52,11 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
+    public SecurityFilterChain filterChain(
+        HttpSecurity http,
+        MvcRequestMatcher.Builder mvc,
+        CustomOAuth2UserService customOAuth2UserService
+    ) throws Exception {
         http
             .cors(withDefaults())
             .csrf(csrf -> {
@@ -94,6 +97,7 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/api/employee-invite/activate")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET,"/api/business-employee/public/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET,"/api/offerings/public/**")).permitAll()
+
                     .requestMatchers(mvc.pattern("/api/**")).authenticated()
                     .requestMatchers(mvc.pattern("/websocket/**")).authenticated()
                     .requestMatchers(mvc.pattern("/v3/api-docs/**")).permitAll()
@@ -123,8 +127,30 @@ public class SecurityConfiguration {
                     .failureHandler((request, response, exception) -> response.setStatus(HttpStatus.UNAUTHORIZED.value()))
                     .permitAll()
             )
+            .oauth2Login(oauth2 ->
+                oauth2
+                    .loginPage("/")
+                    .successHandler((request, response, authentication) -> {
+                        String redirectUrl = env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))
+                            ? "http://localhost:5173/oauth-success"
+                            : "https://booklyapp.me/oauth-success";
+                        response.sendRedirect(redirectUrl);
+                    })
+                    .failureHandler((request, response, exception) -> {
+                        String redirectUrl = env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))
+                            ? "http://localhost:5173/?error=google"
+                            : "https://booklyapp.me/?error=google";
+                        response.sendRedirect(redirectUrl);
+                    })
+                    .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+            )
             .logout(logout ->
-                logout.logoutUrl("/api/logout").logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()).permitAll()
+                logout
+                    .logoutUrl("/api/logout")
+                    .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID")
+                    .permitAll()
             );
         if (env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))) {
             http

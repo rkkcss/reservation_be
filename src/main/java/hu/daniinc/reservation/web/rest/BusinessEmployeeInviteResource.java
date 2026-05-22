@@ -12,6 +12,7 @@ import hu.daniinc.reservation.web.rest.vm.ManagedUserVM;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +32,7 @@ public class BusinessEmployeeInviteResource {
         this.businessEmployeeInviteService = businessEmployeeInviteService;
     }
 
+    // create business employee invitation
     @PostMapping("/{businessId}")
     @RequiredBusinessPermission(BusinessPermission.MANAGE_EMPLOYEES)
     public ResponseEntity<BusinessEmployeeInviteDTO> createBusinessEmployeeInvite(
@@ -46,7 +48,6 @@ public class BusinessEmployeeInviteResource {
     }
 
     @GetMapping("/business/{businessId}/pending")
-    @RequiredBusinessPermission(BusinessPermission.MANAGE_EMPLOYEES)
     public ResponseEntity<List<BusinessEmployeeInviteDTO>> getPendingBusinessEmployeeInvites(
         @PathVariable(value = "businessId") Long businessId,
         Pageable pageable
@@ -71,17 +72,23 @@ public class BusinessEmployeeInviteResource {
     }
 
     @PostMapping("/activate")
-    public ResponseEntity<Void> activateBusinessEmployeeInvite(
+    public ResponseEntity<?> activateBusinessEmployeeInvite(
         @RequestParam("token") String token,
         @Valid @RequestBody(required = false) ManagedUserVM managedUserVM,
         HttpServletRequest request
     ) {
         if (managedUserVM == null) {
             businessEmployeeInviteService.activateAlreadyRegisteredBusinessEmployeeWithToken(token);
+            return ResponseEntity.noContent().build();
         } else {
             businessEmployeeInviteService.activateBusinessEmployeeWithToken(token, managedUserVM, request);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         }
+    }
 
-        return ResponseEntity.noContent().build();
+    //get pending invitations by logged in user
+    @GetMapping("/pending")
+    public ResponseEntity<Set<BusinessEmployeeInviteDTO>> getPendingBusinessEmployeeInvites() {
+        return ResponseEntity.status(HttpStatus.OK).body(businessEmployeeInviteService.getPendingInvitationsByLoggedInUser());
     }
 }

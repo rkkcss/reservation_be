@@ -59,6 +59,9 @@ public class GuestServiceImpl implements GuestService {
     public GuestDTO save(Long businessId, GuestDTO guestDTO) {
         LOG.debug("Request to save Guest : {}", guestDTO);
         Guest guest = guestMapper.toEntity(guestDTO);
+        if (guestRepository.findByEmailByBusinessId(guest.getEmail(), businessId).isPresent()) {
+            throw new GeneralException("Guest already exists", "guest-already-exists", HttpStatus.CONFLICT);
+        }
         BusinessEmployee be = businessEmployeeRepository
             .findByUserLoginAndBusinessId(businessId)
             .orElseThrow(() -> new GeneralException("business-employee-not-found", "business-employee-not-found", HttpStatus.NOT_FOUND));

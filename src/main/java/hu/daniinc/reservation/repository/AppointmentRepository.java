@@ -79,15 +79,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
     @Query(
         """
             SELECT new hu.daniinc.reservation.service.dto.IncomeChartDTO(
-                CAST(CAST(a.createdDate AS date) AS string),
+                CAST(CAST(a.startDate AS date) AS string),
                 SUM(a.offering.price)
             )
             FROM Appointment a
-            WHERE a.createdDate BETWEEN :start AND :end
+            WHERE a.startDate BETWEEN :start AND :end
             AND a.businessEmployee.business.id = :businessId
             AND (:employeeId IS NULL OR a.businessEmployee.user.id = :employeeId)
-            GROUP BY CAST(CAST(a.createdDate AS date) AS string)
-            ORDER BY CAST(CAST(a.createdDate AS date) AS string) ASC
+            AND a.status != 'PENDING'
+            AND a.status != 'CANCELLED'
+            GROUP BY CAST(CAST(a.startDate AS date) AS string)
+            ORDER BY CAST(CAST(a.startDate AS date) AS string) ASC
         """
     )
     List<IncomeChartDTO> getDailyStats(

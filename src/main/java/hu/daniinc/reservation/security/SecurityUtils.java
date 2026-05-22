@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 /**
  * Utility class for Spring Security.
@@ -31,6 +32,8 @@ public final class SecurityUtils {
             return null;
         } else if (authentication.getPrincipal() instanceof UserDetails springSecurityUser) {
             return springSecurityUser.getUsername();
+        } else if (authentication.getPrincipal() instanceof OAuth2User oauth2User) {
+            return oauth2User.getAttribute("email");
         } else if (authentication.getPrincipal() instanceof String s) {
             return s;
         }

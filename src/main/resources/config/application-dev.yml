@@ -20,6 +20,16 @@ logging:
     hu.daniinc.reservation: DEBUG
 
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE-CLIENT-ID}
+            client-secret: ${GOOGLE-CLIENT-SECRET}
+            scope:
+              - email
+              - profile
   jpa:
     properties:
       hibernate:

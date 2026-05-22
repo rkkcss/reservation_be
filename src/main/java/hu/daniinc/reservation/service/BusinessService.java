@@ -62,5 +62,5 @@ public interface BusinessService {
 
     void changeBusinessLogo(String logo);
 
-    void changeBusinessTheme(BusinessTheme theme);
+    void changeBusinessThemeById(Long businessId, BusinessTheme theme);
 }

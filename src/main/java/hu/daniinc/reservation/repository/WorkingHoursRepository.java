@@ -20,14 +20,8 @@ public interface WorkingHoursRepository extends JpaRepository<WorkingHours, Long
     )
     List<WorkingHours> findByBusinessUserLogin(@Param("businessId") Long businessId);
 
-    @Query(
-        "SELECT w FROM WorkingHours w WHERE w.businessEmployee.business.id = :businessId AND w.businessEmployee.user.id = :employeeId AND w.dayOfWeek = :dayOfWeek"
-    )
-    List<WorkingHours> findByBusinessIdAndEmployeeIdAndDayOfWeek(
-        @Param("businessId") Long businessId,
-        @Param("employeeId") Long employeeId,
-        @Param("dayOfWeek") Integer dayOfWeek
-    );
+    @Query("SELECT w FROM WorkingHours w WHERE w.businessEmployee.business.id = :businessId AND w.businessEmployee.user.id = :employeeId")
+    List<WorkingHours> findByBusinessIdAndEmployeeId(@Param("businessId") Long businessId, @Param("employeeId") Long employeeId);
 
     @Query("select w from WorkingHours w where w.businessEmployee.business.id = :businessId and w.businessEmployee.user.id = :employeeId")
     Set<WorkingHours> findAllByBusinessAndEmployeeId(@Param("businessId") Long businessId, @Param("employeeId") Long employeeId);

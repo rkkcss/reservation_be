@@ -18,6 +18,9 @@ app.onboarding-version: 1
 ---
 # Conditionally disable springdoc on missing api-docs profile
 
+# imagekit
+#imagekit.public-key: ${SPRING_DATASOURCE_USERNAME:}
+
 spring:
   quartz:
     job-store-type: jdbc
