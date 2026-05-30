@@ -199,7 +199,7 @@ public class AccountResource {
     @PostMapping(path = "/account/change-password")
     public void changePassword(@RequestBody PasswordChangeDTO passwordChangeDto) {
         if (isPasswordLengthInvalid(passwordChangeDto.getNewPassword())) {
-            throw new InvalidPasswordException();
+            throw new GeneralException("Password length is invalid.", "password-length-not-fit", HttpStatus.BAD_REQUEST);
         }
         userService.changePassword(passwordChangeDto.getCurrentPassword(), passwordChangeDto.getNewPassword());
     }

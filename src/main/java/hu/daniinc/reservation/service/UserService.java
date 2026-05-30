@@ -61,6 +61,7 @@ public class UserService {
     private final BusinessEmployeeInviteRepository businessEmployeeInviteRepository;
     private final BusinessEmployeeRepository businessEmployeeRepository;
     private final DomainUserDetailsService userDetailsService;
+    private final EmailService emailService;
 
     @Value("${app.onboarding-version}")
     private Integer onboardingVersion;
@@ -74,7 +75,8 @@ public class UserService {
         BusinessRepository businessRepository,
         BusinessEmployeeInviteRepository businessEmployeeInviteRepository,
         BusinessEmployeeRepository businessEmployeeRepository,
-        DomainUserDetailsService userDetailsService
+        DomainUserDetailsService userDetailsService,
+        EmailService emailService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -85,6 +87,7 @@ public class UserService {
         this.businessEmployeeInviteRepository = businessEmployeeInviteRepository;
         this.businessEmployeeRepository = businessEmployeeRepository;
         this.userDetailsService = userDetailsService;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -379,11 +382,19 @@ public class UserService {
             .ifPresent(user -> {
                 String currentEncryptedPassword = user.getPassword();
                 if (!passwordEncoder.matches(currentClearTextPassword, currentEncryptedPassword)) {
-                    throw new InvalidPasswordException();
+                    throw new GeneralException("Incorrect password", "incorrect-password", HttpStatus.BAD_REQUEST);
                 }
                 String encryptedPassword = passwordEncoder.encode(newPassword);
                 user.setPassword(encryptedPassword);
                 this.clearUserCaches(user);
+                //need custom email template
+                emailService.sendEmail(
+                    user.getEmail(),
+                    "Your password successfully changed!",
+                    "You changed your password successfully",
+                    false,
+                    false
+                );
                 LOG.debug("Changed password for User: {}", user);
             });
     }

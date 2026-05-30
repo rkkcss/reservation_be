@@ -8,29 +8,22 @@ import hu.daniinc.reservation.service.AppointmentService;
 import hu.daniinc.reservation.service.EmailService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.*;
-import hu.daniinc.reservation.service.jobs.AppointmentReminderJob;
 import hu.daniinc.reservation.service.mapper.AppointmentMapper;
 import hu.daniinc.reservation.service.quartz.AppointmentReminderService;
 import hu.daniinc.reservation.service.specifications.AppointmentsSpecification;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import hu.daniinc.reservation.web.rest.errors.NotFoundException;
-import io.undertow.util.BadRequestException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Service Implementation for managing {@link hu.daniinc.reservation.domain.Appointment}.

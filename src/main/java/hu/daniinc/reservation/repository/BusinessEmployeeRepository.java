@@ -1,12 +1,9 @@
 package hu.daniinc.reservation.repository;
 
-import hu.daniinc.reservation.domain.Business;
 import hu.daniinc.reservation.domain.BusinessEmployee;
-import hu.daniinc.reservation.service.dto.BusinessEmployeeDTO;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.hibernate.annotations.Where;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
