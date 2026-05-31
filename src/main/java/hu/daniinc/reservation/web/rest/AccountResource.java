@@ -263,6 +263,7 @@ public class AccountResource {
         if (user.isPresent()) {
             //TODO: SEND password reset email implementation
             //            mailService.sendPasswordResetMail(user.orElseThrow());
+            emailService.sendPasswordResetMail(user.orElseThrow());
         } else {
             // Pretend the request has been successful to prevent checking which emails really exist
             // but log that an invalid attempt has been made
@@ -280,12 +281,12 @@ public class AccountResource {
     @PostMapping(path = "/account/reset-password/finish")
     public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
         if (isPasswordLengthInvalid(keyAndPassword.getNewPassword())) {
-            throw new InvalidPasswordException();
+            throw new GeneralException("Password length is invalid.", "password-length-not-fit", HttpStatus.BAD_REQUEST);
         }
         Optional<User> user = userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
 
         if (!user.isPresent()) {
-            throw new AccountResourceException("No user was found for this reset key");
+            throw new GeneralException("No user was found for this reset key", "password-reset-not-fit", HttpStatus.BAD_REQUEST);
         }
     }
 

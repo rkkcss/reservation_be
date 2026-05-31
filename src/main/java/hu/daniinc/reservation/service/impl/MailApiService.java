@@ -4,11 +4,13 @@ import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.service.EmailService;
-import java.time.Instant;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.thymeleaf.context.Context;
@@ -19,6 +21,7 @@ import tech.jhipster.config.JHipsterConstants;
 @Profile(JHipsterConstants.SPRING_PROFILE_PRODUCTION)
 public class MailApiService implements EmailService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(MailApiService.class);
     private final SpringTemplateEngine templateEngine;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -51,7 +54,35 @@ public class MailApiService implements EmailService {
     public void sendAppointmentReservedEmail(Appointment appointment) {}
 
     @Override
+    @Async
+    public void sendPasswordResetMail(User user) {
+        LOG.debug("Sending password reset email to '{}'", user.getEmail());
+        Context context = new Context();
+        context.setVariable("user", user);
+        context.setVariable("baseUrl", baseUrl);
+        String content = templateEngine.process("mail/passwordReset", context);
+        String subject = "Jelszó visszaállitása";
+        this.sendEmail(user.getEmail(), subject, "mail/passwordResetEmail", false, false);
+    }
+
+    @Override
     public void sendAppointmentReminder(Guest guest, Appointment appointment) {}
+
+    @Override
+    public void sendPasswordChanged(User user) {
+        LOG.debug("User password changed successfully '{}'", user.getEmail());
+        Context context = new Context();
+        context.setVariable("user", user);
+        //TODO: create normal email for that
+        String content = templateEngine.process("mail/passwordReset", context);
+        this.sendEmail(
+                user.getEmail(),
+                "Sikeres jelszó változtatás!",
+                "Sikeresen megváltoztattad a jelszavadat! Ez rendszer üzenet, ne válaszolj rá!",
+                false,
+                false
+            );
+    }
 
     @Override
     public void sendEmail(String toEmail, String subject, String content, boolean isMultipart, boolean isHtml) {

@@ -145,6 +145,23 @@ public class FakeMailService implements EmailService {
         sendEmailFromTemplateSync(user, "mail/passwordResetEmail", "email.reset.title");
     }
 
+    @Override
+    @Async
+    public void sendPasswordChanged(User user) {
+        LOG.debug("User password changed successfully '{}'", user.getEmail());
+        Context context = new Context();
+        context.setVariable("user", user);
+        //TODO: create normal email for that
+        //String content = templateEngine.process("mail/passwordReset", context);
+        this.sendEmail(
+                user.getEmail(),
+                "Sikeres jelszó változtatás!",
+                "Sikeresen megváltoztattad a jelszavadat! Ez rendszer üzenet, ne válaszolj rá!",
+                false,
+                false
+            );
+    }
+
     @Async
     public void sendAppointmentReminder(Guest guest, Appointment appointment) {
         LOG.debug("Emlékeztető email küldése a vendégnek: {}", guest.getEmail());

@@ -9,6 +9,8 @@ public interface EmailService {
     void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml);
     void sendRegistrationEmail(User to);
     void sendAppointmentReservedEmail(Appointment appointment);
-
+    void sendPasswordResetMail(User user);
     void sendAppointmentReminder(Guest guest, Appointment appointment);
+
+    void sendPasswordChanged(User user);
 }

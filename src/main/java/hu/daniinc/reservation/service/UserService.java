@@ -128,6 +128,7 @@ public class UserService {
                 user.setResetKey(null);
                 user.setResetDate(null);
                 this.clearUserCaches(user);
+                emailService.sendPasswordChanged(user);
                 return user;
             });
     }
