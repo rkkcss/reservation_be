@@ -1,12 +1,9 @@
 package hu.daniinc.reservation.service.impl;
 
-import hu.daniinc.reservation.domain.Business;
 import hu.daniinc.reservation.domain.BusinessEmployee;
 import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
-import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.repository.GuestRepository;
-import hu.daniinc.reservation.security.SecurityUtils;
 import hu.daniinc.reservation.service.GuestService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.GuestDTO;
@@ -153,5 +150,10 @@ public class GuestServiceImpl implements GuestService {
 
         // 4. Lekérdezés és DTO-vá alakítás
         return guestRepository.findAll(spec, pageable).map(guestMapper::toDto);
+    }
+
+    @Override
+    public List<GuestDTO> searchForGlobal(Long businessId, String query, int limit) {
+        return findAllBySearchString(businessId, query).stream().limit(limit).toList();
     }
 }

@@ -1,9 +1,6 @@
 package hu.daniinc.reservation.service;
 
-import hu.daniinc.reservation.service.dto.AppointmentDTO;
-import hu.daniinc.reservation.service.dto.CreateAppointmentByGuestDTO;
-import hu.daniinc.reservation.service.dto.CreateAppointmentRequestDTO;
-import hu.daniinc.reservation.service.dto.UpdateAppointmentDTO;
+import hu.daniinc.reservation.service.dto.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -87,4 +84,6 @@ public interface AppointmentService {
     AppointmentDTO approveAppointment(Long appointmentId, Long employeeId);
 
     AppointmentDTO cancelAppointment(Long id, Long employeeId);
+
+    List<AppointmentDTO> searchGlobal(Long businessId, String query, int limit);
 }

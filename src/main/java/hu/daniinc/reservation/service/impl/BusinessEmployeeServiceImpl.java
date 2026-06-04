@@ -3,6 +3,7 @@ package hu.daniinc.reservation.service.impl;
 import hu.daniinc.reservation.domain.BusinessEmployee;
 import hu.daniinc.reservation.domain.BusinessEmployeeInvite;
 import hu.daniinc.reservation.domain.User;
+import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.domain.enumeration.BusinessRole;
 import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
@@ -121,5 +122,19 @@ public class BusinessEmployeeServiceImpl implements BusinessEmployeeService {
             .stream()
             .map(businessEmployeeMapper::toDto)
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public BusinessEmployeeDTO changeEmployeeStatus(Long businessEmployeeId, boolean status) {
+        return businessEmployeeRepository
+            .findByEmployeeId(businessEmployeeId)
+            .map(businessEmployee -> {
+                BasicEntityStatus newStatus = status ? BasicEntityStatus.ACTIVE : BasicEntityStatus.INACTIVE;
+                businessEmployee.setStatus(newStatus);
+
+                return businessEmployeeRepository.save(businessEmployee);
+            })
+            .map(businessEmployeeMapper::toDto)
+            .orElseThrow(() -> new NotFoundException("Employee", businessEmployeeId));
     }
 }

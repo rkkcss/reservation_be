@@ -69,4 +69,6 @@ public interface GuestService {
     Page<GuestDTO> findAllByLoggedInUser(Pageable pageable);
 
     Page<GuestDTO> findAllWithSpecs(Long businessId, String filter, Long filterEmployeeId, Pageable pageable);
+
+    List<GuestDTO> searchForGlobal(Long businessId, String query, int limit);
 }

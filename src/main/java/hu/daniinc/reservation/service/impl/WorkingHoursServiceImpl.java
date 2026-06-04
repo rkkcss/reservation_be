@@ -1,6 +1,5 @@
 package hu.daniinc.reservation.service.impl;
 
-import hu.daniinc.reservation.domain.Business;
 import hu.daniinc.reservation.domain.BusinessEmployee;
 import hu.daniinc.reservation.domain.WorkingHours;
 import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
@@ -123,7 +122,7 @@ public class WorkingHoursServiceImpl implements WorkingHoursService {
         existingHours.stream().filter(hour -> !newHourIds.contains(hour.getId())).forEach(workingHoursRepository::delete);
 
         BusinessEmployee employee = businessEmployeeRepository
-            .findByEmployeeUserId(employeeId)
+            .findByEmployeeId(employeeId)
             .orElseThrow(() -> new GeneralException("Employee not found!", "employee-not-found", HttpStatus.NOT_FOUND));
 
         // Process each DTO

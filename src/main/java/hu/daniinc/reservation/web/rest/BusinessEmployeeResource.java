@@ -102,4 +102,13 @@ public class BusinessEmployeeResource {
         }
         return ResponseEntity.ok(businessEmployeeService.findAllPublicByBusinessId(businessId));
     }
+
+    @PatchMapping("/{employeeId}/status")
+    public ResponseEntity<BusinessEmployeeDTO> patchEmployeeStatus(@PathVariable Long employeeId, @RequestBody boolean status) {
+        if (employeeId == null) {
+            LOG.debug("patchEmployeeStatus: employeeId is null");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.ok().body(businessEmployeeService.changeEmployeeStatus(employeeId, status));
+    }
 }

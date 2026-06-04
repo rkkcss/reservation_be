@@ -1,10 +1,8 @@
 package hu.daniinc.reservation.repository;
 
 import hu.daniinc.reservation.domain.Appointment;
-import hu.daniinc.reservation.service.dto.AppointmentDTO;
 import hu.daniinc.reservation.service.dto.IncomeChartDTO;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -98,4 +96,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
         @Param("end") Instant end,
         @Param("employeeId") Long employeeId
     );
+
+    @Query(
+        """
+            select a from Appointment a where a.businessEmployee.business.id = :businessId
+            AND a.businessEmployee.user.login = ?#{authentication.name}
+            AND a.startDate >= CURRENT_DATE
+            AND (LOWER(a.guest.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(a.guest.email) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(a.guest.phoneNumber) LIKE LOWER(CONCAT('%', :query, '%')))
+            AND a.status != 'CANCELLED'
+        """
+    )
+    List<Appointment> searchByBusinessIdQueryString(Long businessId, String query);
 }

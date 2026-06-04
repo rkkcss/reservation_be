@@ -19,4 +19,6 @@ public interface BusinessEmployeeService {
     BusinessEmployeeDTO updatePermissions(Long businessEmployeeId, Set<BusinessPermission> permissions);
 
     List<BusinessEmployeeDTO> findAllPublicByBusinessId(Long businessId);
+
+    BusinessEmployeeDTO changeEmployeeStatus(Long businessEmployeeId, boolean status);
 }

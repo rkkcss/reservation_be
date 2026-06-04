@@ -17,7 +17,13 @@ public interface BusinessEmployeeRepository extends JpaRepository<BusinessEmploy
     @Query("select be from BusinessEmployee be where be.business.id = ?1 and be.user.login = ?#{authentication.name}")
     Optional<BusinessEmployee> findByUserLoginAndBusinessId(Long businessId);
 
-    @Query("select be from BusinessEmployee be where be.user.login = :login")
+    @Query(
+        """
+        select be from BusinessEmployee be where be.user.login = :login
+        and be.status not in (hu.daniinc.reservation.domain.enumeration.BasicEntityStatus.INACTIVE,
+        hu.daniinc.reservation.domain.enumeration.BasicEntityStatus.DELETED)
+        """
+    )
     Set<BusinessEmployee> findAllByUserLogin(@Param("login") String login);
 
     @Query(
@@ -43,6 +49,6 @@ public interface BusinessEmployeeRepository extends JpaRepository<BusinessEmploy
     )
     List<BusinessEmployee> findAllPublicByBusinessId(Long businessId);
 
-    @Query("select be from BusinessEmployee be where be.user.id = :employeeId")
-    Optional<BusinessEmployee> findByEmployeeUserId(@Param("employeeId") Long employeeId);
+    @Query("select be from BusinessEmployee be where be.id = :employeeId")
+    Optional<BusinessEmployee> findByEmployeeId(@Param("employeeId") Long employeeId);
 }

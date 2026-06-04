@@ -417,6 +417,17 @@ public class AppointmentServiceImpl implements AppointmentService {
         return appointmentMapper.toDto(appointmentRepository.save(appointment));
     }
 
+    //thats for global search
+    @Override
+    public List<AppointmentDTO> searchGlobal(Long businessId, String query, int limit) {
+        return appointmentRepository
+            .searchByBusinessIdQueryString(businessId, query)
+            .stream()
+            .limit(limit)
+            .map(appointmentMapper::toDto)
+            .toList();
+    }
+
     //checking the appointment is available return TRUE if yes else FALSE
     public boolean isSlotAvailable(Long businessId, Long employeeId, LocalDate date, LocalTime time, Long offeringId, ZoneId zone) {
         // Offering lekérése a hossz miatt
