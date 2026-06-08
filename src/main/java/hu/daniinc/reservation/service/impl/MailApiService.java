@@ -85,6 +85,16 @@ public class MailApiService implements EmailService {
     }
 
     @Override
+    public void sendEmailCancelled(Appointment appointment) {
+        LOG.debug("Guest cancelled an appointment ID '{}'", appointment.getId());
+        Context context = new Context();
+        context.setVariable("appointment", appointment);
+        String content = templateEngine.process("mail/appointmentCancelledEmail", context);
+
+        this.sendEmail(appointment.getGuest().getEmail(), "Cancelled an appointment!", content, false, true);
+    }
+
+    @Override
     public void sendEmail(String toEmail, String subject, String content, boolean isMultipart, boolean isHtml) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

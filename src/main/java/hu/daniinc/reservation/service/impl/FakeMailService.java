@@ -162,6 +162,16 @@ public class FakeMailService implements EmailService {
             );
     }
 
+    @Override
+    public void sendEmailCancelled(Appointment appointment) {
+        LOG.debug("Guest cancelled an appointment ID '{}'", appointment.getId());
+        Context context = new Context();
+        context.setVariable("appointment", appointment);
+        String content = templateEngine.process("mail/appointmentCancelledEmail", context);
+
+        this.sendEmail(appointment.getGuest().getEmail(), "Cancelled an appointment!", content, false, true);
+    }
+
     @Async
     public void sendAppointmentReminder(Guest guest, Appointment appointment) {
         LOG.debug("Emlékeztető email küldése a vendégnek: {}", guest.getEmail());

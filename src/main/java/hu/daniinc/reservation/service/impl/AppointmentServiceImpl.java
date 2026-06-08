@@ -383,7 +383,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = appointmentRepository
             .findByModifierToken(modifierToken)
             .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
-        appointmentRepository.deleteById(appointment.getId());
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointmentRepository.save(appointment);
+        //send email
+        emailService.sendEmailCancelled(appointment);
     }
 
     @Override
@@ -413,7 +416,8 @@ public class AppointmentServiceImpl implements AppointmentService {
             .findByIdAndLoggedInOwner(appointmentId, employeeId)
             .orElseThrow(() -> new EntityNotFoundException("appointment"));
         appointment.setStatus(AppointmentStatus.CANCELLED);
-
+        //sending email
+        emailService.sendEmailCancelled(appointment);
         return appointmentMapper.toDto(appointmentRepository.save(appointment));
     }
 

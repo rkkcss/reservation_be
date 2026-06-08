@@ -13,4 +13,6 @@ public interface EmailService {
     void sendAppointmentReminder(Guest guest, Appointment appointment);
 
     void sendPasswordChanged(User user);
+
+    void sendEmailCancelled(Appointment appointment);
 }
