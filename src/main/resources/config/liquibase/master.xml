@@ -40,6 +40,7 @@
   <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 
+  <include file="config/liquibase/changelog/202606091_added_entity_notification.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250528T1530_remove_appointment_from_offering.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20240101000000_added_quartz_tables.xml" relativeToChangelogFile="false"/>
 

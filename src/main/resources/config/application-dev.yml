@@ -79,6 +79,9 @@ spring:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
+  mvc:
+    async:
+      request-timeout: -1
 
 server:
   port: 8080
@@ -104,7 +107,7 @@ jhipster:
     allowed-origin-patterns: 'https://*.githubpreview.dev'
     allowed-methods: '*'
     allowed-headers: '*'
-    exposed-headers: 'Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
+    exposed-headers: 'Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params,X-Unread-Count'
     allow-credentials: true
     max-age: 1800
   security:

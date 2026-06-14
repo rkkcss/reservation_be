@@ -9,6 +9,7 @@ import hu.daniinc.reservation.service.EmailService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.*;
 import hu.daniinc.reservation.service.mapper.AppointmentMapper;
+import hu.daniinc.reservation.service.mapper.BusinessEmployeeMapper;
 import hu.daniinc.reservation.service.quartz.AppointmentReminderService;
 import hu.daniinc.reservation.service.specifications.AppointmentsSpecification;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
@@ -20,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final BusinessEmployeeRepository businessEmployeeRepository;
     private final AppointmentReminderService appointmentReminderService;
     private final UserService userService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final BusinessEmployeeMapper businessEmployeeMapper;
 
     public AppointmentServiceImpl(
         AppointmentRepository appointmentRepository,
@@ -57,7 +61,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         GuestRepository guestRepository,
         BusinessEmployeeRepository businessEmployeeRepository,
         AppointmentReminderService appointmentReminderService,
-        UserService userService
+        UserService userService,
+        ApplicationEventPublisher eventPublisher,
+        BusinessEmployeeMapper businessEmployeeMapper
     ) {
         this.appointmentRepository = appointmentRepository;
         this.emailService = emailService;
@@ -70,6 +76,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.businessEmployeeRepository = businessEmployeeRepository;
         this.appointmentReminderService = appointmentReminderService;
         this.userService = userService;
+        this.eventPublisher = eventPublisher;
+        this.businessEmployeeMapper = businessEmployeeMapper;
     }
 
     @Override
@@ -364,7 +372,20 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (savedAppointment.getStatus() == AppointmentStatus.CONFIRMED) {
             appointmentReminderService.scheduleEmailReminder(savedAppointment);
         }
-
+        eventPublisher.publishEvent(
+            new NotificationEventDTO(
+                businessEmployeeMapper.toDto(appointment.getBusinessEmployee()),
+                "new.booking",
+                Map.of(
+                    "appointmentId",
+                    appointment.getId(),
+                    "guestName",
+                    appointment.getGuest().getName(),
+                    "date",
+                    appointment.getStartDate().toString()
+                )
+            )
+        );
         return appointmentMapper.toDto(savedAppointment);
     }
 
@@ -385,6 +406,22 @@ public class AppointmentServiceImpl implements AppointmentService {
             .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
+
+        //send notification to businessEmployee
+        eventPublisher.publishEvent(
+            new NotificationEventDTO(
+                businessEmployeeMapper.toDto(appointment.getBusinessEmployee()),
+                "appointment.cancelled",
+                Map.of(
+                    "appointmentId",
+                    appointment.getId(),
+                    "guestName",
+                    appointment.getGuest().getName(),
+                    "date",
+                    appointment.getStartDate().toString()
+                )
+            )
+        );
         //send email
         emailService.sendEmailCancelled(appointment);
     }
@@ -405,7 +442,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             .findByIdAndLoggedInOwner(appointmentId, employeeId)
             .orElseThrow(() -> new EntityNotFoundException("appointment"));
         appointment.setStatus(AppointmentStatus.CONFIRMED);
-
+        appointmentReminderService.scheduleEmailReminder(appointment);
         return appointmentMapper.toDto(appointmentRepository.save(appointment));
     }
 
@@ -416,6 +453,21 @@ public class AppointmentServiceImpl implements AppointmentService {
             .findByIdAndLoggedInOwner(appointmentId, employeeId)
             .orElseThrow(() -> new EntityNotFoundException("appointment"));
         appointment.setStatus(AppointmentStatus.CANCELLED);
+        //send notification
+        eventPublisher.publishEvent(
+            new NotificationEventDTO(
+                businessEmployeeMapper.toDto(appointment.getBusinessEmployee()),
+                "appointment.cancelled",
+                Map.of(
+                    "appointmentId",
+                    appointment.getId(),
+                    "guestName",
+                    appointment.getGuest().getName(),
+                    "date",
+                    appointment.getStartDate().toString()
+                )
+            )
+        );
         //sending email
         emailService.sendEmailCancelled(appointment);
         return appointmentMapper.toDto(appointmentRepository.save(appointment));

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <!-- Added the entity Notification -->
+  <changeSet id="20250609000000-1" author="dani">
+    <createTable tableName="notification">
+      <column name="id" type="bigint">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="business_employee_id" type="bigint">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="type" type="varchar(100)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="data" type="text">
+        <constraints nullable="true"/>
+      </column>
+
+      <column name="read" type="boolean" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="created_at" type="${datetimeType}">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <dropDefaultValue tableName="notification" columnName="created_at" columnDataType="${datetimeType}"/>
+
+    <addForeignKeyConstraint
+      baseTableName="notification"
+      baseColumnNames="business_employee_id"
+      referencedTableName="business_employee"
+      referencedColumnNames="id"
+      constraintName="fk_notification_business_employee_id"/>
+
+    <createIndex tableName="notification" indexName="idx_notification_business_employee_id">
+      <column name="business_employee_id"/>
+    </createIndex>
+  </changeSet>
+
+  <!-- Faker data -->
+  <changeSet id="20250609000000-1-data" author="dani" context="faker">
+    <loadData
+      file="config/liquibase/fake-data/notification.csv"
+      separator=";"
+      tableName="notification"
+      usePreparedStatements="true">
+      <column name="id" type="numeric"/>
+      <column name="type" type="string"/>
+      <column name="data" type="string"/>
+      <column name="read" type="boolean"/>
+      <column name="created_at" type="date"/>
+      <column name="business_employee_id" type="numeric" />
+    </loadData>
+  </changeSet>
+
+</databaseChangeLog>

@@ -21,4 +21,6 @@ public interface BusinessEmployeeService {
     List<BusinessEmployeeDTO> findAllPublicByBusinessId(Long businessId);
 
     BusinessEmployeeDTO changeEmployeeStatus(Long businessEmployeeId, boolean status);
+
+    BusinessEmployeeDTO findById(long businessEmployeeId);
 }

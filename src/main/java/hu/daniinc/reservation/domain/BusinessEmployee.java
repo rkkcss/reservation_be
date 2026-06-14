@@ -78,6 +78,10 @@ public class BusinessEmployee {
         return id;
     }
 
+    public void setId(final Long id) {
+        this.id = id;
+    }
+
     public Business getBusiness() {
         return business;
     }

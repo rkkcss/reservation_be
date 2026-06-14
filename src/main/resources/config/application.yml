@@ -171,6 +171,8 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+    async:
+      request-timeout: -1
   task:
     execution:
       thread-name-prefix: reservation-be-task-
@@ -217,7 +219,7 @@ jhipster:
     allowed-origins: 'http://localhost:5173,https://leafy-pika-f290b9.netlify.app,https://reservationfe.vercel.app/,https://reservation-fe-production.up.railway.app/,https://booklyapp.me/'
     allowed-methods: '*'
     allowed-headers: '*'
-    exposed-headers: 'Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
+    exposed-headers: 'Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params,X-Unread-Count'
     allow-credentials: true
     max-age: 1800
   mail:

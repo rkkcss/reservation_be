@@ -137,4 +137,18 @@ public class BusinessEmployeeServiceImpl implements BusinessEmployeeService {
             .map(businessEmployeeMapper::toDto)
             .orElseThrow(() -> new NotFoundException("Employee", businessEmployeeId));
     }
+
+    @Override
+    public BusinessEmployeeDTO findById(long businessEmployeeId) {
+        return businessEmployeeRepository
+            .findById(businessEmployeeId)
+            .map(businessEmployeeMapper::toDto)
+            .orElseThrow(() ->
+                new GeneralException(
+                    "Employee not found with id: " + businessEmployeeId,
+                    "business-employee-not-found",
+                    HttpStatus.NOT_FOUND
+                )
+            );
+    }
 }

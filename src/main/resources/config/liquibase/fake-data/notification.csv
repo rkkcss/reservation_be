@@ -1,0 +1,6 @@
+id;type;data;read;created_at;business_employee_id
+1;appointment.cancelled;{"appointmentId": 1, "guestName": "Kiss János", "date": "2024-06-10 14:00"};false;2024-06-10T10:00:00;1
+2;appointment.confirmed;{"appointmentId": 2, "guestName": "Nagy Péter", "date": "2024-06-11 09:00"};false;2024-06-10T11:00:00;1
+3;employee.added;{"employeeId": 1, "employeeName": "Szabó Anna"};true;2024-06-09T08:00:00;1
+4;password.changed;{};true;2024-06-08T15:00:00;1
+5;new.booking;{"appointmentId": 3, "guestName": "Tóth Béla", "date": "2024-06-12 16:00"};false;2024-06-10T12:00:00;1

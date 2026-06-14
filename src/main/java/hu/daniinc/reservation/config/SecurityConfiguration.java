@@ -69,7 +69,10 @@ public class SecurityConfiguration {
                     tokenRepository.setCookieCustomizer(cookie -> cookie.domain(".booklyapp.me").sameSite("None").secure(true));
                 }
 
-                csrf.csrfTokenRepository(tokenRepository).csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler());
+                csrf
+                    .csrfTokenRepository(tokenRepository)
+                    .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                    .ignoringRequestMatchers(mvc.pattern("/api/notifications/stream"));
             })
             .authorizeHttpRequests(authz ->
                 // prettier-ignore
