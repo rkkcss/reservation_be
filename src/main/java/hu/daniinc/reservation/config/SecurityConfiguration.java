@@ -64,9 +64,12 @@ public class SecurityConfiguration {
                 tokenRepository.setCookieHttpOnly(false);
                 tokenRepository.setCookiePath("/");
 
-                // Production beállítások
+                // Production settings
                 if (!env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))) {
                     tokenRepository.setCookieCustomizer(cookie -> cookie.domain(".booklyapp.me").sameSite("None").secure(true));
+                } else {
+                    // development — subdomain cookie support
+                    tokenRepository.setCookieCustomizer(cookie -> cookie.domain(null).sameSite("Lax").secure(false));
                 }
 
                 csrf

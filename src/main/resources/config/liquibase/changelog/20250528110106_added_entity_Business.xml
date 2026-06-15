@@ -67,7 +67,9 @@
         <constraints nullable="false" />
       </column>
 
-      <!-- !!! REMOVED business_employee_id !!! -->
+      <column name="slug" type="varchar(64)">
+        <constraints nullable="false" unique="true" />
+      </column>
       <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
     </createTable>
 

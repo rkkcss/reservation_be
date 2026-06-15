@@ -211,4 +211,10 @@ public class BusinessResource {
         businessService.changeBusinessThemeById(businessId, businessAppearanceDTO.getTheme());
         return ResponseEntity.ok().body(businessAppearanceDTO.getTheme());
     }
+
+    @GetMapping("/by-slug/{slug}")
+    public ResponseEntity<BusinessDTO> getBusinessBySlug(@PathVariable("slug") String slug) {
+        LOG.debug("REST request to get Business by slug : {}", slug);
+        return ResponseEntity.ok().body(businessService.findBySlug(slug));
+    }
 }

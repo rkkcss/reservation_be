@@ -134,9 +134,9 @@ public class BusinessServiceImpl implements BusinessService {
         businessRepository.save(business);
     }
 
-    public Business getAuthenticatedBusiness() {
-        return businessRepository
-            .findBusinessByLoginAndBusinessId(1L)
-            .orElseThrow(() -> new IllegalStateException("Authenticated user has no associated business."));
+    @Override
+    public BusinessDTO findBySlug(String slug) {
+        Business result = businessRepository.findBySlugIgnoreCase(slug).orElseThrow(() -> new EntityNotFoundException("No Business Found"));
+        return businessMapper.toDto(result);
     }
 }

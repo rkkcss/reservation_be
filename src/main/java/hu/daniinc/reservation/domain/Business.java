@@ -57,6 +57,9 @@ public class Business implements Serializable {
     @OneToOne(fetch = FetchType.LAZY)
     private User owner;
 
+    @Column(unique = true, nullable = false)
+    private String slug;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
@@ -306,6 +309,14 @@ public class Business implements Serializable {
 
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
