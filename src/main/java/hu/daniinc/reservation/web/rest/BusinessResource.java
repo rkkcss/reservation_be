@@ -4,6 +4,7 @@ import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
+import hu.daniinc.reservation.security.annotation.TenantBusiness;
 import hu.daniinc.reservation.service.BusinessService;
 import hu.daniinc.reservation.service.dto.BusinessAppearanceDTO;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
@@ -187,9 +188,9 @@ public class BusinessResource {
     }
 
     //get business by logged in user
-    @GetMapping("/{businessId}/private")
+    @GetMapping("/private")
     @RequiredBusinessPermission(BusinessPermission.MANAGE_BUSINESS_SETTINGS)
-    public ResponseEntity<BusinessDTO> getBusinessPrivate(@PathVariable("businessId") Long businessId) {
+    public ResponseEntity<BusinessDTO> getBusinessPrivate(@TenantBusiness Long businessId) {
         LOG.debug("REST request to get Business owners");
         return ResponseEntity.status(HttpStatus.OK).body(businessService.getBusinessByLoggedInUser(businessId));
     }
@@ -201,14 +202,20 @@ public class BusinessResource {
         return ResponseEntity.ok().body(businessAppearanceDTO.getLogo());
     }
 
-    @PostMapping("/{businessId}/theme")
+    @PostMapping("/theme")
     @RequiredBusinessPermission(BusinessPermission.MANAGE_BUSINESS_SETTINGS)
     public ResponseEntity<BusinessTheme> changeBusinessTheme(
-        @PathVariable("businessId") Long businessId,
+        @TenantBusiness Long businessId,
         @RequestBody BusinessAppearanceDTO businessAppearanceDTO
     ) {
         LOG.debug("REST request to change Business Theme : {}", businessAppearanceDTO.getTheme());
         businessService.changeBusinessThemeById(businessId, businessAppearanceDTO.getTheme());
         return ResponseEntity.ok().body(businessAppearanceDTO.getTheme());
+    }
+
+    @GetMapping("/by-slug/{slug}")
+    public ResponseEntity<BusinessDTO> getBusinessBySlug(@PathVariable("slug") String slug) {
+        LOG.debug("REST request to get Business by slug : {}", slug);
+        return ResponseEntity.ok().body(businessService.findBySlug(slug));
     }
 }

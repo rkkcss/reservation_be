@@ -64,9 +64,12 @@ public class SecurityConfiguration {
                 tokenRepository.setCookieHttpOnly(false);
                 tokenRepository.setCookiePath("/");
 
-                // Production beállítások
+                // Production settings
                 if (!env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))) {
                     tokenRepository.setCookieCustomizer(cookie -> cookie.domain(".booklyapp.me").sameSite("None").secure(true));
+                } else {
+                    // development — subdomain cookie support
+                    tokenRepository.setCookieCustomizer(cookie -> cookie.domain(null).sameSite("Lax").secure(false));
                 }
 
                 csrf
@@ -92,7 +95,7 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/businesses/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/csrf-token")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/appointments")).permitAll()
-                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/businesses/**")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/employees/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/appointments/business/*/business-employee/*")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/business-ratings/business/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/cancel/*")).permitAll()

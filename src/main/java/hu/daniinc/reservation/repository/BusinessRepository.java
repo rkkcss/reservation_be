@@ -23,4 +23,12 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
         "AND be.user.login = ?#{authentication.name}"
     )
     Optional<Business> findBusinessByLoginAndBusinessId(@Param(value = "businessId") Long businessId);
+
+    boolean existsBySlug(String slug);
+
+    @Query("SELECT b FROM Business b WHERE LOWER(b.slug) = LOWER(:slug)")
+    Optional<Business> findBySlugIgnoreCase(@Param("slug") String slug);
+
+    @Query("select b from Business b where lower(b.customDomain) = lower(:domain) ")
+    Optional<Business> findByCustomDomainIgnoreCase(@Param("domain") String domain);
 }

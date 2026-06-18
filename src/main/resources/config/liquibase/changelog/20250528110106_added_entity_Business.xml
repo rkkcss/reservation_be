@@ -67,7 +67,13 @@
         <constraints nullable="false" />
       </column>
 
-      <!-- !!! REMOVED business_employee_id !!! -->
+      <column name="slug" type="varchar(64)">
+        <constraints nullable="false" unique="true" />
+      </column>
+
+      <column name="custom_domain" type="varchar(64)">
+        <constraints nullable="true" unique="true" />
+      </column>
       <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
     </createTable>
 
@@ -98,6 +104,8 @@
       <column name="max_weeks_in_advance" type="numeric"/>
       <column name="theme" type="string"/>
       <column name="time_zone" type="string" />
+      <column name="slug" type="string" />
+      <column name="custom_domain" type="string" />
 
       <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
     </loadData>

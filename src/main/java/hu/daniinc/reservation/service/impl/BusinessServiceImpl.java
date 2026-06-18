@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -100,6 +102,7 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
+    @CacheEvict(value = { "businessBySlug", "businessByCustomDomain" }, allEntries = true)
     public void changeBusinessLogo(String newLogo) {
         LOG.debug("Request to change Business Logo");
 
@@ -123,6 +126,7 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     @Transactional
+    @CacheEvict(value = { "businessBySlug", "businessByCustomDomain" }, allEntries = true)
     public void changeBusinessThemeById(Long businessId, BusinessTheme theme) {
         LOG.debug("Request to change Business Theme");
 
@@ -134,9 +138,18 @@ public class BusinessServiceImpl implements BusinessService {
         businessRepository.save(business);
     }
 
-    public Business getAuthenticatedBusiness() {
-        return businessRepository
-            .findBusinessByLoginAndBusinessId(1L)
-            .orElseThrow(() -> new IllegalStateException("Authenticated user has no associated business."));
+    @Override
+    @Cacheable(value = "businessBySlug", key = "#slug.toLowerCase()", unless = "#result == null")
+    public BusinessDTO findBySlug(String slug) {
+        Business result = businessRepository.findBySlugIgnoreCase(slug).orElseThrow(() -> new EntityNotFoundException("No Business Found"));
+        return businessMapper.toDto(result);
+    }
+
+    @Override
+    public BusinessDTO findByCustomDomain(String domain) {
+        Business result = businessRepository
+            .findByCustomDomainIgnoreCase(domain)
+            .orElseThrow(() -> new EntityNotFoundException("No Business Found"));
+        return businessMapper.toDto(result);
     }
 }

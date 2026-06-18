@@ -59,13 +59,11 @@ public interface OfferingService {
 
     Page<OfferingDTO> getAllByLoggedInEmployeeAndBusinessId(Long businessId, Pageable pageable);
 
-    Page<OfferingDTO> getAllByBusinessId(Long id, Pageable pageable);
-
     List<OfferingDTO> getAllOfferingsByLoggedInEmployee(Long businessId);
-
-    Page<OfferingDTO> getAllOfferingsByLoggedInBusinessId(Long businessId, Pageable pageable);
 
     List<OfferingDTO> getAllByBusinessEmployee(Long businessEmployeeId);
 
     Page<OfferingDTO> findAllPublicOfferingByBusinessId(Long businessId, String search, Pageable pageable);
+
+    Page<OfferingDTO> findAllLoggedInOfferingByBusinessId(Long businessId, Pageable pageable);
 }

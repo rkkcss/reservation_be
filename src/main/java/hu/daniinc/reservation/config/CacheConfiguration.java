@@ -61,6 +61,8 @@ public class CacheConfiguration {
             createCache(cm, hu.daniinc.reservation.domain.Offering.class.getName());
             createCache(cm, hu.daniinc.reservation.domain.WorkingHours.class.getName());
             // jhipster-needle-caffeine-add-entry
+            createCache(cm, "businessBySlug");
+            createCache(cm, "businessByCustomDomain");
         };
     }
 

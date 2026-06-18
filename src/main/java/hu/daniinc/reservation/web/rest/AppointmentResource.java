@@ -3,6 +3,7 @@ package hu.daniinc.reservation.web.rest;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.AppointmentRepository;
 import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
+import hu.daniinc.reservation.security.annotation.TenantBusiness;
 import hu.daniinc.reservation.service.AppointmentService;
 import hu.daniinc.reservation.service.dto.*;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
@@ -211,9 +212,9 @@ public class AppointmentResource {
             .build();
     }
 
-    @GetMapping("/businesses/{businessId}/employees/{employeeId}/available-slots")
+    @GetMapping("/employees/{employeeId}/available-slots")
     public Map<LocalDate, List<String>> getAvailableSlots(
-        @PathVariable Long businessId,
+        @TenantBusiness Long businessId,
         @PathVariable Long employeeId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,

@@ -4,6 +4,7 @@ import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.domain.enumeration.BusinessRole;
 import hu.daniinc.reservation.security.annotation.RequireBusinessRole;
 import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
+import hu.daniinc.reservation.security.annotation.TenantBusiness;
 import hu.daniinc.reservation.service.BusinessEmployeeService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.BusinessEmployeeDTO;
@@ -95,8 +96,8 @@ public class BusinessEmployeeResource {
     }
 
     //return all the public employees
-    @GetMapping("/public/business/{businessId}")
-    public ResponseEntity<List<BusinessEmployeeDTO>> getPublicEmployees(@PathVariable Long businessId) {
+    @GetMapping("/public")
+    public ResponseEntity<List<BusinessEmployeeDTO>> getPublicEmployees(@TenantBusiness Long businessId) {
         if (businessId == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
