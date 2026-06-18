@@ -66,4 +66,6 @@ public interface BusinessService {
     void changeBusinessThemeById(Long businessId, BusinessTheme theme);
 
     BusinessDTO findBySlug(String slug);
+
+    BusinessDTO findByCustomDomain(String domain);
 }

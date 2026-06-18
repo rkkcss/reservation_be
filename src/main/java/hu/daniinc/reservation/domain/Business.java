@@ -92,6 +92,9 @@ public class Business implements Serializable {
     @Column(name = "time_zone", length = 64, nullable = false)
     private String timeZone = "Europe/Budapest";
 
+    @Column(name = "custom_domain", length = 64)
+    private String customDomain;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -317,6 +320,14 @@ public class Business implements Serializable {
 
     public void setSlug(String slug) {
         this.slug = slug;
+    }
+
+    public String getCustomDomain() {
+        return customDomain;
+    }
+
+    public void setCustomDomain(String customDomain) {
+        this.customDomain = customDomain;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

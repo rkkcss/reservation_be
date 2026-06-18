@@ -136,11 +136,6 @@ public class OfferingServiceImpl implements OfferingService {
     }
 
     @Override
-    public Page<OfferingDTO> getAllByBusinessId(Long id, Pageable pageable) {
-        return offeringRepository.findAllByBusinessId(id, pageable).map(offeringMapper::toDto);
-    }
-
-    @Override
     public List<OfferingDTO> getAllOfferingsByLoggedInEmployee(Long businessId) {
         userService.getUserWithAuthorities().orElseThrow(() -> new AuthorizationDeniedException("You are not authorised"));
         // Check if user is part of the business
@@ -149,11 +144,6 @@ public class OfferingServiceImpl implements OfferingService {
             .orElseThrow(() -> new GeneralException("You are not part of this business", "not-part-business", HttpStatus.NOT_FOUND));
 
         return offeringRepository.getAllByLoggedInEmployee(businessId).stream().map(offeringMapper::toDto).collect(Collectors.toList());
-    }
-
-    @Override
-    public Page<OfferingDTO> getAllOfferingsByLoggedInBusinessId(Long businessId, Pageable pageable) {
-        return offeringRepository.findAllByBusinessId(businessId, pageable).map(offeringMapper::toDto);
     }
 
     @Override
@@ -170,5 +160,17 @@ public class OfferingServiceImpl implements OfferingService {
         Specification<Offering> spec = OfferingSpecification.publicOfferingsWithEmployeeNameFilter(businessId, search);
 
         return offeringRepository.findAll(spec, pageable).map(offeringMapper::toDto);
+    }
+
+    @Override
+    public Page<OfferingDTO> findAllLoggedInOfferingByBusinessId(Long businessId, Pageable pageable) {
+        this.assertUserBelongsToBusiness(businessId);
+        return offeringRepository.findAllLoggedInOfferingByBusinessId(businessId, pageable).map(offeringMapper::toDto);
+    }
+
+    private void assertUserBelongsToBusiness(Long businessId) {
+        businessEmployeeRepository
+            .findByUserLoginAndBusinessId(businessId)
+            .orElseThrow(() -> new GeneralException("You are not part of this business", "business-access-denied", HttpStatus.FORBIDDEN));
     }
 }

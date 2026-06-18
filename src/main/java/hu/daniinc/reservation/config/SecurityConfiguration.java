@@ -95,7 +95,7 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/businesses/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/csrf-token")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/appointments")).permitAll()
-                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/businesses/**")).permitAll()
+                    .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/employees/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/appointments/business/*/business-employee/*")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/business-ratings/business/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/appointments/cancel/*")).permitAll()

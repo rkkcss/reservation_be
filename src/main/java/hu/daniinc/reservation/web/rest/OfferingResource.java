@@ -4,6 +4,7 @@ import hu.daniinc.reservation.domain.Offering;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.OfferingRepository;
 import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
+import hu.daniinc.reservation.security.annotation.TenantBusiness;
 import hu.daniinc.reservation.service.OfferingService;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
 import hu.daniinc.reservation.service.dto.GuestDTO;
@@ -60,11 +61,11 @@ public class OfferingResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new offeringDTO, or with status {@code 400 (Bad Request)} if the offering has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/business/{businessId}/business-employee/{employeeId}")
+    @PostMapping("/business/business-employee/{employeeId}")
     @RequiredBusinessPermission(value = { BusinessPermission.EDIT_ALL_SERVICES, BusinessPermission.EDIT_OWN_SERVICES })
     public ResponseEntity<OfferingDTO> createOffering(
         @Valid @RequestBody OfferingDTO offeringDTO,
-        @PathVariable Long businessId,
+        @TenantBusiness Long businessId,
         @PathVariable Long employeeId
     ) throws URISyntaxException {
         LOG.debug("REST request to save Offering : {}", offeringDTO);
@@ -118,7 +119,6 @@ public class OfferingResource {
     /**
      * {@code PATCH  /offerings/:id} : Partial updates given fields of an existing offering, field will ignore if it is null
      *
-     * @param id the id of the offeringDTO to save.
      * @param offeringDTO the offeringDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated offeringDTO,
      * or with status {@code 400 (Bad Request)} if the offeringDTO is not valid,
@@ -154,24 +154,15 @@ public class OfferingResource {
     }
 
     /**
-     * {@code GET  /offerings/{businessId} : get all the offerings.
-     *
+     * {@code GET  /offerings/business/employee : get all the offerings.
+     * @TenantBusiness returning the businessId from header
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of offerings in body.
      */
-    @GetMapping("/business/{businessId}/employee")
-    public ResponseEntity<List<OfferingDTO>> getAllOwnOfferings(@PathVariable(value = "businessId") Long businessId) {
+    @GetMapping("/business/employee")
+    public ResponseEntity<List<OfferingDTO>> getAllOwnOfferings(@TenantBusiness Long businessId) {
         LOG.debug("REST request to get own Offerings by business id : {}", businessId);
         List<OfferingDTO> result = offeringService.getAllOfferingsByLoggedInEmployee(businessId);
         return ResponseEntity.ok().body(result);
-    }
-
-    // return all the offerings by businessId
-    @GetMapping("/business/{businessId}/")
-    public ResponseEntity<List<OfferingDTO>> getAllByBusiness(@PathVariable(value = "businessId") Long businessId, Pageable pageable) {
-        LOG.debug("REST request to get Offerings by business id : {}", businessId);
-        Page<OfferingDTO> page = offeringService.getAllOfferingsByLoggedInBusinessId(businessId, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     // return all offerings by business employee
@@ -182,9 +173,9 @@ public class OfferingResource {
     }
 
     //return all the business related offerings - PUBLIC
-    @GetMapping("/public/business/{businessId}")
+    @GetMapping("/public")
     public ResponseEntity<List<OfferingDTO>> getAllPublicByBusinessId(
-        @PathVariable(value = "businessId") Long businessId,
+        @TenantBusiness Long businessId,
         @RequestParam(required = false) String search,
         Pageable pageable
     ) {
@@ -223,27 +214,31 @@ public class OfferingResource {
     }
 
     //get all the offerings by logged in user / owner
-    @GetMapping("/business/{businessId}/my")
+    @GetMapping("/business/my")
     @RequiredBusinessPermission(value = BusinessPermission.VIEW_SERVICES)
-    public ResponseEntity<List<OfferingDTO>> getAllByLoggedInEmployee(
-        @PathVariable(value = "businessId") Long businessId,
-        Pageable pageable
-    ) {
-        if (businessId == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<List<OfferingDTO>> getAllByLoggedInEmployee(@TenantBusiness Long businessId, Pageable pageable) {
         LOG.debug("REST request to get a page of Offerings by logged in business employee and business id : {}", businessId);
         Page<OfferingDTO> page = offeringService.getAllByLoggedInEmployeeAndBusinessId(businessId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
-    @GetMapping("/business/{id}")
-    public ResponseEntity<List<OfferingDTO>> getAllByBusinessId(@PathVariable(value = "id") Long id, Pageable pageable) {
-        Page<OfferingDTO> page = offeringService.getAllByBusinessId(id, pageable);
+    @GetMapping("/business/public")
+    public ResponseEntity<List<OfferingDTO>> getAllByBusinessId(@TenantBusiness Long businessId, Pageable pageable) {
+        Page<OfferingDTO> page = offeringService.findAllPublicOfferingByBusinessId(businessId, "", pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         headers.add("X-Page-Size", String.valueOf(pageable.getPageSize()));
 
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    // return all the offerings by businessId
+    // this is private path. User has to be logged in
+    @GetMapping("/business")
+    public ResponseEntity<List<OfferingDTO>> getAllByBusiness(@TenantBusiness Long businessId, Pageable pageable) {
+        LOG.debug("REST request to get Offerings by business id : {}", businessId);
+        Page<OfferingDTO> page = offeringService.findAllLoggedInOfferingByBusinessId(businessId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

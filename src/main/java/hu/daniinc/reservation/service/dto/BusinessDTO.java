@@ -47,6 +47,8 @@ public class BusinessDTO implements Serializable {
 
     private Set<BusinessOpeningHoursDTO> openingHours = new HashSet<>();
 
+    private String customDomain;
+
     public Long getId() {
         return id;
     }
@@ -157,6 +159,14 @@ public class BusinessDTO implements Serializable {
 
     public void setOpeningHours(Set<BusinessOpeningHoursDTO> openingHours) {
         this.openingHours = openingHours;
+    }
+
+    public String getCustomDomain() {
+        return customDomain;
+    }
+
+    public void setCustomDomain(String customDomain) {
+        this.customDomain = customDomain;
     }
 
     @Override

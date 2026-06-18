@@ -3,6 +3,7 @@ package hu.daniinc.reservation.web.rest;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.BusinessRatingRepository;
 import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
+import hu.daniinc.reservation.security.annotation.TenantBusiness;
 import hu.daniinc.reservation.service.BusinessRatingService;
 import hu.daniinc.reservation.service.dto.BusinessRatingDTO;
 import hu.daniinc.reservation.service.dto.BusinessRatingSummaryDTO;
@@ -183,11 +184,8 @@ public class BusinessRatingResource {
             .build();
     }
 
-    @GetMapping("/business/{businessId}")
-    public ResponseEntity<BusinessRatingSummaryDTO> getAllBusinessRatingsByBusinessId(
-        @PathVariable("businessId") Long businessId,
-        Pageable pageable
-    ) {
+    @GetMapping("/business")
+    public ResponseEntity<BusinessRatingSummaryDTO> getAllBusinessRatingsByBusinessId(@TenantBusiness Long businessId, Pageable pageable) {
         LOG.debug("REST request to get BusinessRatings by businessId : {}", businessId);
 
         Page<BusinessRatingDTO> page = businessRatingService.findAllByBusinessId(businessId, pageable);

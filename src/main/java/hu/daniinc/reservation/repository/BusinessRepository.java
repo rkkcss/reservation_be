@@ -28,4 +28,7 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
 
     @Query("SELECT b FROM Business b WHERE LOWER(b.slug) = LOWER(:slug)")
     Optional<Business> findBySlugIgnoreCase(@Param("slug") String slug);
+
+    @Query("select b from Business b where lower(b.customDomain) = lower(:domain) ")
+    Optional<Business> findByCustomDomainIgnoreCase(@Param("domain") String domain);
 }

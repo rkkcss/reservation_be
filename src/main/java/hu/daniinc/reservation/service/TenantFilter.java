@@ -1,12 +1,13 @@
 package hu.daniinc.reservation.service;
 
-import hu.daniinc.reservation.domain.Business;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -15,39 +16,42 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Order(1)
 public class TenantFilter extends OncePerRequestFilter {
 
+    private static final Logger LOG = LoggerFactory.getLogger(TenantFilter.class);
     private final BusinessService businessService;
+    private final TenantSlugExtractorService tenantSlugExtractorService;
 
-    public TenantFilter(BusinessService businessService) {
+    public TenantFilter(BusinessService businessService, TenantSlugExtractorService tenantSlugExtractorService) {
         this.businessService = businessService;
+        this.tenantSlugExtractorService = tenantSlugExtractorService;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
         throws ServletException, IOException {
-        String host = request.getServerName(); // "pizzeria-bella.localhost"
-        String slug = extractSlug(host);
+        String host = request.getServerName();
+        String slug = tenantSlugExtractorService.extractTenantSlug(host);
 
-        if (slug != null) {
-            try {
-                BusinessDTO business = businessService.findBySlug(slug);
-                request.setAttribute("tenantBusinessId", business.getId());
-            } catch (Exception e) {
-                // unknown slug → 404
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Business not found");
-                return;
+        BusinessDTO businessDTO = null;
+
+        try {
+            if (slug != null) {
+                businessDTO = businessService.findBySlug(slug);
+            } else {
+                //TODO:: domain from environment
+                if (!host.equals("localhost") && !host.equals("booklyapp.me") && !host.equals("www.booklyapp.me")) {
+                    businessDTO = businessService.findByCustomDomain(host);
+                }
             }
+        } catch (Exception e) {
+            LOG.error("Hiba történt a business lekérése közben. Host: {}", host, e);
+        }
+
+        if (businessDTO != null) {
+            request.setAttribute("tenantBusinessId", businessDTO.getId());
+        } else {
+            request.setAttribute("tenantBusinessId", null);
         }
 
         chain.doFilter(request, response);
-    }
-
-    private String extractSlug(String host) {
-        // lokális fejlesztéshez: X-Tenant-ID header fallback
-        // (ezt csak fejlesztés közben használd)
-        String[] parts = host.split("\\.");
-        if (parts.length >= 3) {
-            return parts[0]; // "pizzeria-bella"
-        }
-        return null;
     }
 }
