@@ -63,7 +63,7 @@ public interface OfferingService {
 
     List<OfferingDTO> getAllByBusinessEmployee(Long businessEmployeeId);
 
-    Page<OfferingDTO> findAllPublicOfferingByBusinessId(Long businessId, String search, Pageable pageable);
+    Page<OfferingDTO> findAllPublicOfferingByBusinessId(Long businessId, String search, Long businessEmployeeId, Pageable pageable);
 
     Page<OfferingDTO> findAllLoggedInOfferingByBusinessId(Long businessId, Pageable pageable);
 }

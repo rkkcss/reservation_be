@@ -8,8 +8,11 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class OfferingSpecification {
 
-    public static Specification<Offering> publicOfferingsWithEmployeeNameFilter(Long businessId, String search) {
-        return Specification.where(belongsToBusinessId(businessId)).and(isPublicOffering()).and(searchByEmployeeName(search));
+    public static Specification<Offering> publicOfferingsWithEmployeeNameFilter(Long businessId, String search, Long businessEmployeeId) {
+        return Specification.where(belongsToBusinessId(businessId))
+            .and(isEmployeeIdEqual(businessEmployeeId))
+            .and(isPublicOffering())
+            .and(searchByEmployeeName(search));
     }
 
     private static Specification<Offering> belongsToBusinessId(Long businessId) {
@@ -18,6 +21,13 @@ public class OfferingSpecification {
 
     private static Specification<Offering> isPublicOffering() {
         return (root, query, cb) -> cb.and(cb.equal(root.get("status"), BasicEntityStatus.ACTIVE));
+    }
+
+    private static Specification<Offering> isEmployeeIdEqual(Long employeeId) {
+        return (root, query, cb) -> {
+            if (employeeId == null) return cb.conjunction();
+            return cb.equal(root.get("businessEmployee").get("id"), employeeId);
+        };
     }
 
     private static Specification<Offering> searchByEmployeeName(String search) {

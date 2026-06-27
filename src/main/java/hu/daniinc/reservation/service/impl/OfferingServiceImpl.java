@@ -156,8 +156,8 @@ public class OfferingServiceImpl implements OfferingService {
     }
 
     @Override
-    public Page<OfferingDTO> findAllPublicOfferingByBusinessId(Long businessId, String search, Pageable pageable) {
-        Specification<Offering> spec = OfferingSpecification.publicOfferingsWithEmployeeNameFilter(businessId, search);
+    public Page<OfferingDTO> findAllPublicOfferingByBusinessId(Long businessId, String search, Long businessEmployeeId, Pageable pageable) {
+        Specification<Offering> spec = OfferingSpecification.publicOfferingsWithEmployeeNameFilter(businessId, search, businessEmployeeId);
 
         return offeringRepository.findAll(spec, pageable).map(offeringMapper::toDto);
     }

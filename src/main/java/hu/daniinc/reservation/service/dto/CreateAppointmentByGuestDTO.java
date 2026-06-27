@@ -23,20 +23,9 @@ public class CreateAppointmentByGuestDTO {
     @NotNull
     private Long offeringId;
 
-    @NotNull
-    private Long businessId;
-
     private Long employeeId;
 
     public CreateAppointmentByGuestDTO() {}
-
-    public Long getBusinessId() {
-        return businessId;
-    }
-
-    public void setBusinessId(Long businessId) {
-        this.businessId = businessId;
-    }
 
     public Long getOfferingId() {
         return offeringId;

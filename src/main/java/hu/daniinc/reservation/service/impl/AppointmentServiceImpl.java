@@ -333,7 +333,23 @@ public class AppointmentServiceImpl implements AppointmentService {
         // 5. Vendég kezelése
         Guest guest = guestRepository
             .findByEmailByBusinessId(dto.getEmail(), business.getId())
+            .map(existingGuest -> {
+                boolean hasChanged = false;
+
+                if (!existingGuest.getName().equals(dto.getName())) {
+                    existingGuest.setName(dto.getName());
+                    hasChanged = true;
+                }
+
+                if (!existingGuest.getPhoneNumber().equals(dto.getPhoneNumber())) {
+                    existingGuest.setPhoneNumber(dto.getPhoneNumber());
+                    hasChanged = true;
+                }
+
+                return hasChanged ? guestRepository.save(existingGuest) : existingGuest;
+            })
             .orElseGet(() -> {
+                //if user not exists for the business
                 Guest newGuest = new Guest();
                 newGuest.setEmail(dto.getEmail());
                 newGuest.setName(dto.getName());

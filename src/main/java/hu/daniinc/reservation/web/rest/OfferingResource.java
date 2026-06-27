@@ -173,13 +173,14 @@ public class OfferingResource {
     }
 
     //return all the business related offerings - PUBLIC
-    @GetMapping("/public")
+    @GetMapping("/business-employee/public")
     public ResponseEntity<List<OfferingDTO>> getAllPublicByBusinessId(
         @TenantBusiness Long businessId,
         @RequestParam(required = false) String search,
+        @RequestParam(value = "employeeId", required = false) Long businessEmployeeId,
         Pageable pageable
     ) {
-        Page<OfferingDTO> page = offeringService.findAllPublicOfferingByBusinessId(businessId, search, pageable);
+        Page<OfferingDTO> page = offeringService.findAllPublicOfferingByBusinessId(businessId, search, businessEmployeeId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -220,15 +221,6 @@ public class OfferingResource {
         LOG.debug("REST request to get a page of Offerings by logged in business employee and business id : {}", businessId);
         Page<OfferingDTO> page = offeringService.getAllByLoggedInEmployeeAndBusinessId(businessId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-    @GetMapping("/business/public")
-    public ResponseEntity<List<OfferingDTO>> getAllByBusinessId(@TenantBusiness Long businessId, Pageable pageable) {
-        Page<OfferingDTO> page = offeringService.findAllPublicOfferingByBusinessId(businessId, "", pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        headers.add("X-Page-Size", String.valueOf(pageable.getPageSize()));
-
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 

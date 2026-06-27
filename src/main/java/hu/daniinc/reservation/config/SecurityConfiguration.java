@@ -104,6 +104,8 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern(HttpMethod.GET,"/api/business-employee/public/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET,"/api/offerings/public/**")).permitAll()
 
+                    .requestMatchers(mvc.pattern("/api/appointments/public/**")).permitAll()
+
                     .requestMatchers(mvc.pattern("/api/**")).authenticated()
                     .requestMatchers(mvc.pattern("/websocket/**")).authenticated()
                     .requestMatchers(mvc.pattern("/v3/api-docs/**")).permitAll()

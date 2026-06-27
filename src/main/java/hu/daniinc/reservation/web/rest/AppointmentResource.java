@@ -66,9 +66,9 @@ public class AppointmentResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new appointmentDTO, or with status {@code 400 (Bad Request)} if the appointment has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/business/{businessId}/business-employee/{employeeId}")
+    @PostMapping("/public/business-employee/{employeeId}")
     public ResponseEntity<AppointmentDTO> createAppointment(
-        @PathVariable("businessId") Long businessId,
+        @TenantBusiness Long businessId,
         @PathVariable("employeeId") Long employeeId,
         @Valid @RequestBody CreateAppointmentByGuestDTO createAppointmentByGuestDTO
     ) throws URISyntaxException {
