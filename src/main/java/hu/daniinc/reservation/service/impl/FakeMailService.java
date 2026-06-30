@@ -3,17 +3,22 @@ package hu.daniinc.reservation.service.impl;
 import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.domain.User;
+import hu.daniinc.reservation.service.CalendarLinkGenerator;
 import hu.daniinc.reservation.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -173,16 +178,46 @@ public class FakeMailService implements EmailService {
     }
 
     @Async
+    @Override
     public void sendAppointmentReminder(Guest guest, Appointment appointment) {
         LOG.debug("Emlékeztető email küldése a vendégnek: {}", guest.getEmail());
 
+        // 1. Thymeleaf context and google calendar link
         Context context = new Context();
         context.setVariable("appointment", appointment);
         context.setVariable("guest", guest);
+        context.setVariable(
+            "googleCalendarLink",
+            CalendarLinkGenerator.generateCalendarLink(
+                appointment.getOffering().getTitle(),
+                LocalDateTime.ofInstant(appointment.getStartDate(), ZoneId.systemDefault()),
+                appointment.getOffering().getDurationMinutes(),
+                "",
+                appointment.getBusinessEmployee().getBusiness().getAddress()
+            )
+        );
 
         String content = templateEngine.process("mail/appointmentReminder", context);
         String subject = messageSource.getMessage("email.reminder.title", null, Locale.getDefault());
 
-        sendEmail(guest.getEmail(), subject, content, false, true);
+        // 2. generate .ics for IOS invitation
+        ByteArrayResource icsFile = CalendarLinkGenerator.generateICSalAttachment(appointment);
+
+        // 3. create email + attachment
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
+            messageHelper.setTo(guest.getEmail());
+            messageHelper.setFrom(jHipsterProperties.getMail().getFrom());
+            messageHelper.setSubject(subject);
+            messageHelper.setText(content, true);
+
+            messageHelper.addAttachment("invite.ics", icsFile, "text/calendar; charset=UTF-8");
+
+            javaMailSender.send(mimeMessage);
+            LOG.debug("Sent appointment reminder with iCal attachment to '{}'", guest.getEmail());
+        } catch (MailException | MessagingException e) {
+            LOG.warn("Email reminder with attachment could not be sent to '{}'", guest.getEmail(), e);
+        }
     }
 }

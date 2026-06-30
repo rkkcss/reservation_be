@@ -55,6 +55,9 @@ public class Offering implements Serializable {
     @Column(name = "status", nullable = false)
     private BasicEntityStatus status = BasicEntityStatus.INACTIVE;
 
+    @Column(name = "color", length = 7)
+    private String color;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -141,6 +144,14 @@ public class Offering implements Serializable {
 
     public void setStatus(BasicEntityStatus status) {
         this.status = status;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

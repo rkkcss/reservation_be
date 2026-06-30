@@ -134,7 +134,8 @@
                     <tr>
                       <td class="pad" style="width:100%;">
                         <div class="alignment" align="center">
-                          <div style="max-width: 268px;"><img src="https://d1oco4z2z1fhwp.cloudfront.net/templates/default/4966/Yourlogo-light.png" style="display: block; height: auto; border: 0; width: 100%;" width="268" alt="Yourlogo Light" title="Yourlogo Light" height="auto"></div>
+                          <div style="max-width: 268px;">
+                            <img th:src="${appointment?.getBusinessEmployee()?.getBusiness()?.getLogo() ?: 'https://d1oco4z2z1fhwp.cloudfront.net/templates/default/4966/Yourlogo-light.png'}" style="display: block; height: auto; border: 0; width: 100%;" width="268" alt="Yourlogo Light" title="Yourlogo Light" height="auto"></div>
                         </div>
                       </td>
                     </tr>
@@ -308,6 +309,12 @@
                           <p style="margin: 0; word-break: break-word;"><span style="word-break: break-word; color: #5d77a9;">Need to make changes on this appointment?</span></p>
                           <p style="margin: 0; word-break: break-word;">Lorem ipsum dolor sit amet, consectetur adipiscing quam lectus&nbsp; tincidunt.</p>
                           <p style="margin: 0; word-break: break-word;">Consectetur adipiscing quam lectus&nbsp; tincidunt.</p>
+                          <div style="text-align: center;mso-line-height-alt:24px;">
+                            <a th:href="${googleCalendarLink}"
+                              style="margin-top: 9px;color: white; background-color: #1a6bec;border: none;padding: 8px 12px;cursor: pointer">
+                              Hozzáadás Google naptárhoz
+                            </a>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -333,7 +340,7 @@
                     <tr>
                       <td class="pad" style="width:100%;padding-right:0px;padding-left:0px;">
                         <div class="alignment" align="center">
-                          <div style="max-width: 204px;"><img src="https://d1oco4z2z1fhwp.cloudfront.net/templates/default/4966/Yourlogo-light.png" style="display: block; height: auto; border: 0; width: 100%;" width="204" alt="Yourlogo Light" title="Yourlogo Light" height="auto"></div>
+                          <div style="max-width: 204px;"><img th:src="${appointment?.getBusinessEmployee()?.getBusiness()?.getLogo() ?: 'https://d1oco4z2z1fhwp.cloudfront.net/templates/default/4966/Yourlogo-light.png'}" style="display: block; height: auto; border: 0; width: 100%;" width="204" alt="Yourlogo Light" title="Yourlogo Light" height="auto"></div>
                         </div>
                       </td>
                     </tr>

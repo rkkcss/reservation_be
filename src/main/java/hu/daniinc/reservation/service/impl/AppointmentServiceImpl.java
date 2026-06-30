@@ -384,6 +384,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         // 7. Mentés és Reminder
         Appointment savedAppointment = appointmentRepository.save(appointment);
+        emailService.sendAppointmentReminder(savedAppointment.getGuest(), savedAppointment);
 
         if (savedAppointment.getStatus() == AppointmentStatus.CONFIRMED) {
             appointmentReminderService.scheduleEmailReminder(savedAppointment);

@@ -33,6 +33,8 @@ public class OfferingDTO implements Serializable {
 
     private BasicEntityStatus status;
 
+    private String color;
+
     public Long getId() {
         return id;
     }
@@ -95,6 +97,14 @@ public class OfferingDTO implements Serializable {
 
     public void setStatus(BasicEntityStatus status) {
         this.status = status;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     @Override

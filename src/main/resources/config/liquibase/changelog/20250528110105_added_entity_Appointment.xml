@@ -62,6 +62,14 @@
     <dropDefaultValue tableName="appointment" columnName="modified_date" columnDataType="${datetimeType}"/>
   </changeSet>
 
+  <!-- Unique constraint for appointment slot -->
+  <changeSet id="20250528110105-2" author="jhipster">
+    <addUniqueConstraint
+      tableName="appointment"
+      columnNames="business_employee_id, start_date"
+      constraintName="uq_employee_start_date"/>
+  </changeSet>
+
   <!-- Faker data -->
   <changeSet id="20250528110105-1-data" author="jhipster" context="faker">
     <loadData
