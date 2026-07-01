@@ -126,11 +126,11 @@ public class OfferingResource {
      * or with status {@code 500 (Internal Server Error)} if the offeringDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{offeringId}/business/{businessId}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{offeringId}", consumes = { "application/json", "application/merge-patch+json" })
     @RequiredBusinessPermission(value = { BusinessPermission.EDIT_OWN_SERVICES, BusinessPermission.EDIT_ALL_SERVICES })
     public ResponseEntity<OfferingDTO> partialUpdateOffering(
         @PathVariable(value = "offeringId") final Long offeringId,
-        @PathVariable(value = "businessId") final Long businessId,
+        @TenantBusiness final Long businessId,
         @NotNull @RequestBody OfferingDTO offeringDTO
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update Offering partially : {}, {}, {}", offeringId, offeringDTO, businessId);
@@ -204,9 +204,9 @@ public class OfferingResource {
      * @param offerId the id of the offeringDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/{offerId}/business/{businessId}")
+    @DeleteMapping("/{offerId}")
     @RequiredBusinessPermission(value = { BusinessPermission.EDIT_ALL_SERVICES, BusinessPermission.EDIT_OWN_SERVICES })
-    public ResponseEntity<Void> deleteOffering(@PathVariable("offerId") Long offerId, @PathVariable("businessId") Long businessId) {
+    public ResponseEntity<Void> deleteOffering(@PathVariable("offerId") Long offerId, @TenantBusiness Long businessId) {
         LOG.debug("REST request to delete Offering : {}", offerId);
         offeringService.logicalDelete(offerId, businessId);
         return ResponseEntity.noContent()

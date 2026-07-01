@@ -13,7 +13,6 @@ import hu.daniinc.reservation.service.specifications.OfferingSpecification;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -38,20 +37,17 @@ public class OfferingServiceImpl implements OfferingService {
     private final OfferingRepository offeringRepository;
 
     private final OfferingMapper offeringMapper;
-    private final BusinessRepository businessRepository;
     private final BusinessEmployeeRepository businessEmployeeRepository;
     private final UserService userService;
 
     public OfferingServiceImpl(
         OfferingRepository offeringRepository,
         OfferingMapper offeringMapper,
-        BusinessRepository businessRepository,
         BusinessEmployeeRepository businessEmployeeRepository,
         UserService userService
     ) {
         this.offeringRepository = offeringRepository;
         this.offeringMapper = offeringMapper;
-        this.businessRepository = businessRepository;
         this.businessEmployeeRepository = businessEmployeeRepository;
         this.userService = userService;
     }
@@ -121,6 +117,7 @@ public class OfferingServiceImpl implements OfferingService {
     }
 
     @Override
+    @Transactional
     public void logicalDelete(Long offerId, Long businessId) {
         LOG.debug("Request to logical delete Offering : {}, in businessId: {}", offerId, businessId);
         Offering offering = offeringRepository
