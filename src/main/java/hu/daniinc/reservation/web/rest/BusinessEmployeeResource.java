@@ -60,8 +60,8 @@ public class BusinessEmployeeResource {
 
     //get business employees by business ID
     //    @RequiredBusinessPermission(BusinessPermission.VIEW_EMPLOYEES)
-    @GetMapping("/business/{businessId}/employees")
-    public ResponseEntity<List<BusinessEmployeeDTO>> getBusinessEmployees(@PathVariable Long businessId, Pageable pageable) {
+    @GetMapping("/employees")
+    public ResponseEntity<List<BusinessEmployeeDTO>> getBusinessEmployees(@TenantBusiness Long businessId, Pageable pageable) {
         if (businessId == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

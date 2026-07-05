@@ -1,12 +1,10 @@
 package hu.daniinc.reservation.repository;
 
 import hu.daniinc.reservation.domain.Offering;
-import hu.daniinc.reservation.service.dto.OfferingDTO;
 import hu.daniinc.reservation.service.dto.TopOfferingStatisticDTO;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-@SQLRestriction("status != 'DELETED'")
 public interface OfferingRepository extends JpaRepository<Offering, Long>, JpaSpecificationExecutor<Offering> {
     @Query(
         "select o from Offering o where o.businessEmployee.user.login = ?#{authentication.name} and o.businessEmployee.business.id = :businessId"

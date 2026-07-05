@@ -412,7 +412,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         return appointmentRepository
             .findByModifierToken(token)
             .map(appointmentMapper::toDto)
-            .orElseThrow(() -> new NotFoundException("Entity not found", token));
+            .orElseThrow(() -> new GeneralException("Entity not found", "appointment-not-exists", HttpStatus.BAD_REQUEST));
     }
 
     //cancel appointment by modifier token

@@ -1,8 +1,7 @@
 package hu.daniinc.reservation.web.rest;
 
-import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.GuestRepository;
-import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
+import hu.daniinc.reservation.security.annotation.TenantBusiness;
 import hu.daniinc.reservation.service.GuestService;
 import hu.daniinc.reservation.service.dto.GuestDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
@@ -58,8 +57,8 @@ public class GuestResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new guestDTO, or with status {@code 400 (Bad Request)} if the guest has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/business/{businessId}")
-    public ResponseEntity<GuestDTO> createGuest(@PathVariable("businessId") Long businessId, @Valid @RequestBody GuestDTO guestDTO)
+    @PostMapping("")
+    public ResponseEntity<GuestDTO> createGuest(@TenantBusiness Long businessId, @Valid @RequestBody GuestDTO guestDTO)
         throws URISyntaxException {
         LOG.debug("REST request to save Guest : {}", guestDTO);
         if (guestDTO.getId() != null) {

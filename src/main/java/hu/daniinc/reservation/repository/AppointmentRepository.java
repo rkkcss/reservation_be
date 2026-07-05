@@ -50,7 +50,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
     )
     List<Appointment> findAllPendingAppointments(@Param("businessId") Long businessId);
 
-    @Query("select a from Appointment a where a.modifierToken = ?1")
+    @Query("select a from Appointment a where a.modifierToken = ?1 and a.status != 'CANCELLED' AND a.startDate >= CURRENT_DATE")
     Optional<Appointment> findByModifierToken(String modifierToken);
 
     @Query("select a from Appointment a where a.id = :appointmentId and a.businessEmployee.user.id = :employeeId")
