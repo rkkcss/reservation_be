@@ -43,9 +43,10 @@
         <constraints nullable="true" />
       </column>
 
-      <column name="banner_url" type="varchar(255)">
-        <constraints nullable="true" />
-      </column>
+      <column name="logo_public_id" type="varchar(255)" />
+
+      <column name="banner_url" type="varchar(255)" />
+      <column name="banner_public_id" type="varchar(255)" />
 
       <column name="appointment_approval_required" type="BOOLEAN" defaultValueBoolean="true">
         <constraints nullable="false"/>

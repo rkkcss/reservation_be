@@ -33,12 +33,10 @@ public class BusinessServiceImpl implements BusinessService {
     private final BusinessRepository businessRepository;
 
     private final BusinessMapper businessMapper;
-    private final ImageServiceImpl imageServiceImpl;
 
-    public BusinessServiceImpl(BusinessRepository businessRepository, BusinessMapper businessMapper, ImageServiceImpl imageServiceImpl) {
+    public BusinessServiceImpl(BusinessRepository businessRepository, BusinessMapper businessMapper) {
         this.businessRepository = businessRepository;
         this.businessMapper = businessMapper;
-        this.imageServiceImpl = imageServiceImpl;
     }
 
     @Override
@@ -109,19 +107,7 @@ public class BusinessServiceImpl implements BusinessService {
         Business business = businessRepository
             .findBusinessByLoginAndBusinessId(1L)
             .orElseThrow(() -> new EntityNotFoundException("No Business Found"));
-
-        String oldLogo = business.getLogo();
-
-        if (newLogo == null || newLogo.trim().isEmpty()) {
-            throw new IllegalArgumentException("Invalid logo name");
-        }
-
-        business.setLogo(newLogo);
         businessRepository.save(business);
-
-        if (oldLogo != null && !oldLogo.equals(newLogo)) {
-            imageServiceImpl.deleteImage(oldLogo);
-        }
     }
 
     @Override

@@ -36,6 +36,9 @@ public class AdminUserDTO implements Serializable {
     @Size(max = 256)
     private String imageUrl;
 
+    @Size(max = 256)
+    private String imagePublicId;
+
     private boolean activated = false;
 
     @Size(min = 2, max = 10)
@@ -75,6 +78,7 @@ public class AdminUserDTO implements Serializable {
         this.authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
         this.onboardingVersion = user.getOnboardingVersion();
         this.fullName = user.getFullName();
+        this.imagePublicId = user.getImagePublicId();
     }
 
     public Long getId() {
@@ -83,6 +87,14 @@ public class AdminUserDTO implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getImagePublicId() {
+        return imagePublicId;
+    }
+
+    public void setImagePublicId(String imagePublicId) {
+        this.imagePublicId = imagePublicId;
     }
 
     public String getLogin() {

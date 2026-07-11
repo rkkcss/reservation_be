@@ -19,6 +19,7 @@ import hu.daniinc.reservation.web.rest.errors.*;
 import hu.daniinc.reservation.web.rest.vm.KeyAndPasswordVM;
 import hu.daniinc.reservation.web.rest.vm.ManagedUserVM;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
@@ -31,6 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * REST controller for managing the current user's account.
@@ -261,8 +263,6 @@ public class AccountResource {
     public void requestPasswordReset(@RequestBody String mail) {
         Optional<User> user = userService.requestPasswordReset(mail);
         if (user.isPresent()) {
-            //TODO: SEND password reset email implementation
-            //            mailService.sendPasswordResetMail(user.orElseThrow());
             emailService.sendPasswordResetMail(user.orElseThrow());
         } else {
             // Pretend the request has been successful to prevent checking which emails really exist
@@ -320,5 +320,15 @@ public class AccountResource {
     public ResponseEntity<Void> updateDone() {
         userService.increaseOnboardingVersion();
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(value = "/account/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AdminUserDTO> updateProfileImage(@RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(userService.updateProfileImage(file));
+    }
+
+    @DeleteMapping("/account/profile-image")
+    public ResponseEntity<UserDTO> deleteProfileImage() throws IOException {
+        return ResponseEntity.ok(userService.deleteProfileImage());
     }
 }

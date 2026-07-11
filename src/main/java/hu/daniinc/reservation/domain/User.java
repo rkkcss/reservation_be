@@ -69,6 +69,10 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @Column(name = "image_url", length = 256)
     private String imageUrl;
 
+    @Size(max = 256)
+    @Column(name = "image_public_id", length = 256)
+    private String imagePublicId;
+
     @Size(max = 20)
     @Column(name = "activation_key", length = 20)
     @JsonIgnore
@@ -111,6 +115,14 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     public String getLogin() {
         return login;
+    }
+
+    public String getImagePublicId() {
+        return imagePublicId;
+    }
+
+    public void setImagePublicId(String imagePublicId) {
+        this.imagePublicId = imagePublicId;
     }
 
     // Lowercase the login before saving it in database

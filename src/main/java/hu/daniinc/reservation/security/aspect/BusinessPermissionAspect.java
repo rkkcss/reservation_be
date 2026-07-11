@@ -1,33 +1,49 @@
 package hu.daniinc.reservation.security.aspect;
 
 import hu.daniinc.reservation.domain.BusinessEmployee;
+import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
+import hu.daniinc.reservation.service.BusinessEmployeeService;
+import hu.daniinc.reservation.service.UserService;
+import hu.daniinc.reservation.service.dto.BusinessEmployeeDTO;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Set;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 @Aspect
 @Component
 public class BusinessPermissionAspect {
 
     private final BusinessEmployeeRepository businessEmployeeRepository;
+    private final UserService userService;
+    private final BusinessEmployeeService businessEmployeeService;
+    private final HttpServletRequest request;
 
-    public BusinessPermissionAspect(BusinessEmployeeRepository businessEmployeeRepository) {
+    public BusinessPermissionAspect(
+        BusinessEmployeeRepository businessEmployeeRepository,
+        UserService userService,
+        BusinessEmployeeService businessEmployeeService,
+        HttpServletRequest request
+    ) {
         this.businessEmployeeRepository = businessEmployeeRepository;
+        this.userService = userService;
+        this.businessEmployeeService = businessEmployeeService;
+        this.request = request;
     }
 
     @Before("@annotation(required)")
     public void checkPermission(JoinPoint jp, RequiredBusinessPermission required) {
-        String paramName = required.businessIdParam();
-        Long businessId = extractBusinessId(jp, paramName);
+        // Már nem passzoljuk át a paramName-t, mert a request-ből dolgozunk
+        Long businessId = extractBusinessId();
 
         if (businessId == null) {
             throw new GeneralException(
@@ -67,26 +83,31 @@ public class BusinessPermissionAspect {
         }
     }
 
-    private Long extractBusinessId(JoinPoint jp, String paramName) {
-        MethodSignature signature = (MethodSignature) jp.getSignature();
-        String[] paramNames = signature.getParameterNames();
-        Object[] args = jp.getArgs();
-
-        for (int i = 0; i < paramNames.length; i++) {
-            if (paramNames[i].equals(paramName)) {
-                Object arg = args[i];
-
-                if (paramName.equals("businessEmployeeId") && arg instanceof Long) {
-                    return businessEmployeeRepository
-                        .findById((Long) arg)
-                        .map(be -> be.getBusiness().getId())
-                        .orElseThrow(() -> new GeneralException("BusinessEmployee not found", "not-found", HttpStatus.NOT_FOUND));
-                }
-
-                return (Long) arg;
-            }
+    private Long extractBusinessId() {
+        Long businessId = (Long) request.getAttribute("tenantBusinessId");
+        if (businessId != null) {
+            return businessId;
         }
 
-        throw new RuntimeException("Parameter '" + paramName + "' not found");
+        String businessHeader = request.getHeader("X-Business-ID");
+        if (businessHeader != null) {
+            Long requestedId = Long.parseLong(businessHeader);
+
+            // Is user belongs to business validation
+            User user = userService
+                .getUserWithAuthorities()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+            BusinessEmployeeDTO employee = businessEmployeeService.findByBusinessIdAndUserId(requestedId, user.getId());
+
+            if (employee == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found");
+            }
+
+            request.setAttribute("tenantBusinessId", requestedId);
+            return requestedId;
+        }
+
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No business context");
     }
 }

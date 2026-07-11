@@ -51,8 +51,14 @@ public class Business implements Serializable {
     @Column(name = "logo")
     private String logo;
 
+    @Column(name = "logo_public_id")
+    private String logoPublicId;
+
     @Column(name = "banner_url")
     private String bannerUrl;
+
+    @Column(name = "banner_public_id")
+    private String bannerPublicId;
 
     @OneToOne(fetch = FetchType.LAZY)
     private User owner;
@@ -129,6 +135,22 @@ public class Business implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLogoPublicId() {
+        return logoPublicId;
+    }
+
+    public void setLogoPublicId(String logoPublicId) {
+        this.logoPublicId = logoPublicId;
+    }
+
+    public String getBannerPublicId() {
+        return bannerPublicId;
+    }
+
+    public void setBannerPublicId(String bannerPublicId) {
+        this.bannerPublicId = bannerPublicId;
     }
 
     public ZonedDateTime getCreatedDate() {

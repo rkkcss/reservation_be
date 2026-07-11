@@ -1,5 +1,7 @@
 package hu.daniinc.reservation.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import hu.daniinc.reservation.config.Constants;
 import hu.daniinc.reservation.domain.*;
 import hu.daniinc.reservation.domain.enumeration.BasicEntityStatus;
@@ -11,10 +13,13 @@ import hu.daniinc.reservation.security.DomainUserDetailsService;
 import hu.daniinc.reservation.security.SecurityUtils;
 import hu.daniinc.reservation.service.dto.AdminUserDTO;
 import hu.daniinc.reservation.service.dto.UserDTO;
+import hu.daniinc.reservation.service.mapper.UserMapper;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import hu.daniinc.reservation.web.rest.vm.ManagedUserVM;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -36,6 +41,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tech.jhipster.security.RandomUtil;
 
@@ -56,12 +62,17 @@ public class UserService {
 
     private final AuthorityRepository authorityRepository;
 
+    private final CloudinaryImageUploader cloudinaryImageUploader;
+
+    private final Cloudinary cloudinary;
+
     private final CacheManager cacheManager;
     private final BusinessRepository businessRepository;
     private final BusinessEmployeeInviteRepository businessEmployeeInviteRepository;
     private final BusinessEmployeeRepository businessEmployeeRepository;
     private final DomainUserDetailsService userDetailsService;
     private final EmailService emailService;
+    private final UserMapper userMapper;
 
     @Value("${app.onboarding-version}")
     private Integer onboardingVersion;
@@ -71,23 +82,29 @@ public class UserService {
         PasswordEncoder passwordEncoder,
         PersistentTokenRepository persistentTokenRepository,
         AuthorityRepository authorityRepository,
+        CloudinaryImageUploader cloudinaryImageUploader,
+        Cloudinary cloudinary,
         CacheManager cacheManager,
         BusinessRepository businessRepository,
         BusinessEmployeeInviteRepository businessEmployeeInviteRepository,
         BusinessEmployeeRepository businessEmployeeRepository,
         DomainUserDetailsService userDetailsService,
-        EmailService emailService
+        EmailService emailService,
+        UserMapper userMapper
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.persistentTokenRepository = persistentTokenRepository;
         this.authorityRepository = authorityRepository;
+        this.cloudinaryImageUploader = cloudinaryImageUploader;
+        this.cloudinary = cloudinary;
         this.cacheManager = cacheManager;
         this.businessRepository = businessRepository;
         this.businessEmployeeInviteRepository = businessEmployeeInviteRepository;
         this.businessEmployeeRepository = businessEmployeeRepository;
         this.userDetailsService = userDetailsService;
         this.emailService = emailService;
+        this.userMapper = userMapper;
     }
 
     @Transactional
@@ -526,5 +543,35 @@ public class UserService {
         } else {
             LOG.debug("A felhasználó ({}) már elérte a maximális onboarding verziót: {}", user.getLogin(), onboardingVersion);
         }
+    }
+
+    public AdminUserDTO updateProfileImage(MultipartFile file) throws IOException {
+        User user = getUserWithAuthorities()
+            .orElseThrow(() -> new GeneralException("user-not-found", "user-not-found", HttpStatus.NOT_FOUND));
+
+        var result = cloudinaryImageUploader.uploadAndReplace(file, "users/" + user.getId() + "/profile", user.getImagePublicId());
+
+        user.setImageUrl(result.url());
+        user.setImagePublicId(result.publicId());
+        this.clearUserCaches(user);
+
+        return userMapper.userToAdminUserDTO(userRepository.save(user));
+    }
+
+    public UserDTO deleteProfileImage() throws IOException {
+        User user = getUserWithAuthorities()
+            .orElseThrow(() -> new GeneralException("user-not-found", "user-not-found", HttpStatus.NOT_FOUND));
+
+        if (user.getImagePublicId() == null) {
+            return userMapper.userToUserDTO(user);
+        }
+
+        cloudinary.uploader().destroy(user.getImagePublicId(), ObjectUtils.emptyMap());
+
+        user.setImageUrl(null);
+        user.setImagePublicId(null);
+        this.clearUserCaches(user);
+
+        return userMapper.userToUserDTO(userRepository.save(user));
     }
 }

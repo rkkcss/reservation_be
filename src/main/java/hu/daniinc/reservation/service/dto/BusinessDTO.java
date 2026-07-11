@@ -35,7 +35,11 @@ public class BusinessDTO implements Serializable {
 
     private String logo;
 
+    private String logoPublicId;
+
     private String bannerUrl;
+
+    private String bannerPublicId;
 
     private UserDTO owner;
 
@@ -127,6 +131,22 @@ public class BusinessDTO implements Serializable {
 
     public void setAppointmentApprovalRequired(Boolean appointmentApprovalRequired) {
         this.appointmentApprovalRequired = appointmentApprovalRequired;
+    }
+
+    public String getLogoPublicId() {
+        return logoPublicId;
+    }
+
+    public void setLogoPublicId(String logoPublicId) {
+        this.logoPublicId = logoPublicId;
+    }
+
+    public String getBannerPublicId() {
+        return bannerPublicId;
+    }
+
+    public void setBannerPublicId(String bannerPublicId) {
+        this.bannerPublicId = bannerPublicId;
     }
 
     public String getLogo() {
