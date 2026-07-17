@@ -176,11 +176,11 @@ public class AppointmentResource {
     public ResponseEntity<List<AppointmentDTO>> getAllAppointments(
         @RequestParam Instant startDate,
         @RequestParam Instant endDate,
-        @RequestParam Long businessId,
-        @RequestParam String employeeName
+        @TenantBusiness Long businessId,
+        @RequestParam String employeeId
     ) {
         LOG.debug("REST request to get a page of Appointments");
-        List<AppointmentDTO> result = appointmentService.findOverlappingAppointments(startDate, endDate, businessId, employeeName);
+        List<AppointmentDTO> result = appointmentService.findOverlappingAppointments(startDate, endDate, businessId, employeeId);
         return ResponseEntity.ok().body(result);
     }
 

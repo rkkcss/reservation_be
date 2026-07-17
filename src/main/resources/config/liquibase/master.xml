@@ -44,5 +44,7 @@
     <include file="config/liquibase/changelog/20250528T1530_remove_appointment_from_offering.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20240101000000_added_quartz_tables.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/202607061_added_entity_GalleryImage.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20260711120000_added_entity_EmployeeTimeOff.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260711120000_added_entity_constraints_EmployeeTimeOff.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

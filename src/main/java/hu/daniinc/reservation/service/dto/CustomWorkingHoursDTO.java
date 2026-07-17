@@ -24,7 +24,7 @@ public class CustomWorkingHoursDTO implements Serializable {
     @NotNull
     private Instant endTime;
 
-    private BusinessDTO business;
+    private BusinessEmployeeDTO businessEmployee;
 
     public Long getId() {
         return id;
@@ -58,12 +58,12 @@ public class CustomWorkingHoursDTO implements Serializable {
         this.endTime = endTime;
     }
 
-    public BusinessDTO getBusiness() {
-        return business;
+    public BusinessEmployeeDTO getBusinessEmployee() {
+        return businessEmployee;
     }
 
-    public void setBusiness(BusinessDTO business) {
-        this.business = business;
+    public void setBusinessEmployee(BusinessEmployeeDTO businessEmployee) {
+        this.businessEmployee = businessEmployee;
     }
 
     @Override
@@ -95,7 +95,6 @@ public class CustomWorkingHoursDTO implements Serializable {
             ", workDate='" + getWorkDate() + "'" +
             ", startTime='" + getStartTime() + "'" +
             ", endTime='" + getEndTime() + "'" +
-            ", business=" + getBusiness() +
             "}";
     }
 }

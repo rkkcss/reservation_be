@@ -6,6 +6,7 @@ import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.*;
 import hu.daniinc.reservation.service.AppointmentService;
 import hu.daniinc.reservation.service.EmailService;
+import hu.daniinc.reservation.service.EmployeeTimeOffService;
 import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.*;
 import hu.daniinc.reservation.service.mapper.AppointmentMapper;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private final BusinessEmployeeMapper businessEmployeeMapper;
+    private final EmployeeTimeOffService employeeTimeOffService;
 
     public AppointmentServiceImpl(
         AppointmentRepository appointmentRepository,
@@ -63,7 +66,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         AppointmentReminderService appointmentReminderService,
         UserService userService,
         ApplicationEventPublisher eventPublisher,
-        BusinessEmployeeMapper businessEmployeeMapper
+        BusinessEmployeeMapper businessEmployeeMapper,
+        EmployeeTimeOffService employeeTimeOffService
     ) {
         this.appointmentRepository = appointmentRepository;
         this.emailService = emailService;
@@ -78,6 +82,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.userService = userService;
         this.eventPublisher = eventPublisher;
         this.businessEmployeeMapper = businessEmployeeMapper;
+        this.employeeTimeOffService = employeeTimeOffService;
     }
 
     @Override
@@ -128,7 +133,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AppointmentDTO> findOverlappingAppointments(Instant startDate, Instant endDate, Long businessId, String employeeFullName) {
+    public List<AppointmentDTO> findOverlappingAppointments(Instant startDate, Instant endDate, Long businessId, String employeeId) {
         User user = userService
             .getUserWithAuthorities()
             .orElseThrow(() -> new GeneralException("No user logged in!", "no-user-logged-in", HttpStatus.NOT_FOUND));
@@ -137,19 +142,21 @@ public class AppointmentServiceImpl implements AppointmentService {
             .orElseThrow(() ->
                 new GeneralException("No employee logged in for businessId: " + businessId, "no-employee-logged-in", HttpStatus.NOT_FOUND)
             );
-
-        String myName = user.getFullName();
+        Long myBusinessEmployeeId = businessEmployee.getId();
 
         //if employee don't have permission to view all or different employee, we set the filter name to the logged in employee
-        if (!myName.equals(employeeFullName) && !businessEmployee.hasPermission(BusinessPermission.VIEW_ALL_SCHEDULE)) {
-            LOG.warn("Unauthorized access attempt by {}: requested {}, allowed {}", user.getLogin(), employeeFullName, myName);
-            employeeFullName = myName;
+        if (
+            !Objects.equals(String.valueOf(myBusinessEmployeeId), employeeId) &&
+            !businessEmployee.hasPermission(BusinessPermission.VIEW_ALL_SCHEDULE)
+        ) {
+            LOG.warn("Unauthorized access attempt by {}: requested {}, allowed {}", user.getLogin(), employeeId, myBusinessEmployeeId);
+            employeeId = String.valueOf(myBusinessEmployeeId);
         }
         Specification<Appointment> spec = AppointmentsSpecification.overlappingAppointmentsByEmployeeName(
             startDate,
             endDate,
             businessId,
-            employeeFullName
+            employeeId
         );
         return appointmentRepository.findAll(spec).stream().map(appointmentMapper::toDto).toList();
     }
@@ -212,29 +219,39 @@ public class AppointmentServiceImpl implements AppointmentService {
         );
 
         // ÚJ: WorkingHours lekérése EGYSZER a ciklus előtt
-        List<WorkingHours> allWorkingHours = workingHoursRepository.findByBusinessIdAndEmployeeId(businessId, employeeId);
+        Set<WorkingHours> allWorkingHours = workingHoursRepository.findAllByBusinessAndEmployeeId(businessId, employeeId);
 
         Instant now = Instant.now();
 
         // 4. Napokon való végigfutás
+
+        List<CustomWorkingHours> allCustomWorkingHours = customWorkingHoursRepository.findByBusinessIdAndEmployeeIdAndWorkDateBetween(
+            businessId,
+            employeeId,
+            from,
+            to
+        );
+
+        Map<LocalDate, CustomWorkingHours> customByDate = allCustomWorkingHours
+            .stream()
+            .collect(Collectors.toMap(CustomWorkingHours::getWorkDate, c -> c));
+
+        List<EmployeeTimeOffService.TimeOffRange> allTimeOffs = employeeTimeOffService.findOverlappingRanges(
+            businessId,
+            employeeId,
+            overallStart,
+            overallEnd
+        );
+
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
             List<Instant> potentialSlots = new ArrayList<>();
 
-            // Egyedi munkaidő ellenőrzés - ez marad DB hívás (egyedi napok)
-            Optional<CustomWorkingHours> customOpt = customWorkingHoursRepository.findByBusinessIdAndEmployeeIdAndWorkDate(
-                businessId,
-                employeeId,
-                date
-            );
-
-            if (customOpt.isPresent()) {
-                CustomWorkingHours cwh = customOpt.get();
+            CustomWorkingHours cwh = customByDate.get(date);
+            if (cwh != null) {
                 generateSlots(potentialSlots, cwh.getStartTime(), cwh.getEndTime(), slotLength);
             } else {
-                // ÚJ: Már nem DB hívás, csak szűrés a memóriában
                 int dayOfWeek = date.getDayOfWeek().getValue();
                 List<WorkingHours> whList = allWorkingHours.stream().filter(wh -> wh.getDayOfWeek().equals(dayOfWeek)).toList();
-
                 for (WorkingHours wh : whList) {
                     Instant start = date.atTime(wh.getStartTime()).atZone(zone).toInstant();
                     Instant end = date.atTime(wh.getEndTime()).atZone(zone).toInstant();
@@ -242,7 +259,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                 }
             }
 
-            // 5. Szűrés - változatlan
             List<Instant> available = potentialSlots
                 .stream()
                 .filter(slot -> !slot.isBefore(now))
@@ -251,6 +267,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                         .stream()
                         .noneMatch(appt -> slot.isBefore(appt.getEndDate()) && slot.plus(slotLength).isAfter(appt.getStartDate()))
                 )
+                // ÚJ: szabadság/time off szűrés
+                .filter(slot -> allTimeOffs.stream().noneMatch(t -> slot.isBefore(t.end()) && slot.plus(slotLength).isAfter(t.start())))
                 .collect(Collectors.toList());
 
             if (!available.isEmpty()) {
@@ -265,6 +283,11 @@ public class AppointmentServiceImpl implements AppointmentService {
      * Segédmetódus a slotok legenerálásához két időpont között
      */
     private void generateSlots(List<Instant> slots, Instant start, Instant end, Duration slotLength) {
+        if (slotLength == null || slotLength.isZero() || slotLength.isNegative()) {
+            LOG.warn("Invalid slotLength provided: {}", slotLength);
+            return;
+        }
+
         Instant current = start;
         while (!current.plus(slotLength).isAfter(end)) {
             slots.add(current);
@@ -336,12 +359,12 @@ public class AppointmentServiceImpl implements AppointmentService {
             .map(existingGuest -> {
                 boolean hasChanged = false;
 
-                if (!existingGuest.getName().equals(dto.getName())) {
+                if (!Objects.equals(existingGuest.getName(), dto.getName())) {
                     existingGuest.setName(dto.getName());
                     hasChanged = true;
                 }
 
-                if (!existingGuest.getPhoneNumber().equals(dto.getPhoneNumber())) {
+                if (!Objects.equals(existingGuest.getPhoneNumber(), dto.getPhoneNumber())) {
                     existingGuest.setPhoneNumber(dto.getPhoneNumber());
                     hasChanged = true;
                 }
@@ -382,13 +405,17 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setEndDate(endDate);
         appointment.setModifierToken(UUID.randomUUID().toString());
 
-        // 7. Mentés és Reminder
-        Appointment savedAppointment = appointmentRepository.save(appointment);
-        emailService.sendAppointmentReminder(savedAppointment.getGuest(), savedAppointment);
+        // saving - notifications - email reminders
+        Appointment savedAppointment;
 
-        if (savedAppointment.getStatus() == AppointmentStatus.CONFIRMED) {
-            appointmentReminderService.scheduleEmailReminder(savedAppointment);
+        try {
+            savedAppointment = appointmentRepository.save(appointment);
+            appointmentRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestAlertException("Appointment is reserved!", null, "appointment.reserved");
         }
+
+        eventPublisher.publishEvent(savedAppointment);
         eventPublisher.publishEvent(
             new NotificationEventDTO(
                 businessEmployeeMapper.toDto(appointment.getBusinessEmployee()),
@@ -504,7 +531,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     //checking the appointment is available return TRUE if yes else FALSE
     public boolean isSlotAvailable(Long businessId, Long employeeId, LocalDate date, LocalTime time, Long offeringId, ZoneId zone) {
         // Offering lekérése a hossz miatt
-        Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new RuntimeException("Offering not found"));
+        Offering offering = offeringRepository
+            .findById(offeringId)
+            .orElseThrow(() -> new EntityNotFoundException("Offering not found with id: " + offeringId));
 
         // 1. Slot kiszámítása a cég időzónájában, majd konvertálás Instant-ra
         Instant slotStart = date.atTime(time).atZone(zone).toInstant();
@@ -534,6 +563,20 @@ public class AppointmentServiceImpl implements AppointmentService {
             return false;
         }
 
+        List<EmployeeTimeOffService.TimeOffRange> timeOffs = employeeTimeOffService.findOverlappingRanges(
+            businessId,
+            employeeId,
+            slotStart,
+            slotEnd
+        );
+
+        boolean onTimeOff = timeOffs.stream().anyMatch(t -> slotStart.isBefore(t.end()) && slotEnd.isAfter(t.start()));
+
+        if (onTimeOff) {
+            LOG.debug("Slot overlaps with employee time off for employee {}", employeeId);
+            return false;
+        }
+
         // 4. Munkaidő ellenőrzése (Egyedi munkaidő elsőbbséget élvez)
         Optional<CustomWorkingHours> customOpt = customWorkingHoursRepository.findByBusinessIdAndEmployeeIdAndWorkDate(
             businessId,
@@ -549,7 +592,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         // 5. Alapértelmezett munkaidő ellenőrzése
         int dow = date.getDayOfWeek().getValue();
-        List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndEmployeeId(businessId, employeeId);
+        List<WorkingHours> whList = workingHoursRepository.findByBusinessIdAndEmployeeIdAndDayOfWeek(businessId, employeeId, dow);
 
         for (WorkingHours wh : whList) {
             Instant whStart = date.atTime(wh.getStartTime()).atZone(zone).toInstant();

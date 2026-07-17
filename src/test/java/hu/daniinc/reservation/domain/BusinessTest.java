@@ -38,26 +38,7 @@ class BusinessTest {
     }
 
     @Test
-    void customWorkingHoursTest() {
-        Business business = getBusinessRandomSampleGenerator();
-        CustomWorkingHours customWorkingHoursBack = getCustomWorkingHoursRandomSampleGenerator();
-
-        business.addCustomWorkingHours(customWorkingHoursBack);
-        assertThat(business.getCustomWorkingHours()).containsOnly(customWorkingHoursBack);
-        assertThat(customWorkingHoursBack.getBusiness()).isEqualTo(business);
-
-        business.removeCustomWorkingHours(customWorkingHoursBack);
-        assertThat(business.getCustomWorkingHours()).doesNotContain(customWorkingHoursBack);
-        assertThat(customWorkingHoursBack.getBusiness()).isNull();
-
-        business.customWorkingHours(new HashSet<>(Set.of(customWorkingHoursBack)));
-        assertThat(business.getCustomWorkingHours()).containsOnly(customWorkingHoursBack);
-        assertThat(customWorkingHoursBack.getBusiness()).isEqualTo(business);
-
-        business.setCustomWorkingHours(new HashSet<>());
-        assertThat(business.getCustomWorkingHours()).doesNotContain(customWorkingHoursBack);
-        assertThat(customWorkingHoursBack.getBusiness()).isNull();
-    }
+    void customWorkingHoursTest() {}
 
     @Test
     void offeringTest() {

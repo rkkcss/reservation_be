@@ -109,4 +109,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
         """
     )
     List<Appointment> searchByBusinessIdQueryString(Long businessId, String query);
+
+    @Query(
+        """
+            SELECT a FROM Appointment a
+            JOIN FETCH a.guest
+            JOIN FETCH a.offering
+            JOIN FETCH a.businessEmployee be
+            JOIN FETCH be.business
+            WHERE a.id = :appointmentId
+        """
+    )
+    Optional<Appointment> findByIdWithDetails(@Param("appointmentId") Long appointmentId);
 }

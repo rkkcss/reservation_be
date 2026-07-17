@@ -32,7 +32,7 @@ public class AppointmentReminderJob implements Job {
             LOG.info("📧 Emlékeztető küldése az appointmentId-hez: {}", appointmentId);
 
             appointmentRepository
-                .findById(appointmentId)
+                .findByIdWithDetails(appointmentId)
                 .ifPresentOrElse(
                     app -> {
                         LOG.info(

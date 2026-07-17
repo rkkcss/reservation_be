@@ -74,6 +74,9 @@ public class BusinessEmployee {
     @JsonIgnoreProperties(value = { "businessEmployee" }, allowSetters = true)
     private Set<Guest> guests = new HashSet<>();
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "businessEmployee")
+    private Set<CustomWorkingHours> customWorkingHours = new HashSet<>();
+
     public Long getId() {
         return id;
     }
@@ -148,6 +151,14 @@ public class BusinessEmployee {
 
     public boolean hasPermission(BusinessPermission permission) {
         return permissions.contains(permission);
+    }
+
+    public Set<CustomWorkingHours> getCustomWorkingHours() {
+        return customWorkingHours;
+    }
+
+    public void setCustomWorkingHours(Set<CustomWorkingHours> customWorkingHours) {
+        this.customWorkingHours = customWorkingHours;
     }
 
     public BusinessEmployee withRole(BusinessRole role) {

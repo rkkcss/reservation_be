@@ -67,11 +67,6 @@ public class Business implements Serializable {
     private String slug;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
-    private Set<CustomWorkingHours> customWorkingHours = new HashSet<>();
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "business")
     @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
     private Set<BusinessRating> businessRatings = new HashSet<>();
 
@@ -287,37 +282,6 @@ public class Business implements Serializable {
 
     public void setBusinessRatings(Set<BusinessRating> businessRatings) {
         this.businessRatings = businessRatings;
-    }
-
-    public Set<CustomWorkingHours> getCustomWorkingHours() {
-        return this.customWorkingHours;
-    }
-
-    public void setCustomWorkingHours(Set<CustomWorkingHours> customWorkingHours) {
-        if (this.customWorkingHours != null) {
-            this.customWorkingHours.forEach(i -> i.setBusiness(null));
-        }
-        if (customWorkingHours != null) {
-            customWorkingHours.forEach(i -> i.setBusiness(this));
-        }
-        this.customWorkingHours = customWorkingHours;
-    }
-
-    public Business customWorkingHours(Set<CustomWorkingHours> customWorkingHours) {
-        this.setCustomWorkingHours(customWorkingHours);
-        return this;
-    }
-
-    public Business addCustomWorkingHours(CustomWorkingHours customWorkingHours) {
-        this.customWorkingHours.add(customWorkingHours);
-        customWorkingHours.setBusiness(this);
-        return this;
-    }
-
-    public Business removeCustomWorkingHours(CustomWorkingHours customWorkingHours) {
-        this.customWorkingHours.remove(customWorkingHours);
-        customWorkingHours.setBusiness(null);
-        return this;
     }
 
     public Set<BusinessOpeningHours> getOpeningHours() {

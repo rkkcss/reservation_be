@@ -41,7 +41,7 @@ public class CustomWorkingHours implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "user", "appointment", "workingHours", "customWorkingHours", "offerings" }, allowSetters = true)
-    private Business business;
+    private BusinessEmployee businessEmployee;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -97,17 +97,12 @@ public class CustomWorkingHours implements Serializable {
         this.endTime = endTime;
     }
 
-    public Business getBusiness() {
-        return this.business;
+    public BusinessEmployee getBusinessEmployee() {
+        return businessEmployee;
     }
 
-    public void setBusiness(Business business) {
-        this.business = business;
-    }
-
-    public CustomWorkingHours business(Business business) {
-        this.setBusiness(business);
-        return this;
+    public void setBusinessEmployee(BusinessEmployee businessEmployee) {
+        this.businessEmployee = businessEmployee;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

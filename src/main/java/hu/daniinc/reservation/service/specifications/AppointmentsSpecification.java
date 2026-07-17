@@ -10,7 +10,7 @@ public class AppointmentsSpecification {
         Instant startDate,
         Instant endDate,
         Long businessId,
-        String employeeFullName // f.e. "John Doe" or "all"
+        String employeeId
     ) {
         return (root, query, cb) -> {
             var predicates = cb.conjunction();
@@ -23,11 +23,9 @@ public class AppointmentsSpecification {
             predicates = cb.and(predicates, cb.equal(root.get("businessEmployee").get("business").get("id"), businessId));
 
             // employee name filter
-            if (employeeFullName != null && !employeeFullName.isEmpty() && !"all".equalsIgnoreCase(employeeFullName)) {
-                var firstNamePath = root.get("businessEmployee").get("user").get("firstName").as(String.class);
-                var lastNamePath = root.get("businessEmployee").get("user").get("lastName").as(String.class);
-                var fullNameExpr = cb.concat(cb.concat(firstNamePath, " "), lastNamePath);
-                predicates = cb.and(predicates, cb.equal(fullNameExpr, employeeFullName));
+            if (employeeId != null && !employeeId.isEmpty() && !"all".equalsIgnoreCase(employeeId)) {
+                var searchedEmployeeId = root.get("businessEmployee").get("id");
+                predicates = cb.and(predicates, cb.equal(searchedEmployeeId, employeeId));
             }
             // if employeeFullName all -> dont add name filter -> return ALL the employees
 

@@ -28,9 +28,26 @@ public class AppointmentReminderService {
         try {
             LOG.info("🔔 scheduleEmailReminder meghívva az appointment-hez: {}", appointment.getId());
 
-            // test: start after 1 min
-            Instant triggerTime = Instant.now().plus(1, ChronoUnit.MINUTES);
-            LOG.warn("⚠️ TESZT MÓD: Job 1 perc múlvára ütemezve ({})", triggerTime);
+            Instant now = Instant.now();
+            Instant appointmentStart = appointment.getStartDate();
+
+            if (appointmentStart.isBefore(now)) {
+                LOG.warn("Az appointment már elmúlt, nem ütemezünk emailt: {}", appointment.getId());
+                return;
+            }
+
+            Instant fourHoursBefore = appointmentStart.minus(4, ChronoUnit.HOURS);
+            Instant triggerTime;
+
+            if (fourHoursBefore.isAfter(now)) {
+                // Normál eset: 4 órával az időpont előtt küldjük
+                triggerTime = fourHoursBefore;
+                LOG.info("📅 Emlékeztető ütemezve 4 órával az időpont előtt: {}", triggerTime);
+            } else {
+                // Utolsó pillanatos foglalás: már 4 óránál kevesebb van hátra, azonnal küldjük
+                triggerTime = now.plusSeconds(10);
+                LOG.warn("Utolsó pillanatos foglalás (kevesebb mint 4 óra van hátra), azonnali küldés: {}", triggerTime);
+            }
 
             String jobId = "appointment-reminder-" + appointment.getId();
 
@@ -52,7 +69,6 @@ public class AppointmentReminderService {
             boolean exists = scheduler.checkExists(jobDetail.getKey());
             LOG.info("🔍 Job létezik az adatbázisban? {}", exists);
 
-            // ÚJ: Trigger részletek
             Trigger storedTrigger = scheduler.getTrigger(trigger.getKey());
             if (storedTrigger != null) {
                 LOG.info("📅 Trigger következő futási ideje: {}", storedTrigger.getNextFireTime());

@@ -23,7 +23,7 @@
             <column name="end_time" type="${datetimeType}">
                 <constraints nullable="false" />
             </column>
-            <column name="business_id" type="bigint">
+            <column name="business_employee_id" type="bigint">
                 <constraints nullable="true" />
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->

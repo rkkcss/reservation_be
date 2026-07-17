@@ -46,7 +46,7 @@ public interface AppointmentService {
      * @param pageable the pagination information.
      * @return the list of entities.
      */
-    List<AppointmentDTO> findOverlappingAppointments(Instant startDate, Instant endDate, Long businessId, String name);
+    List<AppointmentDTO> findOverlappingAppointments(Instant startDate, Instant endDate, Long businessId, String employeeId);
 
     /**
      * Get the "id" appointment.

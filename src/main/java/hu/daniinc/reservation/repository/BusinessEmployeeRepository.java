@@ -42,6 +42,12 @@ public interface BusinessEmployeeRepository extends JpaRepository<BusinessEmploy
     @Query("select be from BusinessEmployee be where be.business.id = :businessId and be.user.id = :employeeId")
     Optional<BusinessEmployee> findByBusinessIdAndEmployeeId(Long businessId, Long employeeId);
 
+    @Query("select be from BusinessEmployee be where be.business.id = :businessId and be.id = :employeeId")
+    Optional<BusinessEmployee> findByBusinessIdAndBusinessEmployeeId(
+        @Param("businessId") Long businessId,
+        @Param("employeeId") Long employeeId
+    );
+
     @Query(
         "select be from BusinessEmployee be where be.business.id = :businessId " +
         "AND be.status <> 'DELETED' " +

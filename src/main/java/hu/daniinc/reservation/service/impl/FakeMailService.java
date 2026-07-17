@@ -3,6 +3,7 @@ package hu.daniinc.reservation.service.impl;
 import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.domain.User;
+import hu.daniinc.reservation.service.AppointmentLinkService;
 import hu.daniinc.reservation.service.CalendarLinkGenerator;
 import hu.daniinc.reservation.service.EmailService;
 import jakarta.mail.MessagingException;
@@ -51,6 +52,7 @@ public class FakeMailService implements EmailService {
     private final MessageSource messageSource;
 
     private final SpringTemplateEngine templateEngine;
+    private final AppointmentLinkService appointmentLinkService;
 
     @Value("${jhipster.mail.base-url}")
     private String baseUrl;
@@ -59,12 +61,14 @@ public class FakeMailService implements EmailService {
         JHipsterProperties jHipsterProperties,
         JavaMailSender javaMailSender,
         MessageSource messageSource,
-        SpringTemplateEngine templateEngine
+        SpringTemplateEngine templateEngine,
+        AppointmentLinkService appointmentLinkService
     ) {
         this.jHipsterProperties = jHipsterProperties;
         this.javaMailSender = javaMailSender;
         this.messageSource = messageSource;
         this.templateEngine = templateEngine;
+        this.appointmentLinkService = appointmentLinkService;
     }
 
     @Async
@@ -186,6 +190,13 @@ public class FakeMailService implements EmailService {
         Context context = new Context();
         context.setVariable("appointment", appointment);
         context.setVariable("guest", guest);
+        context.setVariable(
+            "appointmentCancelLink",
+            appointmentLinkService.generateModificationLinkWithQueryParam(
+                appointment.getBusinessEmployee().getBusiness().getSlug(),
+                appointment.getModifierToken()
+            )
+        );
         context.setVariable(
             "googleCalendarLink",
             CalendarLinkGenerator.generateCalendarLink(

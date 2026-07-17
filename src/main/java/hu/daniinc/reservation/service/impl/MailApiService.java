@@ -3,6 +3,7 @@ package hu.daniinc.reservation.service.impl;
 import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.domain.Guest;
 import hu.daniinc.reservation.domain.User;
+import hu.daniinc.reservation.service.AppointmentLinkService;
 import hu.daniinc.reservation.service.CalendarLinkGenerator;
 import hu.daniinc.reservation.service.EmailService;
 import jakarta.mail.MessagingException;
@@ -35,6 +36,7 @@ public class MailApiService implements EmailService {
     private final SpringTemplateEngine templateEngine;
     private final MessageSource messageSource;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final AppointmentLinkService appointmentLinkService;
 
     @Value("${brevo.api.key}")
     private String apiKey;
@@ -45,9 +47,10 @@ public class MailApiService implements EmailService {
     @Value("${jhipster.mail.base-url}")
     private String baseUrl;
 
-    public MailApiService(SpringTemplateEngine templateEngine, MessageSource messageSource) {
+    public MailApiService(SpringTemplateEngine templateEngine, MessageSource messageSource, AppointmentLinkService appointmentLinkService) {
         this.templateEngine = templateEngine;
         this.messageSource = messageSource;
+        this.appointmentLinkService = appointmentLinkService;
     }
 
     @Override
@@ -86,6 +89,13 @@ public class MailApiService implements EmailService {
         Context context = new Context();
         context.setVariable("appointment", appointment);
         context.setVariable("guest", guest);
+        context.setVariable(
+            "appointmentCancelLink",
+            appointmentLinkService.generateModificationLinkWithQueryParam(
+                appointment.getBusinessEmployee().getBusiness().getSlug(),
+                appointment.getModifierToken()
+            )
+        );
         context.setVariable(
             "googleCalendarLink",
             CalendarLinkGenerator.generateCalendarLink(
