@@ -60,7 +60,7 @@ public class Business implements Serializable {
     @Column(name = "banner_public_id")
     private String bannerPublicId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     private User owner;
 
     @Column(unique = true, nullable = false)
@@ -95,6 +95,10 @@ public class Business implements Serializable {
 
     @Column(name = "custom_domain", length = 64)
     private String customDomain;
+
+    @NotNull
+    @Column(name = "onboarding_completed", nullable = false)
+    private Boolean onboardingCompleted = false;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -314,6 +318,14 @@ public class Business implements Serializable {
 
     public void setCustomDomain(String customDomain) {
         this.customDomain = customDomain;
+    }
+
+    public Boolean getOnboardingCompleted() {
+        return onboardingCompleted;
+    }
+
+    public void setOnboardingCompleted(Boolean onboardingCompleted) {
+        this.onboardingCompleted = onboardingCompleted;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

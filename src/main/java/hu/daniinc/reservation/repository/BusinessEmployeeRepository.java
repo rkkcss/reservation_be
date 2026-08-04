@@ -19,9 +19,14 @@ public interface BusinessEmployeeRepository extends JpaRepository<BusinessEmploy
 
     @Query(
         """
-        select be from BusinessEmployee be where be.user.login = :login
-        and be.status not in (hu.daniinc.reservation.domain.enumeration.BasicEntityStatus.INACTIVE,
-        hu.daniinc.reservation.domain.enumeration.BasicEntityStatus.DELETED)
+        select be from BusinessEmployee be
+        left join fetch be.business b
+        left join fetch b.owner o
+        where be.user.login = :login
+        and be.status not in (
+            hu.daniinc.reservation.domain.enumeration.BasicEntityStatus.INACTIVE,
+            hu.daniinc.reservation.domain.enumeration.BasicEntityStatus.DELETED
+        )
         """
     )
     Set<BusinessEmployee> findAllByUserLogin(@Param("login") String login);

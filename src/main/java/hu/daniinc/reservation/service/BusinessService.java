@@ -1,12 +1,13 @@
 package hu.daniinc.reservation.service;
 
-import hu.daniinc.reservation.domain.Business;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
-import java.util.List;
+import hu.daniinc.reservation.service.dto.OnboardingCompleteDTO;
+import hu.daniinc.reservation.service.dto.SlugCheckResponseDTO;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 /**
  * Service Interface for managing {@link hu.daniinc.reservation.domain.Business}.
@@ -68,4 +69,8 @@ public interface BusinessService {
     BusinessDTO findBySlug(String slug);
 
     BusinessDTO findByCustomDomain(String domain);
+
+    SlugCheckResponseDTO checkSlugAvailability(String slug);
+
+    Void onboardingComplete(OnboardingCompleteDTO dto, long businessId);
 }

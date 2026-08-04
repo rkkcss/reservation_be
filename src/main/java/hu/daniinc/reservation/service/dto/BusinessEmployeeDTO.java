@@ -13,7 +13,7 @@ public class BusinessEmployeeDTO {
 
     private Long id;
 
-    private Business business;
+    private BusinessDTO business;
 
     private UserDTO user;
 
@@ -45,11 +45,11 @@ public class BusinessEmployeeDTO {
         this.id = id;
     }
 
-    public Business getBusiness() {
+    public BusinessDTO getBusiness() {
         return business;
     }
 
-    public void setBusiness(Business business) {
+    public void setBusiness(BusinessDTO business) {
         this.business = business;
     }
 

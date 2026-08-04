@@ -8,6 +8,8 @@ import hu.daniinc.reservation.security.annotation.TenantBusiness;
 import hu.daniinc.reservation.service.BusinessService;
 import hu.daniinc.reservation.service.dto.BusinessAppearanceDTO;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
+import hu.daniinc.reservation.service.dto.OnboardingCompleteDTO;
+import hu.daniinc.reservation.service.dto.SlugCheckResponseDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -217,5 +219,16 @@ public class BusinessResource {
     public ResponseEntity<BusinessDTO> getBusinessBySlug(@PathVariable("slug") String slug) {
         LOG.debug("REST request to get Business by slug : {}", slug);
         return ResponseEntity.ok().body(businessService.findBySlug(slug));
+    }
+
+    @GetMapping("/check-slug")
+    public ResponseEntity<SlugCheckResponseDTO> checkSlug(@RequestParam("slug") String slug) {
+        SlugCheckResponseDTO response = businessService.checkSlugAvailability(slug);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/onboarding-complete")
+    public ResponseEntity<?> onboardingComplete(@RequestBody OnboardingCompleteDTO dto, @TenantBusiness Long businessId) {
+        return ResponseEntity.ok(businessService.onboardingComplete(dto, businessId));
     }
 }
