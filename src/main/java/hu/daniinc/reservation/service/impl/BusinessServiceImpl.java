@@ -5,11 +5,12 @@ import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.service.BusinessService;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
+import hu.daniinc.reservation.service.dto.OnboardingCompleteDTO;
+import hu.daniinc.reservation.service.dto.SlugCheckResponseDTO;
 import hu.daniinc.reservation.service.mapper.BusinessMapper;
+import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import jakarta.persistence.EntityNotFoundException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,52 @@ public class BusinessServiceImpl implements BusinessService {
     private final BusinessRepository businessRepository;
 
     private final BusinessMapper businessMapper;
+
+    private static final Set<String> RESERVED_SLUGS = Set.of(
+        "admin",
+        "administrator",
+        "api",
+        "app",
+        "auth",
+        "login",
+        "register",
+        "billing",
+        "checkout",
+        "help",
+        "support",
+        "test",
+        "demo",
+        "dev",
+        "stage",
+        "staging",
+        "mail",
+        "email",
+        "smtp",
+        "pop",
+        "ftp",
+        "www",
+        "web",
+        "blog",
+        "status",
+        "dashboard",
+        "portal",
+        "system",
+        "booklyzz",
+        "root",
+        "user",
+        "users",
+        "account",
+        "profile",
+        "setting",
+        "settings",
+        "privacy",
+        "terms",
+        "about",
+        "contact",
+        "pricing",
+        "pay",
+        "payment"
+    );
 
     public BusinessServiceImpl(BusinessRepository businessRepository, BusinessMapper businessMapper) {
         this.businessRepository = businessRepository;
@@ -132,10 +180,94 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BusinessDTO findByCustomDomain(String domain) {
         Business result = businessRepository
             .findByCustomDomainIgnoreCase(domain)
             .orElseThrow(() -> new EntityNotFoundException("No Business Found"));
         return businessMapper.toDto(result);
+    }
+
+    @Override
+    @Transactional
+    public Void onboardingComplete(OnboardingCompleteDTO dto, long businessId) {
+        Business business = businessRepository
+            .getByLoggedInUserAndBusinessId(businessId)
+            .orElseThrow(() -> {
+                LOG.debug("User don't have business with id {}", businessId);
+                throw new GeneralException(
+                    "User don't have business with id " + businessId,
+                    "user.dont.have.business",
+                    HttpStatus.NOT_FOUND
+                );
+            });
+
+        if (!checkSlugAvailability(dto.getBusiness().getSlug()).isAvailable()) {
+            LOG.debug("Slug Not Available");
+            throw new GeneralException("Slug is not available", "slug.not.available", HttpStatus.BAD_REQUEST);
+        }
+
+        dto.getBusiness().setOnboardingCompleted(true);
+
+        businessMapper.partialUpdate(business, dto.getBusiness());
+        businessRepository.save(business);
+
+        return null;
+    }
+
+    @Override
+    public SlugCheckResponseDTO checkSlugAvailability(String rawSlug) {
+        if (rawSlug == null || rawSlug.trim().isEmpty()) {
+            return new SlugCheckResponseDTO(false, List.of());
+        }
+
+        String slug = rawSlug.trim().toLowerCase();
+
+        // 1. Ha a slug teljesen szabad (nem tiltott ÉS nem foglalt a DB-ben)
+        if (isSlugAvailable(slug)) {
+            return new SlugCheckResponseDTO(true, List.of());
+        }
+
+        // 2. Ha nem szabad, legeneráljuk az alternatívákat
+        List<String> suggestions = generateSlugSuggestions(slug);
+
+        return new SlugCheckResponseDTO(false, suggestions);
+    }
+
+    /**
+     * Csekkolja, hogy a slug használható-e.
+     */
+    private boolean isSlugAvailable(String slug) {
+        if (RESERVED_SLUGS.contains(slug)) {
+            return false;
+        }
+        return !businessRepository.existsBySlug(slug);
+    }
+
+    private List<String> generateSlugSuggestions(String baseSlug) {
+        List<String> suggestions = new ArrayList<>();
+
+        // Számozott alternatívák (pl. test-1, komoly-barber-1)
+        int counter = 1;
+        while (suggestions.size() < 2 && counter <= 99) {
+            String candidate = baseSlug + "-" + counter;
+            if (isSlugAvailable(candidate)) {
+                suggestions.add(candidate);
+            }
+            counter++;
+        }
+
+        // Gyakori utótagok (pl. test-app, komoly-barber-hu)
+        List<String> suffixes = List.of("app", "hu", "official");
+        for (String suffix : suffixes) {
+            if (suggestions.size() >= 4) break;
+
+            String candidate = baseSlug + "-" + suffix;
+            if (isSlugAvailable(candidate)) {
+                suggestions.add(candidate);
+            }
+        }
+
+        return suggestions;
     }
 }

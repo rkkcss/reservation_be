@@ -65,7 +65,7 @@ public class EmployeeTimeOffServiceImpl implements EmployeeTimeOffService {
             .orElseThrow(() -> new EntityNotFoundException("Business not found with id: " + businessId));
 
         BusinessEmployee employee = businessEmployeeRepository
-            .findByBusinessIdAndEmployeeId(businessId, employeeId)
+            .findByBusinessIdAndBusinessEmployeeId(businessId, employeeId)
             .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
 
         validateDates(dto);

@@ -83,11 +83,11 @@ public class AppointmentResource {
             .body(appointmentDTO);
     }
 
-    @PostMapping("/business/{businessId}/business-employee/{employeeId}/own")
+    @PostMapping("/business-employee/{employeeId}/own")
     @RequiredBusinessPermission({ BusinessPermission.CREATE_BOOKING, BusinessPermission.EDIT_ALL_BOOKINGS })
     public ResponseEntity<AppointmentDTO> createAppointmentByOwner(
         @Valid @RequestBody CreateAppointmentRequestDTO createAppointmentRequestDTO,
-        @PathVariable("businessId") Long businessId,
+        @TenantBusiness Long businessId,
         @PathVariable("employeeId") Long employeeId
     ) throws URISyntaxException {
         LOG.debug("REST request to save Appointment by owner : {}", createAppointmentRequestDTO);
@@ -141,11 +141,11 @@ public class AppointmentResource {
      * or with status {@code 500 (Internal Server Error)} if the appointmentDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}/business/{businessId}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     @RequiredBusinessPermission(value = { BusinessPermission.EDIT_OWN_BOOKINGS, BusinessPermission.EDIT_ALL_BOOKINGS })
     public ResponseEntity<AppointmentDTO> partialUpdateAppointment(
         @PathVariable(value = "id", required = false) final Long id,
-        @PathVariable(value = "businessId") final Long businessId,
+        @TenantBusiness final Long businessId,
         @NotNull @RequestBody UpdateAppointmentDTO updateAppointmentDTO
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update Appointment partially : {}, {}", id, updateAppointmentDTO);

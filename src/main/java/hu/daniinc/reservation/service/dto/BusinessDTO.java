@@ -3,6 +3,7 @@ package hu.daniinc.reservation.service.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import hu.daniinc.reservation.domain.BusinessOpeningHours;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -52,6 +53,11 @@ public class BusinessDTO implements Serializable {
     private Set<BusinessOpeningHoursDTO> openingHours = new HashSet<>();
 
     private String customDomain;
+
+    private String slug;
+
+    @NotNull
+    private Boolean onboardingCompleted;
 
     public Long getId() {
         return id;
@@ -187,6 +193,22 @@ public class BusinessDTO implements Serializable {
 
     public void setCustomDomain(String customDomain) {
         this.customDomain = customDomain;
+    }
+
+    public Boolean getOnboardingCompleted() {
+        return onboardingCompleted;
+    }
+
+    public void setOnboardingCompleted(Boolean onboardingCompleted) {
+        this.onboardingCompleted = onboardingCompleted;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     @Override

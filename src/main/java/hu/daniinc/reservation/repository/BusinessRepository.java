@@ -12,8 +12,8 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface BusinessRepository extends JpaRepository<Business, Long> {
-    @Query("SELECT CASE WHEN COUNT(b) > 0 THEN TRUE ELSE FALSE END FROM Business b WHERE b.owner.login = ?#{authentication.name}")
-    Boolean hasLoggedInUserBusiness();
+    @Query("SELECT b FROM Business b WHERE b.owner.login = ?#{authentication.name} AND b.id = :businessId")
+    Optional<Business> getByLoggedInUserAndBusinessId(Long businessId);
 
     @Query(
         "SELECT b " +
