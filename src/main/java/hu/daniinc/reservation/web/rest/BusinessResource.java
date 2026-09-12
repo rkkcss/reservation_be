@@ -13,6 +13,7 @@ import hu.daniinc.reservation.service.dto.SlugCheckResponseDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -227,8 +229,10 @@ public class BusinessResource {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/onboarding-complete")
-    public ResponseEntity<?> onboardingComplete(@RequestBody OnboardingCompleteDTO dto, @TenantBusiness Long businessId) {
-        return ResponseEntity.ok(businessService.onboardingComplete(dto, businessId));
+    @PatchMapping("/cover-image")
+    @RequiredBusinessPermission(BusinessPermission.MANAGE_BUSINESS_SETTINGS)
+    public ResponseEntity<?> uploadCoverImage(@TenantBusiness Long businessId, @RequestParam("file") MultipartFile file)
+        throws IOException {
+        return ResponseEntity.ok(businessService.uploadCoverImage(file, businessId));
     }
 }

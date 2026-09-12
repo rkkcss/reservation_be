@@ -3,6 +3,7 @@ package hu.daniinc.reservation.service.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import hu.daniinc.reservation.domain.BusinessOpeningHours;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
+import hu.daniinc.reservation.domain.enumeration.OnboardingSteps;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -58,6 +59,9 @@ public class BusinessDTO implements Serializable {
 
     @NotNull
     private Boolean onboardingCompleted;
+
+    @NotNull
+    private OnboardingSteps onboardingStep;
 
     public Long getId() {
         return id;
@@ -209,6 +213,14 @@ public class BusinessDTO implements Serializable {
 
     public void setSlug(String slug) {
         this.slug = slug;
+    }
+
+    public OnboardingSteps getOnboardingStep() {
+        return onboardingStep;
+    }
+
+    public void setOnboardingStep(OnboardingSteps onboardingStep) {
+        this.onboardingStep = onboardingStep;
     }
 
     @Override

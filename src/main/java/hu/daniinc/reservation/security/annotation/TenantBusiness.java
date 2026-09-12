@@ -8,4 +8,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TenantBusiness {
+    /**
+     * If true, and no businessId, throw an error (400 / Exception).
+     * If false, and no businessId than return null.
+     */
+    boolean required() default true;
 }

@@ -3,6 +3,7 @@ package hu.daniinc.reservation.web.rest;
 import hu.daniinc.reservation.domain.enumeration.BusinessPermission;
 import hu.daniinc.reservation.repository.WorkingHoursRepository;
 import hu.daniinc.reservation.security.annotation.RequiredBusinessPermission;
+import hu.daniinc.reservation.security.annotation.TenantBusiness;
 import hu.daniinc.reservation.service.WorkingHoursService;
 import hu.daniinc.reservation.service.dto.WorkingHoursDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
@@ -172,10 +173,10 @@ public class WorkingHoursResource {
         return ResponseEntity.status(HttpStatus.OK).body(workingHoursService.getAllOwnWorkingHours(businessId));
     }
 
-    @PutMapping("/business/{businessId}/business-employee/{employeeId}")
+    @PutMapping("/business-employee/{employeeId}")
     @RequiredBusinessPermission(value = { BusinessPermission.EDIT_ALL_SCHEDULES, BusinessPermission.EDIT_OWN_SCHEDULE })
     public ResponseEntity<Void> updateOpeningHours(
-        @PathVariable("businessId") Long businessId,
+        @TenantBusiness Long businessId,
         @PathVariable("employeeId") Long employeeId,
         @RequestBody List<WorkingHoursDTO> newHours
     ) {

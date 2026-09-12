@@ -2,6 +2,7 @@ package hu.daniinc.reservation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
+import hu.daniinc.reservation.domain.enumeration.OnboardingSteps;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -71,12 +72,12 @@ public class Business implements Serializable {
     private Set<BusinessRating> businessRatings = new HashSet<>();
 
     @Column(name = "appointment_approval_required")
-    private Boolean appointmentApprovalRequired;
+    private Boolean appointmentApprovalRequired = Boolean.TRUE;
 
     @Column(nullable = false)
     @Min(0)
     @Max(52)
-    private Integer maxWeeksInAdvance;
+    private Integer maxWeeksInAdvance = 26;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -87,7 +88,7 @@ public class Business implements Serializable {
     @JsonIgnoreProperties(value = { "business" })
     private Set<BusinessEmployee> businessEmployees;
 
-    @OneToMany(mappedBy = "business")
+    @OneToMany(mappedBy = "business", fetch = FetchType.EAGER)
     private Set<BusinessOpeningHours> openingHours = new HashSet<>();
 
     @Column(name = "time_zone", length = 64, nullable = false)
@@ -99,6 +100,10 @@ public class Business implements Serializable {
     @NotNull
     @Column(name = "onboarding_completed", nullable = false)
     private Boolean onboardingCompleted = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "onboarding_step", nullable = false)
+    private OnboardingSteps onboardingStep = OnboardingSteps.BUSINESS_DETAILS;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -326,6 +331,14 @@ public class Business implements Serializable {
 
     public void setOnboardingCompleted(Boolean onboardingCompleted) {
         this.onboardingCompleted = onboardingCompleted;
+    }
+
+    public OnboardingSteps getOnboardingStep() {
+        return onboardingStep;
+    }
+
+    public void setOnboardingStep(OnboardingSteps onboardingStep) {
+        this.onboardingStep = onboardingStep;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

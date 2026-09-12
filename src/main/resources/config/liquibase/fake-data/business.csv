@@ -1,12 +1,12 @@
-id;name;created_date;description;address;phone_number;break_between_appointments_min;logo;banner_url;theme;time_zone;slug;onboarding_completed;owner_id
-1;Crystal szépségszalon;2025-05-27T15:08:55;+46302345334;Prémium szolgáltatások Budapest szívében;beside lóbab;23213;ahová but;primitív polinom lélekbúvár;PINK;Europe/Budapest;pizzeria-bella;false;1
-2;pedig ahá;2025-05-27T11:33:18;állj sétál alul;késő;békebontás valósul;29556;afelől időközben limfocita;pedig shimeji;BLACK;Europe/Budapest;pizzeria-bella1;false;2
-3;hesszöl kétélű nyitva;2025-05-27T11:58:05;soha akaratlanul;éjjel-nappal Sarkcsillag;egybegyűjt;29557;összeadás;lábhoz;ORANGE;Europe/Budapest;pizzeria-bella.localhost2;false;2
-4;since pssz;2025-05-27T21:56:18;habár beneath;hisz beragyog időközben;ameddig követő till;9618;átmenetileg;asztalszék;BLACK;Europe/Budapest;pizzeria-bella.localhost3;false;2
-5;ahá miként aboard;2025-05-28T09:27:09;at;haha turistáskodás exponenciálisan;magatartásilag dehogy;26367;ameddig ó;mérsékel inside;DEFAULT;Europe/Budapest;pizzeria-bella.localhost4;false;2
-6;pertli többszemközt;2025-05-28T05:39:51;kapható plus bár;lélekmelengető;pro;29726;északnyugati;anti rájuk belül;DEFAULT;Europe/Budapest;pizzeria-bella.localhost5;false;2
-7;pedig for vagy;2025-05-27T17:06:24;olvasgat illetőleg;ablakkönyöklő;gazdagodik;13520;megközelíthetetlen aboard könyvízű;agyonázik afelé;ORANGE;Europe/Budapest;pizzeria-bella.localhost6;false;2
-8;lógat ezért tartós;2025-05-27T20:39:40;felnyerít among kántál;mézel abcúg;szétkürtöl;15227;kumulatív;ejha;BLACK;Europe/Budapest;pizzeria-bella.localhost7;false;2
-9;kockázatmentes bíz;2025-05-28T09:59:32;onto;minus minus hihihi;lesiet elkészít;5018;annálfogva;bár körbejár szűzies;BLUE;Europe/Budapest;pizzeria-bella.localhost8;false;2
-10;dehát;2025-05-27T22:19:32;csacsacsa hacsak nem hahaha;örökzöld abszolút;ohohó bárcsak;8530;bacilushordozó;állj;BLUE;Europe/Budapest;pizzeria-bella.localhost9;false;2
-1051;Gál's Business;2025-05-27T22:19:32;csacsacsa hacsak nem hahaha;Gál's Address;false;3;null;állj;DEFAULT;Europe/Budapest;pizzeria-bella.localhost10;false;2
+id;name;created_date;description;address;phone_number;break_between_appointments_min;logo;banner_url;theme;time_zone;slug;onboarding_completed;owner_id;onboarding_step
+1;Crystal szépségszalon;2025-05-27T15:08:55;+46302345334;Prémium szolgáltatások Budapest szívében;beside lóbab;23213;ahová but;primitív polinom lélekbúvár;PINK;Europe/Budapest;pizzeria-bella;false;1;BUSINESS_DETAILS
+2;pedig ahá;2025-05-27T11:33:18;állj sétál alul;késő;békebontás valósul;29556;afelől időközben limfocita;pedig shimeji;BLACK;Europe/Budapest;pizzeria-bella1;false;2;BUSINESS_DETAILS
+3;hesszöl kétélű nyitva;2025-05-27T11:58:05;soha akaratlanul;éjjel-nappal Sarkcsillag;egybegyűjt;29557;összeadás;lábhoz;ORANGE;Europe/Budapest;pizzeria-bella.localhost2;false;2;BUSINESS_DETAILS
+4;since pssz;2025-05-27T21:56:18;habár beneath;hisz beragyog időközben;ameddig követő till;9618;átmenetileg;asztalszék;BLACK;Europe/Budapest;pizzeria-bella.localhost3;false;2;BUSINESS_DETAILS
+5;ahá miként aboard;2025-05-28T09:27:09;at;haha turistáskodás exponenciálisan;magatartásilag dehogy;26367;ameddig ó;mérsékel inside;DEFAULT;Europe/Budapest;pizzeria-bella.localhost4;false;2;BUSINESS_DETAILS
+6;pertli többszemközt;2025-05-28T05:39:51;kapható plus bár;lélekmelengető;pro;29726;északnyugati;anti rájuk belül;DEFAULT;Europe/Budapest;pizzeria-bella.localhost5;false;2;BUSINESS_DETAILS
+7;pedig for vagy;2025-05-27T17:06:24;olvasgat illetőleg;ablakkönyöklő;gazdagodik;13520;megközelíthetetlen aboard könyvízű;agyonázik afelé;ORANGE;Europe/Budapest;pizzeria-bella.localhost6;false;2;BUSINESS_DETAILS
+8;lógat ezért tartós;2025-05-27T20:39:40;felnyerít among kántál;mézel abcúg;szétkürtöl;15227;kumulatív;ejha;BLACK;Europe/Budapest;pizzeria-bella.localhost7;false;2;BUSINESS_DETAILS
+9;kockázatmentes bíz;2025-05-28T09:59:32;onto;minus minus hihihi;lesiet elkészít;5018;annálfogva;bár körbejár szűzies;BLUE;Europe/Budapest;pizzeria-bella.localhost8;false;2;BUSINESS_DETAILS
+10;dehát;2025-05-27T22:19:32;csacsacsa hacsak nem hahaha;örökzöld abszolút;ohohó bárcsak;8530;bacilushordozó;állj;BLUE;Europe/Budapest;pizzeria-bella.localhost9;false;2;BUSINESS_DETAILS
+1051;Gál's Business;2025-05-27T22:19:32;csacsacsa hacsak nem hahaha;Gál's Address;false;3;null;állj;DEFAULT;Europe/Budapest;pizzeria-bella.localhost10;false;2;BUSINESS_DETAILS

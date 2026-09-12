@@ -117,18 +117,6 @@ public class UserService {
                 user.setActivated(true);
                 user.setActivationKey(null);
 
-                Business business = new Business();
-                business.setName(user.getFirstName() + "'s Business");
-                business.setOwner(user);
-                business.setAddress(user.getFirstName() + "'s Address");
-                business.setMaxWeeksInAdvance(0);
-                business.setTheme(BusinessTheme.DEFAULT);
-                business.setAppointmentApprovalRequired(Boolean.FALSE);
-                businessRepository.save(business);
-
-                BusinessEmployee be = BusinessEmployee.owner(business, user);
-                businessEmployeeRepository.save(be);
-
                 this.clearUserCaches(user);
                 LOG.debug("Activated user: {}", user);
                 return user;

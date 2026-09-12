@@ -79,6 +79,11 @@
       <column name="onboarding_completed" type="boolean" defaultValue="false">
         <constraints nullable="false" />
       </column>
+
+      <column name="onboarding_step" type="varchar(50)" defaultValue="BUSINESS_DETAILS">
+        <constraints nullable="false" />
+      </column>
+
       <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
     </createTable>
 
@@ -112,6 +117,7 @@
       <column name="slug" type="string" />
       <column name="custom_domain" type="string" />
       <column name="onboarding_completed" type="boolean" />
+      <column name="onboarding_step" type="string" />
 
       <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
     </loadData>

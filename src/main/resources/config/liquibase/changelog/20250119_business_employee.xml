@@ -9,7 +9,7 @@
   <!-- MAIN TABLE -->
   <changeSet id="20250119-1-create-business-employee" author="dani">
     <createTable tableName="business_employee">
-      <column name="id" type="BIGINT" autoIncrement="true">
+      <column name="id" type="bigint">
         <constraints primaryKey="true" nullable="false"/>
       </column>
 

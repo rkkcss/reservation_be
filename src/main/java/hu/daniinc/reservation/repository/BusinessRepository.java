@@ -1,6 +1,7 @@
 package hu.daniinc.reservation.repository;
 
 import hu.daniinc.reservation.domain.Business;
+import hu.daniinc.reservation.domain.enumeration.OnboardingSteps;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;

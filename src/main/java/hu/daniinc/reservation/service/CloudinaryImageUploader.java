@@ -25,14 +25,8 @@ public class CloudinaryImageUploader {
             cloudinary.uploader().destroy(oldPublicId, ObjectUtils.emptyMap());
         }
 
-        Map<String, Object> options = ObjectUtils.asMap(
-            "folder",
-            folder,
-            "resource_type",
-            "image",
-            "transformation",
-            "w_400,h_400,c_fill,g_face,f_auto,q_auto"
-        );
+        Map<String, Object> options = ObjectUtils.asMap("folder", folder, "resource_type", "image", "transformation", "f_auto,q_auto");
+
         Map uploadResult = cloudinary.uploader().upload(file.getBytes(), options);
 
         return new UploadResult((String) uploadResult.get("secure_url"), (String) uploadResult.get("public_id"));

@@ -1,15 +1,22 @@
 package hu.daniinc.reservation.service.impl;
 
 import hu.daniinc.reservation.domain.Business;
+import hu.daniinc.reservation.domain.BusinessEmployee;
+import hu.daniinc.reservation.domain.User;
 import hu.daniinc.reservation.domain.enumeration.BusinessTheme;
+import hu.daniinc.reservation.domain.enumeration.OnboardingSteps;
+import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.BusinessRepository;
 import hu.daniinc.reservation.service.BusinessService;
+import hu.daniinc.reservation.service.CloudinaryImageUploader;
+import hu.daniinc.reservation.service.UserService;
 import hu.daniinc.reservation.service.dto.BusinessDTO;
 import hu.daniinc.reservation.service.dto.OnboardingCompleteDTO;
 import hu.daniinc.reservation.service.dto.SlugCheckResponseDTO;
 import hu.daniinc.reservation.service.mapper.BusinessMapper;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
 import jakarta.persistence.EntityNotFoundException;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -22,6 +29,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service Implementation for managing {@link hu.daniinc.reservation.domain.Business}.
@@ -81,10 +90,22 @@ public class BusinessServiceImpl implements BusinessService {
         "pay",
         "payment"
     );
+    private final UserService userService;
+    private final BusinessEmployeeRepository businessEmployeeRepository;
+    private final CloudinaryImageUploader cloudinaryImageUploader;
 
-    public BusinessServiceImpl(BusinessRepository businessRepository, BusinessMapper businessMapper) {
+    public BusinessServiceImpl(
+        BusinessRepository businessRepository,
+        BusinessMapper businessMapper,
+        UserService userService,
+        BusinessEmployeeRepository businessEmployeeRepository,
+        CloudinaryImageUploader cloudinaryImageUploader
+    ) {
         this.businessRepository = businessRepository;
         this.businessMapper = businessMapper;
+        this.userService = userService;
+        this.businessEmployeeRepository = businessEmployeeRepository;
+        this.cloudinaryImageUploader = cloudinaryImageUploader;
     }
 
     @Override
@@ -189,33 +210,6 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    @Transactional
-    public Void onboardingComplete(OnboardingCompleteDTO dto, long businessId) {
-        Business business = businessRepository
-            .getByLoggedInUserAndBusinessId(businessId)
-            .orElseThrow(() -> {
-                LOG.debug("User don't have business with id {}", businessId);
-                throw new GeneralException(
-                    "User don't have business with id " + businessId,
-                    "user.dont.have.business",
-                    HttpStatus.NOT_FOUND
-                );
-            });
-
-        if (!checkSlugAvailability(dto.getBusiness().getSlug()).isAvailable()) {
-            LOG.debug("Slug Not Available");
-            throw new GeneralException("Slug is not available", "slug.not.available", HttpStatus.BAD_REQUEST);
-        }
-
-        dto.getBusiness().setOnboardingCompleted(true);
-
-        businessMapper.partialUpdate(business, dto.getBusiness());
-        businessRepository.save(business);
-
-        return null;
-    }
-
-    @Override
     public SlugCheckResponseDTO checkSlugAvailability(String rawSlug) {
         if (rawSlug == null || rawSlug.trim().isEmpty()) {
             return new SlugCheckResponseDTO(false, List.of());
@@ -232,6 +226,25 @@ public class BusinessServiceImpl implements BusinessService {
         List<String> suggestions = generateSlugSuggestions(slug);
 
         return new SlugCheckResponseDTO(false, suggestions);
+    }
+
+    @Override
+    @Transactional
+    public BusinessDTO uploadCoverImage(MultipartFile file, Long businessId) throws IOException {
+        var business = businessRepository
+            .findBusinessByLoginAndBusinessId(businessId)
+            .orElseThrow(() -> new GeneralException("business-not-found", "business-not-found", HttpStatus.NOT_FOUND));
+
+        var result = cloudinaryImageUploader.uploadAndReplace(
+            file,
+            "business/" + business.getId() + "/banner",
+            business.getBannerPublicId()
+        );
+
+        business.setBannerPublicId(result.publicId());
+        business.setBannerUrl(result.url());
+
+        return businessMapper.toDto(businessRepository.save(business));
     }
 
     /**
