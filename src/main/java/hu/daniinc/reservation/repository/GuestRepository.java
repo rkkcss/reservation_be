@@ -3,7 +3,6 @@ package hu.daniinc.reservation.repository;
 import hu.daniinc.reservation.domain.Guest;
 import java.util.List;
 import java.util.Optional;
-import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -32,4 +31,18 @@ public interface GuestRepository extends JpaRepository<Guest, Long>, JpaSpecific
 
     @Query("select g from Guest g where LOWER(g.email) = LOWER(?1) and g.businessEmployee.business.id = ?2")
     Optional<Guest> findByEmailByBusinessId(String email, Long businessId);
+
+    @Query("select g from Guest g where g.businessEmployee.business.id = :businessId and g.id = :guestId")
+    Optional<Guest> findByGuestIdAndBusinessId(@Param("guestId") Long guestId, @Param("businessId") Long businessId);
+
+    //check the business have the current guest or not
+    @Query(
+        "select count(a) > 0 from Appointment a " +
+        "join a.businessEmployee be " +
+        "join be.business b " +
+        "where a.guest.id = :guestId " +
+        "and b.id = :businessId " +
+        "and be.user.login = ?#{authentication.name}"
+    )
+    boolean isGuestPartOfTheBusinessAndUserHasAccess(@Param("businessId") Long businessId, @Param("guestId") Long guestId);
 }

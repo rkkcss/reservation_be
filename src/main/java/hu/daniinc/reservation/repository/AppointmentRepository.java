@@ -1,11 +1,16 @@
 package hu.daniinc.reservation.repository;
 
 import hu.daniinc.reservation.domain.Appointment;
+import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
 import hu.daniinc.reservation.service.dto.IncomeChartDTO;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -121,4 +126,30 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
         """
     )
     Optional<Appointment> findByIdWithDetails(@Param("appointmentId") Long appointmentId);
+
+    @Query(
+        "select count(a) from Appointment a where a.guest.id = :guestId and a.guest.businessEmployee.business.id = :businessId and (:status is null or a.status = :status) and a.status != AppointmentStatus.DELETED"
+    )
+    long countByGuestIdAndBusinessId(
+        @Param("guestId") Long guestId,
+        @Param("businessId") Long businessId,
+        @Param("status") AppointmentStatus status
+    );
+
+    @Query(
+        "select sum(a.offering.price) from Appointment a where a.guest.id = :guestId and a.guest.businessEmployee.business.id = :businessId and a.status = AppointmentStatus.CONFIRMED and a.status != AppointmentStatus.DELETED"
+    )
+    BigDecimal sumSpentByGuestIdAndBusinessId(@Param("guestId") Long guestId, @Param("businessId") Long businessId);
+
+    //Find next appointment in the future by business and guestId where the status is CONFIRMED or PENDING
+    @Query(
+        "select a from Appointment a where a.businessEmployee.business.id = :businessId and a.guest.id = :guestId and (a.status = AppointmentStatus.CONFIRMED OR a.status = AppointmentStatus.PENDING) and a.startDate >= current_timestamp"
+    )
+    Optional<Appointment> findNextAppointmentByBusinessAndGuestId(@Param("businessId") Long businessId, @Param("guestId") Long guestId);
+
+    //Find all appointments for guest by businessId and guestId
+    @Query(
+        "select a from Appointment a where a.guest.id = :guestId and a.businessEmployee.business.id = :businessId and a.startDate > current_time"
+    )
+    Page<Appointment> findAllByBusinessAndGuestId(@Param("businessId") Long businessId, @Param("guestId") Long guestId, Pageable pageable);
 }

@@ -1,12 +1,17 @@
 package hu.daniinc.reservation.service.impl;
 
+import hu.daniinc.reservation.domain.Appointment;
 import hu.daniinc.reservation.domain.BusinessEmployee;
 import hu.daniinc.reservation.domain.Guest;
+import hu.daniinc.reservation.domain.enumeration.AppointmentStatus;
+import hu.daniinc.reservation.repository.AppointmentRepository;
 import hu.daniinc.reservation.repository.BusinessEmployeeRepository;
 import hu.daniinc.reservation.repository.GuestRepository;
 import hu.daniinc.reservation.service.GuestService;
-import hu.daniinc.reservation.service.UserService;
+import hu.daniinc.reservation.service.dto.AppointmentDTO;
 import hu.daniinc.reservation.service.dto.GuestDTO;
+import hu.daniinc.reservation.service.dto.GuestStatisticDTO;
+import hu.daniinc.reservation.service.mapper.AppointmentMapper;
 import hu.daniinc.reservation.service.mapper.GuestMapper;
 import hu.daniinc.reservation.service.specifications.GuestSpecification;
 import hu.daniinc.reservation.web.rest.errors.GeneralException;
@@ -38,18 +43,21 @@ public class GuestServiceImpl implements GuestService {
 
     private final GuestMapper guestMapper;
     private final BusinessEmployeeRepository businessEmployeeRepository;
-    private final UserService userService;
+    private final AppointmentRepository appointmentRepository;
+    private final AppointmentMapper appointmentMapper;
 
     public GuestServiceImpl(
         GuestRepository guestRepository,
         GuestMapper guestMapper,
         BusinessEmployeeRepository businessEmployeeRepository,
-        UserService userService
+        AppointmentRepository appointmentRepository,
+        AppointmentMapper appointmentMapper
     ) {
         this.guestRepository = guestRepository;
         this.guestMapper = guestMapper;
         this.businessEmployeeRepository = businessEmployeeRepository;
-        this.userService = userService;
+        this.appointmentRepository = appointmentRepository;
+        this.appointmentMapper = appointmentMapper;
     }
 
     @Override
@@ -112,9 +120,9 @@ public class GuestServiceImpl implements GuestService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<GuestDTO> findOne(Long id) {
-        LOG.debug("Request to get Guest : {}", id);
-        return guestRepository.findById(id).map(guestMapper::toDto);
+    public Optional<GuestDTO> findOneByGuestIdAndBusinessId(Long guestId, Long businessId) {
+        LOG.debug("Request to get Guest by guestId and businessId : {}, {}", guestId, businessId);
+        return guestRepository.findByGuestIdAndBusinessId(guestId, businessId).map(guestMapper::toDto);
     }
 
     @Override
@@ -155,5 +163,39 @@ public class GuestServiceImpl implements GuestService {
     @Override
     public List<GuestDTO> searchForGlobal(Long businessId, String query, int limit) {
         return findAllBySearchString(businessId, query).stream().limit(limit).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GuestStatisticDTO getGuestStatistic(Long guestId, Long businessId) {
+        return new GuestStatisticDTO(
+            appointmentRepository.countByGuestIdAndBusinessId(guestId, businessId, null),
+            appointmentRepository.countByGuestIdAndBusinessId(guestId, businessId, AppointmentStatus.CANCELLED),
+            2L,
+            appointmentRepository.countByGuestIdAndBusinessId(guestId, businessId, AppointmentStatus.CONFIRMED),
+            appointmentRepository.sumSpentByGuestIdAndBusinessId(guestId, businessId)
+        );
+    }
+
+    @Override
+    public AppointmentDTO findNextAppointmentForGuest(Long businessId, Long guestId) {
+        if (!guestRepository.isGuestPartOfTheBusinessAndUserHasAccess(businessId, guestId)) {
+            throw new GeneralException("no access", "no-acces-for-that-guest", HttpStatus.BAD_REQUEST);
+        }
+
+        Appointment appointment = appointmentRepository
+            .findNextAppointmentByBusinessAndGuestId(businessId, guestId)
+            .orElseThrow(() -> new GeneralException("no-appointment", "appointment-not-exists", HttpStatus.NOT_FOUND));
+
+        return appointmentMapper.toDto(appointment);
+    }
+
+    @Override
+    public Page<AppointmentDTO> findAllByGuestId(Long guestId, Long businessId, Pageable pageable) {
+        if (!guestRepository.isGuestPartOfTheBusinessAndUserHasAccess(businessId, guestId)) {
+            throw new GeneralException("no access", "no-acces-for-that-guest", HttpStatus.BAD_REQUEST);
+        }
+
+        return appointmentRepository.findAllByBusinessAndGuestId(businessId, guestId, pageable).map(appointmentMapper::toDto);
     }
 }

@@ -3,7 +3,9 @@ package hu.daniinc.reservation.web.rest;
 import hu.daniinc.reservation.repository.GuestRepository;
 import hu.daniinc.reservation.security.annotation.TenantBusiness;
 import hu.daniinc.reservation.service.GuestService;
+import hu.daniinc.reservation.service.dto.AppointmentDTO;
 import hu.daniinc.reservation.service.dto.GuestDTO;
+import hu.daniinc.reservation.service.dto.GuestStatisticDTO;
 import hu.daniinc.reservation.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -176,9 +178,9 @@ public class GuestResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the guestDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<GuestDTO> getGuest(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get Guest : {}", id);
-        Optional<GuestDTO> guestDTO = guestService.findOne(id);
+    public ResponseEntity<GuestDTO> getGuest(@PathVariable("id") Long guestId, @TenantBusiness Long businessId) {
+        LOG.debug("REST request to get Guest by guestId and businessId : {} {}", guestId, businessId);
+        Optional<GuestDTO> guestDTO = guestService.findOneByGuestIdAndBusinessId(guestId, businessId);
         return ResponseUtil.wrapOrNotFound(guestDTO);
     }
 
@@ -201,5 +203,34 @@ public class GuestResource {
     public ResponseEntity<List<GuestDTO>> searchGuests(@PathVariable("businessId") Long businessId, @RequestParam String searchString) {
         LOG.debug("REST request to search Guests : {}", searchString);
         return ResponseEntity.status(HttpStatus.OK).body(guestService.findAllBySearchString(businessId, searchString));
+    }
+
+    @GetMapping("/{id}/statistics")
+    public ResponseEntity<GuestStatisticDTO> getGuestStatistics(@PathVariable("id") Long guestId, @TenantBusiness Long businessId) {
+        GuestStatisticDTO result = guestService.getGuestStatistic(guestId, businessId);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{guestId}/next-appointment")
+    public ResponseEntity<AppointmentDTO> getNextAppointment(@PathVariable Long guestId, @TenantBusiness Long businessId) {
+        AppointmentDTO nextAppointment = guestService.findNextAppointmentForGuest(businessId, guestId);
+
+        if (nextAppointment == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(nextAppointment);
+    }
+
+    @GetMapping("/{guestId}/appointments")
+    public ResponseEntity<List<AppointmentDTO>> getAllAppointments(
+        Pageable pageable,
+        @PathVariable Long guestId,
+        @TenantBusiness Long businessId
+    ) {
+        Page<AppointmentDTO> page = guestService.findAllByGuestId(guestId, businessId, pageable);
+
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

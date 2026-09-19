@@ -1,6 +1,8 @@
 package hu.daniinc.reservation.service;
 
+import hu.daniinc.reservation.service.dto.AppointmentDTO;
 import hu.daniinc.reservation.service.dto.GuestDTO;
+import hu.daniinc.reservation.service.dto.GuestStatisticDTO;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -55,7 +57,7 @@ public interface GuestService {
      * @param id the id of the entity.
      * @return the entity.
      */
-    Optional<GuestDTO> findOne(Long id);
+    Optional<GuestDTO> findOneByGuestIdAndBusinessId(Long guestId, Long businessId);
 
     /**
      * Delete the "id" guest.
@@ -71,4 +73,10 @@ public interface GuestService {
     Page<GuestDTO> findAllWithSpecs(Long businessId, String filter, Long filterEmployeeId, Pageable pageable);
 
     List<GuestDTO> searchForGlobal(Long businessId, String query, int limit);
+
+    GuestStatisticDTO getGuestStatistic(Long guestId, Long businessId);
+
+    AppointmentDTO findNextAppointmentForGuest(Long businessId, Long guestId);
+
+    Page<AppointmentDTO> findAllByGuestId(Long guestId, Long businessId, Pageable pageable);
 }
