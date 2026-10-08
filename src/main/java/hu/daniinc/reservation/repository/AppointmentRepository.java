@@ -128,7 +128,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
     Optional<Appointment> findByIdWithDetails(@Param("appointmentId") Long appointmentId);
 
     @Query(
-        "select count(a) from Appointment a where a.guest.id = :guestId and a.guest.businessEmployee.business.id = :businessId and (:status is null or a.status = :status) and a.status != AppointmentStatus.DELETED"
+        "select count(a) from Appointment a where a.guest.id = :guestId and a.guest.businessEmployee.business.id = :businessId and (:status is null or a.status = :status) and a.status != AppointmentStatus.DELETED and a.startDate < current_timestamp"
     )
     long countByGuestIdAndBusinessId(
         @Param("guestId") Long guestId,
@@ -137,7 +137,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
     );
 
     @Query(
-        "select sum(a.offering.price) from Appointment a where a.guest.id = :guestId and a.guest.businessEmployee.business.id = :businessId and a.status = AppointmentStatus.CONFIRMED and a.status != AppointmentStatus.DELETED"
+        "select sum(a.offering.price) from Appointment a where a.guest.id = :guestId and a.guest.businessEmployee.business.id = :businessId and a.status = AppointmentStatus.CONFIRMED and a.status != AppointmentStatus.DELETED and a.startDate < current_timestamp"
     )
     BigDecimal sumSpentByGuestIdAndBusinessId(@Param("guestId") Long guestId, @Param("businessId") Long businessId);
 
